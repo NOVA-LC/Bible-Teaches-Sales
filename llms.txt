@@ -1,0 +1,22 @@
+# Bible Teaches Sales
+
+> A static knowledge base of modern sales training lessons. Each lesson pairs a two-thousand-year-old case study with contemporary sales mechanics (primarily Jeremy Miner's NEPQ methodology) and distills into LinkedIn-ready carousels. No denominational framing reaches the reader — scripture is treated as case evidence, not doctrine. Primary audiences: sales trainers, managers, solo reps, and the family members who encourage them.
+
+## Core documents
+
+- [README](README.md): What this repo is, who it is for, and how AI edge functions should consume it.
+- [SCHEMA](SCHEMA.md): Canonical lesson structure, frontmatter contract, canonical H2 anchors, SEO and GEO production rules.
+- [TAXONOMY](TAXONOMY.md): Controlled vocabulary for every tag field in lesson frontmatter.
+- [index.json](index.json): Machine-readable catalog of every lesson with full metadata.
+
+## Lessons
+
+- [Lesson 01 — The Commendation Before the Commission](lessons/01-commendation-before-commission.md): Why the best closers on your floor were built before they were sharpened. Self-worth as the upstream variable of tonality, using Barnabas's vouch for Saul (Acts 9:27) and his long-arc mentorship of John Mark (2 Timothy 4:11) as the case study. Integrates NEPQ's connection and situation stages. Democratized so a solo rep, spouse, parent, or new hire can run the loop — no title required.
+
+## Carousels
+
+- [Carousel 01 — The Commendation Before the Commission](carousels/01-commendation-before-commission.md): 11-slide LinkedIn distillation of Lesson 01.
+
+## Optional
+
+- [Contributing](README.md#adding-a-lesson): How to add a lesson to the knowledge base.
