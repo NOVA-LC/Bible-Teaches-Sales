@@ -125,6 +125,16 @@ Target demographic combinations. Format: `<gender>-<age-range>`.
 - `male-48-87`
 - `female-17-48`
 
+## content_model
+
+The top-level type of the file. Determines which consumers (edge function, JSON-LD, paywall, fine-tuning export) should index it.
+
+- `lesson` — primary teaching unit in `/lessons/`
+- `carousel` — LinkedIn-ready distillation in `/carousels/`
+- `scripture_page` — study-notes page in `/scriptures/`
+- `pillar` — long-form aggregator in `/lessons/` with `content_type: pillar`
+- `adr` — architectural decision record in `/decisions/` (conceptual; no frontmatter)
+
 ## content_type
 
 Pillar / cluster designation for SEO topology.
@@ -132,6 +142,55 @@ Pillar / cluster designation for SEO topology.
 - `pillar` — long-form hub page, 2,500+ words, aggregates clusters
 - `cluster` — supporting article linked to a pillar
 - `standalone` — neither pillar nor cluster, for now
+
+## status
+
+Lesson lifecycle states.
+
+- `draft` — in progress, not yet reviewed
+- `review` — reviewed, awaiting approval
+- `approved` — live, canonical; edge functions retrieve these by default
+- `superseded` — replaced by a newer lesson; URL preserved for link integrity
+- `deprecated` — still accessible, actively discouraged (methodology no longer endorsed)
+- `archived` — removed from active retrieval, kept for history
+
+## access_tier
+
+Monetization / access-control primitive.
+
+- `public` — free, indexable, full retrieval
+- `premium` — gated, requires authentication
+- `enterprise` — licensed to specific organizations
+- `licensed` — third-party licensed content with bespoke terms
+
+## license
+
+Per-lesson license override. Repo-level default is all-rights-reserved.
+
+- `all-rights-reserved` — default; no redistribution without permission
+- `CC-BY-4.0` — redistribution with attribution
+- `CC-BY-NC-4.0` — non-commercial redistribution with attribution
+- `CC-BY-SA-4.0` — redistribution with attribution and share-alike
+- `custom` — see accompanying `LICENSE-<lesson-id>.md` for bespoke terms
+
+## provenance_method
+
+How content authenticity is signed/verified.
+
+- `git-signed` — git commit signing (v1 default)
+- `c2pa-signed` — Coalition for Content Provenance and Authenticity credentials
+- `multi-signed` — both git and C2PA
+
+## fine_tuning.instruction_style
+
+The pedagogical voice that training examples from this lesson exemplify.
+
+- `therapeutic-inquiry` — NEPQ-style diagnostic questioning
+- `narrative-teaching` — story-led, case-study-first teaching
+- `carousel-copy` — punchy declarative slide-length insights
+- `coaching-1on1` — trainer-to-rep one-on-one dialogue
+- `objection-reframe` — response to prospect pushback
+- `self-talk-prep` — solo operator internal monologue
 
 ## seo.search_intent
 
@@ -152,6 +211,23 @@ Valid values (JSON-LD emitted at render time):
 **Never** use `FAQPage`. Google deprecated most FAQ rich snippet eligibility
 in 2023-2024. The `## Questions People Ask` section serves People Also Ask
 and AI citation organically without markup.
+
+## language
+
+ISO 639-1 two-letter codes. v1 is English-only; other codes are reserved.
+
+- `en` — English (v1)
+- `es` — Spanish (reserved)
+- `pt` — Portuguese (reserved)
+- `fr` — French (reserved)
+
+## chunking.strategy
+
+Edge-function chunking approach for RAG retrieval.
+
+- `semantic_by_h2_with_fallback` — split on H2 headings; sub-chunk on paragraph boundaries if H2 section exceeds max_tokens_per_chunk
+- `semantic_by_paragraph` — reserved for future use with dense prose
+- `fixed_size` — reserved; not recommended (research shows semantic boundaries beat fixed sizing)
 
 ## Canonical spellings (do not drift)
 
