@@ -657,6 +657,24 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def bump_last_modified(conn: sqlite3.Connection) -> None:
+    """Bump the global LastModified timestamp inside userData.db.
+
+    The LastModified table is a single TEXT row that JW Library uses to decide
+    whether an imported backup's data is newer than the device's current data.
+    Without bumping this, JW Library silently drops imported rows that would
+    conflict with newer device-side state — even when the rows themselves are
+    valid and would otherwise merge cleanly.
+
+    Discovered the hard way: a v1 injection merged because the device had no
+    later activity, but a v2 injection against a fresher backup got dropped
+    because Tyler had tapped new articles between export and import — pushing
+    the device's effective LastModified ahead of my (un-bumped) backup's.
+    """
+    cur = conn.cursor()
+    cur.execute("UPDATE LastModified SET LastModified = ?", (now_iso(),))
+
+
 def update_manifest(manifest_path: Path, db_path: Path) -> None:
     with manifest_path.open("r", encoding="utf-8") as f:
         manifest = json.load(f)
@@ -773,6 +791,11 @@ def main() -> int:
                     inserted_underlines.extend(ins)
                     skipped_underlines.extend(skp)
                     underline_errors.extend(errs)
+
+            # Bump the global LastModified timestamp so JW Library treats this
+            # imported backup as "newer" than the current device state.
+            if inserted_notes or inserted_underlines or created:
+                bump_last_modified(conn)
 
             conn.commit()
         finally:
