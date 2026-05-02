@@ -3,6 +3,31 @@
 
 Phase 1: notes only. No underlines / UserMark rows.
 
+Schema convention (derived empirically from Tyler's userData.db, May 2026):
+    For Watchtower study articles, a paragraph-anchored note is:
+        BlockType        = 1
+        BlockIdentifier  = the paragraph's WOL `data-pid`
+        UserMarkId       = NULL (free-floating; no highlight required)
+
+    This places the note in the per-paragraph note slot in JW Library.
+
+    The `data-pid` is *not* the visible paragraph number. In the modern
+    Watchtower layout (2026 study issues, e.g. DocumentId 2026280) the
+    visible paragraphs are body <p> elements with `class=""` and
+    `data-rel-pid="[<question-pid>]"`. The note must anchor to the
+    body-paragraph data-pid, not the question's data-pid.
+
+    Older articles (pre-2024-ish) attached notes to the `class="qu"`
+    question block or `class="sd"` review-box block; in either case
+    BlockType=1 and BlockIdentifier=data-pid still holds. Some of
+    Tyler's older notes additionally have a UserMark (highlight)
+    pointing at the same Identifier; the note itself still uses
+    BlockType=1 + BlockIdentifier=data-pid.
+
+    Bible verse notes (KeySymbol='nwtsty', etc.) use BlockType=2 with
+    BlockIdentifier=verse-number; this tool does not currently emit
+    those — pass an explicit `block_type` per note if needed.
+
 Workflow:
     1. Export a backup from JW Library on any device.
     2. Run this tool against the .jwlibrary file.
@@ -14,22 +39,27 @@ Example:
         --output MyBackup-with-notes.jwlibrary \\
         --comments comments/2026-05-03.json
 
-The comments file is JSON of the form:
+Comments JSON shape (current):
 
     {
       "issue": 20260200,
       "key_symbol": "w",
+      "document_id": 2026280,
       "title_contains": "Are You Prepared",
+      "default_block_type": 1,
       "notes": [
-        {"block": 2,  "title": null, "content": "..."},
-        {"block": 8,  "title": null, "content": "..."}
+        {
+          "paragraph": 2,        # visible paragraph number (informational)
+          "data_pid": 8,         # WOL data-pid — the actual anchor
+          "block_type": 1,       # optional override; defaults to default_block_type
+          "title": null,
+          "content": "..."
+        }
       ]
     }
 
-`issue` is the JW Library IssueTagNumber (YYYYMMDD with day = 00 for monthly
-issues). `title_contains` and/or `document_id` disambiguate when an issue
-contains multiple study articles. The article must already exist as a row
-in the Location table — open it once on a JW Library device before exporting.
+Backward compat: a top-level `block` field on each note is still accepted
+and treated as `data_pid` (which is what the wire schema actually wants).
 """
 
 from __future__ import annotations
@@ -50,6 +80,24 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _resolve_anchor(note: dict, default_block_type: int) -> tuple[int, int]:
+    """Return (block_type, block_identifier) for a note dict.
+
+    Accepts either the new explicit form (`data_pid` + optional `block_type`)
+    or the old form (`block`, treated as data_pid).
+    """
+    if "data_pid" in note and isinstance(note["data_pid"], int):
+        ident = note["data_pid"]
+    elif "block" in note and isinstance(note["block"], int):
+        ident = note["block"]
+    else:
+        raise ValueError("note must include 'data_pid' (int) or legacy 'block' (int)")
+    bt = note.get("block_type", default_block_type)
+    if not isinstance(bt, int) or bt not in (1, 2):
+        raise ValueError(f"block_type must be 1 or 2, got {bt!r}")
+    return bt, ident
+
+
 def load_comments(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as f:
         spec = json.load(f)
@@ -57,9 +105,14 @@ def load_comments(path: Path) -> dict:
         sys.exit("comments file must include 'issue' (e.g. 20260200)")
     if "notes" not in spec or not isinstance(spec["notes"], list) or not spec["notes"]:
         sys.exit("comments file must include a non-empty 'notes' array")
+    default_bt = spec.get("default_block_type", 1)
+    if default_bt not in (1, 2):
+        sys.exit(f"default_block_type must be 1 or 2, got {default_bt!r}")
     for i, n in enumerate(spec["notes"]):
-        if not isinstance(n.get("block"), int):
-            sys.exit(f"note #{i}: 'block' must be an int")
+        try:
+            _resolve_anchor(n, default_bt)
+        except ValueError as e:
+            sys.exit(f"note #{i}: {e}")
         if not isinstance(n.get("content"), str) or not n["content"].strip():
             sys.exit(f"note #{i}: 'content' must be a non-empty string")
     return spec
@@ -109,33 +162,39 @@ def find_location(
     return rows[0]
 
 
-def existing_blocks(conn: sqlite3.Connection, location_id: int) -> set[int]:
+def existing_anchors(conn: sqlite3.Connection, location_id: int) -> set[tuple[int, int]]:
+    """Set of (BlockType, BlockIdentifier) pairs already noted at this Location."""
     cur = conn.cursor()
     cur.execute(
-        "SELECT BlockIdentifier FROM Note "
-        "WHERE LocationId = ? AND BlockType = 2 AND BlockIdentifier IS NOT NULL",
+        "SELECT BlockType, BlockIdentifier FROM Note "
+        "WHERE LocationId = ? AND BlockIdentifier IS NOT NULL",
         (location_id,),
     )
-    return {row[0] for row in cur.fetchall()}
+    return {(row[0], row[1]) for row in cur.fetchall()}
 
 
 def insert_notes(
-    conn: sqlite3.Connection, location_id: int, notes: list[dict]
-) -> tuple[list[int], list[int]]:
-    skipped = sorted(b for b in (n["block"] for n in notes) if b in existing_blocks(conn, location_id))
-    skip_set = set(skipped)
+    conn: sqlite3.Connection,
+    location_id: int,
+    notes: list[dict],
+    default_block_type: int,
+) -> tuple[list[int], list[tuple[int, int]]]:
+    existing = existing_anchors(conn, location_id)
     cur = conn.cursor()
     now = now_iso()
     inserted: list[int] = []
+    skipped: list[tuple[int, int]] = []
     for n in notes:
-        if n["block"] in skip_set:
+        bt, ident = _resolve_anchor(n, default_block_type)
+        if (bt, ident) in existing:
+            skipped.append((bt, ident))
             continue
         cur.execute(
             """
             INSERT INTO Note
                 (Guid, UserMarkId, LocationId, Title, Content,
                  LastModified, Created, BlockType, BlockIdentifier)
-            VALUES (?, NULL, ?, ?, ?, ?, ?, 2, ?)
+            VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 str(uuid.uuid4()),
@@ -144,7 +203,8 @@ def insert_notes(
                 n["content"],
                 now,
                 now,
-                n["block"],
+                bt,
+                ident,
             ),
         )
         inserted.append(cur.lastrowid)
@@ -198,6 +258,7 @@ def main() -> int:
     issue = int(spec["issue"])
     document_id = args.document_id if args.document_id is not None else spec.get("document_id")
     title_contains = args.title_contains or spec.get("title_contains")
+    default_bt = spec.get("default_block_type", 1)
 
     with tempfile.TemporaryDirectory(prefix="jwl_notes_") as td:
         work = Path(td)
@@ -216,13 +277,13 @@ def main() -> int:
                 f"Targeting LocationId={loc['LocationId']} "
                 f"DocumentId={loc['DocumentId']} Title={loc['Title']!r}"
             )
-            inserted, skipped = insert_notes(conn, loc["LocationId"], spec["notes"])
+            inserted, skipped = insert_notes(conn, loc["LocationId"], spec["notes"], default_bt)
             conn.commit()
         finally:
             conn.close()
 
         if skipped:
-            print(f"Skipped paragraphs already noted: {skipped}")
+            print(f"Skipped (BlockType, BlockIdentifier) already noted: {skipped}")
         print(f"Inserted {len(inserted)} note(s); NoteIds={inserted}")
 
         if not inserted:
