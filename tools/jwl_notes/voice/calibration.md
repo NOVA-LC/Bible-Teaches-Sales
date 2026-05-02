@@ -300,6 +300,94 @@ tradition, it is still on-voice.
 
 ---
 
+## Lessons from the broader JW-landscape (cross-speaker analysis)
+
+After sampling primary spoken-delivery transcripts beyond Herd's prose
+— Sam Herd's *Love—The Identifying Mark of a Disciple of Jesus* (JW
+Broadcasting, July 2017), Anthony Morris III's *Glorify Jehovah* (May
+2016), Stephen Lett's parakeet-and-Grand-Canyon illustration on
+"forever" (Governing Body Update), and Gage Fleegle's *Jehovah
+Organises His People* (2023 convention) — seven universals of the most
+listened-to JW talks emerge. They are not religious patterns; they are
+rhetorical patterns wearing religious furniture.
+
+### 1. ONE metaphor carries the entire talk
+
+Lett's parakeet *is* his talk on "forever." Morris's diabetes-genetics
+*is* his talk on family attacks. Herd's "self-sacrificing love" carried
+through "not dying for each other but living for each other" *is* his
+talk on John 13:34-35. The image is not decoration — it is the
+load-bearing structure. Pull the image, the talk collapses.
+
+**Tyler already does this.** The fridge IS the ¶14 talk. The sidewalk
+flower IS the Isaiah 53:2 talk. Hold this discipline.
+
+### 2. Inversion is the structural move, not just the landing
+
+Herd, spoken: "Not specifically that his followers would all be *dying*
+for each other, but more so that they would all be *living* for each
+other." Tyler, Sample 3: "So maybe the question isn't just 'do I see
+the value' — it's 'am I still searching to understand it deeper?'"
+
+The pattern: name what listener thinks the answer is, then invert. This
+is more than a closing aphorism; it can run through the talk repeatedly.
+
+### 3. Permission gives trust
+
+Herd's life story admits regretting his promise to study. Tyler's
+Sample 3 admits the truth once felt rote: *"It was just… Saturday. Just
+meetings. Just what we do."* The trusted communicator is the one who
+names the cost or the dull stretch *first*. The audience cannot trust
+inversion #2 unless permission #3 has earned the right to name what
+they actually feel.
+
+### 4. Scripture as punctuation, not proof
+
+Herd doesn't open with the verse. He builds the inversion, then locks
+on the verse phrase: *"He said... 'just as I have loved you.' That is
+what was different."* The verse caps a moment the speaker already
+created. (Compare to Fleegle, who often opens with the address — that
+is the topic-talk shape, not the audience-comment shape.)
+
+### 5. Cadence of three is universal
+
+Herd's three-beat: "*a place to live, clothes to wear, and enough food
+to eat.*" Tyler's: "*Saturday. Just meetings. Just what we do.*" /
+"*our health, our bank account, or our neighborhood.*" Across every
+tradition that produces memorable preaching, the three-beat plain list
+shows up. It is the rhythm device. Use it once per piece. Twice is
+rehearsed.
+
+### 6. Every memorable speaker owns ONE signature move
+
+- **Lett:** vivid hypothetical with cumulative escalation (parakeet,
+  10,000 years, repeat).
+- **Morris:** extended single metaphor running through the talk
+  (diabetes; family-as-house).
+- **Herd:** parallel-clause inversion landing.
+- **Fleegle:** question-driven topic outline.
+- **Splane:** structural-analytical exegesis.
+- **Tyler:** *reframe-the-question* + *lived-in domestic specificity*.
+  This is his signature. The "the question isn't X — it's Y" move plus
+  the brother / fridge / grandma's ring texture is no one else's.
+
+The lesson: don't try to add more moves. Sharpen the one that's already
+yours. A speaker becomes memorable by being identifiable, not by being
+versatile.
+
+### 7. Image precedes concept, never the reverse
+
+Lett's "forever" illustration goes IMAGE → CONCEPT (parakeet → "and
+forever has just barely begun"). Morris goes IMAGE → CONCEPT
+(diabetes → "spiritual injections"). Herd goes IMAGE → CONCEPT (red
+car / promise → "needs to be gentle toward all"). Tyler always goes
+IMAGE → CONCEPT (sidewalk flower → strength-from-within).
+
+Rule: if the concept appears before the image in a draft, swap the
+order. The audience absorbs concept *through* image, never *before*.
+
+---
+
 ## Sources accessed
 
 - Samuel F. Herd. "A Poor Start—A Rich Ending." *The Watchtower (Study Edition)*, May 2018. jw.org. [https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/](https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/)
