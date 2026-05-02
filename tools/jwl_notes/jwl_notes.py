@@ -92,6 +92,11 @@ COLOR_INDEX = {
     "purple": 6,
 }
 
+# KeySymbols where Locations are anchored by (BookNumber, ChapterNumber)
+# instead of (IssueTagNumber, DocumentId). Bible publications use BlockType=2
+# with BlockIdentifier=verse-number for per-verse notes.
+BIBLE_KEY_SYMBOLS = frozenset({"nwtsty", "nwt", "bi10", "Rbi8", "rNWT", "rbi8"})
+
 USERMARK_STYLE_UNDERLINE = 0  # vs. 1 = full highlight box
 USERMARK_VERSION = 1
 
@@ -108,16 +113,22 @@ def now_iso() -> str:
 def _resolve_anchor(note: dict, default_block_type: int) -> tuple[int, int]:
     """Return (block_type, block_identifier) for a note dict.
 
-    Accepts either the new explicit form (`data_pid` + optional `block_type`)
-    or the old form (`block`, treated as data_pid).
+    Accepts:
+    - `verse` (int) — Bible verse mode; default block_type=2
+    - `data_pid` (int) — workbook/article paragraph mode; default block_type=1
+    - `block` (int) — legacy alias for data_pid
     """
-    if "data_pid" in note and isinstance(note["data_pid"], int):
+    if "verse" in note and isinstance(note["verse"], int):
+        ident = note["verse"]
+        bt = note.get("block_type", 2)
+    elif "data_pid" in note and isinstance(note["data_pid"], int):
         ident = note["data_pid"]
+        bt = note.get("block_type", default_block_type)
     elif "block" in note and isinstance(note["block"], int):
         ident = note["block"]
+        bt = note.get("block_type", default_block_type)
     else:
-        raise ValueError("note must include 'data_pid' (int) or legacy 'block' (int)")
-    bt = note.get("block_type", default_block_type)
+        raise ValueError("note must include 'verse' (int), 'data_pid' (int), or legacy 'block' (int)")
     if not isinstance(bt, int) or bt not in (1, 2):
         raise ValueError(f"block_type must be 1 or 2, got {bt!r}")
     return bt, ident
@@ -126,11 +137,20 @@ def _resolve_anchor(note: dict, default_block_type: int) -> tuple[int, int]:
 def load_comments(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as f:
         spec = json.load(f)
-    if "issue" not in spec:
-        sys.exit("comments file must include 'issue' (e.g. 20260200)")
+    is_bible_mode = "book" in spec and "chapter" in spec
+    if is_bible_mode:
+        if not isinstance(spec["book"], int):
+            sys.exit("'book' must be an integer (Bible book number 1..66)")
+        if not isinstance(spec["chapter"], int):
+            sys.exit("'chapter' must be an integer")
+    elif "issue" not in spec:
+        sys.exit(
+            "comments file must include either 'issue' (paragraph mode — Watchtower / mwb / "
+            "study book) or 'book'+'chapter' (Bible verse mode — nwtsty)"
+        )
     if "notes" not in spec or not isinstance(spec["notes"], list) or not spec["notes"]:
         sys.exit("comments file must include a non-empty 'notes' array")
-    default_bt = spec.get("default_block_type", 1)
+    default_bt = spec.get("default_block_type", 2 if is_bible_mode else 1)
     if default_bt not in (1, 2):
         sys.exit(f"default_block_type must be 1 or 2, got {default_bt!r}")
     for i, n in enumerate(spec["notes"]):
@@ -320,14 +340,50 @@ def insert_underlines_for_note(
 def find_location(
     conn: sqlite3.Connection,
     key_symbol: str,
-    issue: int,
-    document_id: int | None,
-    title_contains: str | None,
+    *,
+    issue: int | None = None,
+    document_id: int | None = None,
+    book: int | None = None,
+    chapter: int | None = None,
+    title_contains: str | None = None,
 ) -> dict:
+    """Locate a Location row by either paragraph mode or Bible-verse mode.
+
+    Paragraph mode: pass `issue` (and optionally `document_id` / `title_contains`).
+    Bible mode: pass `book` and `chapter` (KeySymbol typically 'nwtsty').
+    """
     cur = conn.cursor()
+
+    if book is not None and chapter is not None:
+        cur.execute(
+            """
+            SELECT LocationId, BookNumber, ChapterNumber, MepsLanguage, Type, Title, KeySymbol
+            FROM Location
+            WHERE KeySymbol = ? AND BookNumber = ? AND ChapterNumber = ?
+            """,
+            (key_symbol, book, chapter),
+        )
+        cols = [d[0] for d in cur.description]
+        rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        if not rows:
+            sys.exit(
+                f"No Bible Location for KeySymbol={key_symbol!r} BookNumber={book} ChapterNumber={chapter}. "
+                "Open the chapter once in JW Library, then export a fresh backup."
+            )
+        # Multiple Locations on the same chapter is rare but happens (different MepsLanguages).
+        # Prefer one with MepsLanguage=0 (English default) when ambiguous.
+        if len(rows) > 1:
+            preferred = [r for r in rows if r.get("MepsLanguage") == 0]
+            if preferred:
+                rows = preferred
+        return rows[0]
+
+    if issue is None:
+        sys.exit("find_location requires either (issue, ...) or (book, chapter)")
+
     cur.execute(
         """
-        SELECT LocationId, DocumentId, Title, MepsLanguage, Type
+        SELECT LocationId, DocumentId, Title, MepsLanguage, Type, KeySymbol
         FROM Location
         WHERE KeySymbol = ? AND IssueTagNumber = ?
         """,
@@ -463,15 +519,24 @@ def main() -> int:
         sys.exit(f"input not found: {args.input}")
 
     spec = load_comments(args.comments)
-    key_symbol = spec.get("key_symbol", "w")
-    issue = int(spec["issue"])
+    is_bible_mode = "book" in spec and "chapter" in spec
+    key_symbol = spec.get("key_symbol", "nwtsty" if is_bible_mode else "w")
+    default_bt = spec.get("default_block_type", 2 if is_bible_mode else 1)
+
+    issue = int(spec["issue"]) if "issue" in spec else None
     document_id = args.document_id if args.document_id is not None else spec.get("document_id")
     title_contains = args.title_contains or spec.get("title_contains")
-    default_bt = spec.get("default_block_type", 1)
+    book = spec.get("book")
+    chapter = spec.get("chapter")
 
     needs_article = any(n.get("underlines") for n in spec["notes"])
     article_html: str | None = None
     if needs_article:
+        if is_bible_mode:
+            sys.exit(
+                "Bible-verse underlines aren't supported yet (Phase 2D Mk2). "
+                "Strip 'underlines' from Bible-mode notes; use notes-only for now."
+            )
         if args.article_html:
             article_html = args.article_html.read_text(encoding="utf-8")
         elif document_id:
@@ -492,11 +557,21 @@ def main() -> int:
 
         conn = sqlite3.connect(db_path)
         try:
-            loc = find_location(conn, key_symbol, issue, document_id, title_contains)
-            print(
-                f"Targeting LocationId={loc['LocationId']} "
-                f"DocumentId={loc['DocumentId']} Title={loc['Title']!r}"
-            )
+            if is_bible_mode:
+                loc = find_location(conn, key_symbol, book=book, chapter=chapter)
+                print(
+                    f"Targeting Bible Location: LocationId={loc['LocationId']} "
+                    f"KeySymbol={key_symbol!r} Book={book} Chapter={chapter}"
+                )
+            else:
+                loc = find_location(
+                    conn, key_symbol,
+                    issue=issue, document_id=document_id, title_contains=title_contains,
+                )
+                print(
+                    f"Targeting LocationId={loc['LocationId']} "
+                    f"DocumentId={loc.get('DocumentId')} Title={loc.get('Title')!r}"
+                )
             inserted_notes, skipped_notes = insert_notes(
                 conn, loc["LocationId"], spec["notes"], default_bt
             )
