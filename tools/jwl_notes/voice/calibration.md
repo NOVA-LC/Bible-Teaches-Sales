@@ -388,6 +388,91 @@ order. The audience absorbs concept *through* image, never *before*.
 
 ---
 
+## Comment-as-conversational-persuasion (Hormozi, Miner, Voss)
+
+A 30-45 second audience comment is a unit of conversational persuasion.
+You have a paragraph of text, a room of listeners, and one frame
+rotation to land. The same structural moves that close deals are what
+make a comment land.
+
+Three sales-conversational voices map directly onto your shape:
+
+### 1. Voss labeling = your Permission principle, made explicit
+
+**Chris Voss** (FBI hostage negotiator, *Never Split the Difference*)
+teaches "labeling" — naming the emotion the other person is feeling
+*before* asking anything of them. The form is **"It seems like..."** or
+**"It sounds like..."** — never *"I'm hearing that..."* (which puts
+"I" in front and triggers defensiveness).
+
+You already do this. *"It was just… Saturday. Just meetings. Just what
+we do."* — that's a label of the audience's unspoken interior state.
+*"You know how when you miss somebody, you only remember the good?"* —
+labeled feeling, asked as parity, not preached at.
+
+**Apply more deliberately:** when you want a comment to register
+permission, lead the move with **"It can feel like..."** or **"Some
+of us — myself included — have wondered..."** — Voss-style labels
+that let the room confirm the feeling silently before you advance the
+insight.
+
+### 2. Miner NEPQ tonality = how the reframed-question landing closes
+
+**Jeremy Miner's** NEPQ (Neuro-Emotional Persuasion Questioning)
+methodology is built on one observation: *"Logic-based questions
+invite logical answers, but people's buying decisions aren't based on
+logic — they're based on emotion."* The technique leads the listener
+to persuade *themselves* by asking a question they end up answering
+inside their own head.
+
+This is your reframed-question landing pattern: *"So maybe the question
+isn't 'do I see the value' — it's 'am I still searching to understand
+it deeper?'"* You don't tell the audience what to think. You hand them
+a better question and they finish it inside their own minds.
+
+Miner adds a delivery note that matters: **tonality shifts mid-comment
+from challenging to concern.** Open with curiosity-tone (slightly
+challenging — *"Notice what is NOT on that list..."*) and close with
+concern-tone (warmer, slower — *"...the version we edited."*). Same
+words, different shape on the listener.
+
+### 3. Hormozi compression-expansion = your rhythm
+
+**Alex Hormozi's** post template is **claim → three short parallel
+beats → rule**. Each beat one line. Each beat short. Each beat
+parallel. Then the rule lands as if it were always going to.
+
+Your Sample 3 does this exactly:
+> *"It was just… Saturday. Just meetings. Just what we do."*
+> [unpack: "But at some point something shifts..."]
+> [rule: "the more you search, the more you see."]
+
+Hormozi calls this *"distilled wisdom — taking complex emotional or
+business realities and compressing them into a single, undeniable
+sentence."* That's your aphoristic-parallel-clause landing in business
+vocabulary. Same move.
+
+**Apply more deliberately:** when drafting a comment, write the
+compression first ("Saturday. Just meetings. Just what we do."), the
+rule last ("the more you search, the more you see"), and then write
+the bridge between them. Not the other way around. The compression
+and the rule are the load-bearing parts; the bridge is connective
+tissue.
+
+### Net implication for the comments engine
+
+Your comment shape is **NEPQ-question-led, Voss-labeled, Hormozi-
+compressed.** Sam Herd is the JW-context model. Hormozi/Miner/Voss are
+the conversational-mechanic model. The same lineage runs through both.
+
+When drafting future comments, the test is no longer "does this sound
+like Sam Herd's prose." The test is: **does this comment label the
+feeling (Voss), reframe the question (Miner), and compress the
+landing (Hormozi)?** If yes, it's on shape — regardless of whether
+the surface phrasing matches Herd's furniture.
+
+---
+
 ## Sources accessed
 
 - Samuel F. Herd. "A Poor Start—A Rich Ending." *The Watchtower (Study Edition)*, May 2018. jw.org. [https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/](https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/)
