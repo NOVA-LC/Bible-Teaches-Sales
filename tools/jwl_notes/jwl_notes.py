@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""jwl_notes.py — inject Study Notes into a JW Library backup (.jwlibrary).
+"""jwl_notes.py — inject Study Notes + colored underlines into a JW Library backup.
 
-Phase 1: notes only. No underlines / UserMark rows.
+Phase 1: paragraph notes (always supported).
+Phase 2: underlines via UserMark + BlockRange rows (added May 2026).
 
 Schema convention (derived empirically from Tyler's userData.db, May 2026):
     For Watchtower study articles, a paragraph-anchored note is:
@@ -67,13 +68,37 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sqlite3
 import sys
 import tempfile
+import urllib.request
 import uuid
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+
+
+# JW Library UserMark.ColorIndex mapping (palette as of JW Library 2024+).
+# Confirmed against Tyler's userData.db: he uses all six slots (1..6).
+# See voice/color-semantics.md for Tyler's semantic system.
+COLOR_INDEX = {
+    "yellow": 1,
+    "green": 2,
+    "blue": 3,
+    "pink": 4,
+    "red": 4,    # Tyler's "red = stop in tracks" maps to JWL pink slot
+    "orange": 5,
+    "purple": 6,
+}
+
+USERMARK_STYLE_UNDERLINE = 0  # vs. 1 = full highlight box
+USERMARK_VERSION = 1
+
+DEFAULT_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
+)
 
 
 def now_iso() -> str:
@@ -113,9 +138,183 @@ def load_comments(path: Path) -> dict:
             _resolve_anchor(n, default_bt)
         except ValueError as e:
             sys.exit(f"note #{i}: {e}")
-        if not isinstance(n.get("content"), str) or not n["content"].strip():
-            sys.exit(f"note #{i}: 'content' must be a non-empty string")
+        has_content = isinstance(n.get("content"), str) and n["content"].strip()
+        underlines = n.get("underlines") or []
+        if not isinstance(underlines, list):
+            sys.exit(f"note #{i}: 'underlines' must be an array if present")
+        if not has_content and not underlines:
+            sys.exit(f"note #{i}: must include 'content' (string) or 'underlines' (array) — both empty")
+        for j, u in enumerate(underlines):
+            if not isinstance(u.get("phrase"), str) or not u["phrase"].strip():
+                sys.exit(f"note #{i} underline #{j}: 'phrase' must be a non-empty string")
+            color = u.get("color", "yellow").lower()
+            if color not in COLOR_INDEX:
+                sys.exit(
+                    f"note #{i} underline #{j}: unknown color {color!r}; "
+                    f"known: {sorted(COLOR_INDEX)}"
+                )
     return spec
+
+
+def fetch_wol_article(document_id: int, key_symbol: str = "w",
+                      cache_dir: Path | None = None) -> str:
+    """Fetch a WOL article HTML, caching to disk to avoid repeat hits."""
+    cache_dir = cache_dir or (Path.home() / ".cache" / "jwl_notes")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"{key_symbol}_{document_id}.html"
+    if cache_path.exists():
+        return cache_path.read_text(encoding="utf-8")
+    url = f"https://wol.jw.org/en/wol/d/r1/lp-e/{document_id}"
+    req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        html = resp.read().decode("utf-8", errors="replace")
+    cache_path.write_text(html, encoding="utf-8")
+    return html
+
+
+def extract_paragraph_tokens(html: str, data_pid: int) -> list[str]:
+    """Return the list of word-tokens for a paragraph, by data_pid.
+
+    Strips inline markup (citation links, italics, footnote markers) but keeps
+    the visible word content. Drops the leading paragraph number ("16 ").
+    Empirically aligned with how JW Library tokenizes for BlockRange.StartToken
+    / EndToken offsets.
+    """
+    pattern = re.compile(
+        rf'<p\s+id="p\d+"\s+data-pid="{data_pid}"[^>]*>(.*?)</p>',
+        re.DOTALL,
+    )
+    m = pattern.search(html)
+    if not m:
+        raise ValueError(f"data-pid {data_pid} not found in article HTML")
+    body = m.group(1)
+    # Drop footnote-marker links (typically <a class="fn">…</a>) — invisible to readers.
+    body = re.sub(r'<a\s+[^>]*class="[^"]*fn[^"]*"[^>]*>.*?</a>', ' ', body, flags=re.DOTALL)
+    # Strip remaining tags but keep their text content (citation links read aloud).
+    body = re.sub(r'<[^>]+>', ' ', body)
+    # Decode common HTML entities that affect tokenization.
+    body = (body.replace("&nbsp;", " ").replace("&#160;", " ")
+                .replace("&amp;", "&").replace("&#8217;", "'")
+                .replace("&#8220;", '"').replace("&#8221;", '"')
+                .replace("&#8212;", "—").replace("&#8211;", "–"))
+    body = re.sub(r'\s+', ' ', body).strip()
+    # Strip the leading paragraph number ("16 ") — JW Library doesn't count it as a token.
+    body = re.sub(r'^\d+\s+', '', body)
+    return body.split()
+
+
+def _normalize_token(t: str) -> str:
+    """Lowercase + strip surrounding punctuation for tolerant matching."""
+    return re.sub(r'^[^\w]+|[^\w]+$', '', t.lower())
+
+
+def find_token_range(tokens: list[str], phrase: str) -> tuple[int, int]:
+    """Locate a phrase in a paragraph token list.
+
+    Returns (start_token, end_token) — 0-indexed, inclusive.
+    Tries strict match first, then a punctuation-tolerant case-insensitive
+    match. Raises ValueError if neither hits.
+    """
+    phrase_tokens = phrase.split()
+    n = len(phrase_tokens)
+    if n == 0:
+        raise ValueError("empty phrase")
+    if n > len(tokens):
+        raise ValueError(f"phrase ({n} tokens) longer than paragraph ({len(tokens)} tokens)")
+
+    for i in range(len(tokens) - n + 1):
+        if tokens[i:i + n] == phrase_tokens:
+            return (i, i + n - 1)
+
+    norm_tokens = [_normalize_token(t) for t in tokens]
+    norm_phrase = [_normalize_token(t) for t in phrase_tokens]
+    for i in range(len(norm_tokens) - n + 1):
+        if norm_tokens[i:i + n] == norm_phrase:
+            return (i, i + n - 1)
+
+    raise ValueError(
+        f"phrase not found in paragraph: {phrase!r}\n"
+        f"  paragraph tokens: {' '.join(tokens[:30])}{'…' if len(tokens) > 30 else ''}"
+    )
+
+
+def insert_underline(
+    conn: sqlite3.Connection,
+    location_id: int,
+    data_pid: int,
+    color: str,
+    start_token: int,
+    end_token: int,
+    block_type: int = 1,
+) -> tuple[int, int]:
+    """Insert a UserMark + BlockRange pair. Returns (UserMarkId, BlockRangeId)."""
+    color_index = COLOR_INDEX[color.lower()]
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO UserMark (ColorIndex, LocationId, StyleIndex, UserMarkGuid, Version)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (color_index, location_id, USERMARK_STYLE_UNDERLINE,
+         str(uuid.uuid4()).upper(), USERMARK_VERSION),
+    )
+    user_mark_id = cur.lastrowid
+    cur.execute(
+        """
+        INSERT INTO BlockRange (BlockType, Identifier, StartToken, EndToken, UserMarkId)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (block_type, data_pid, start_token, end_token, user_mark_id),
+    )
+    return (user_mark_id, cur.lastrowid)
+
+
+def existing_underline_anchors(conn: sqlite3.Connection, location_id: int) -> set[tuple[int, int, int, int]]:
+    """Set of (BlockType, Identifier, StartToken, EndToken) already highlighted at this Location."""
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT br.BlockType, br.Identifier, br.StartToken, br.EndToken
+        FROM BlockRange br
+        JOIN UserMark u ON u.UserMarkId = br.UserMarkId
+        WHERE u.LocationId = ? AND br.StartToken IS NOT NULL
+        """,
+        (location_id,),
+    )
+    return {tuple(row) for row in cur.fetchall()}
+
+
+def insert_underlines_for_note(
+    conn: sqlite3.Connection,
+    location_id: int,
+    data_pid: int,
+    block_type: int,
+    underlines: list[dict],
+    article_html: str,
+    existing: set[tuple[int, int, int, int]],
+) -> tuple[list[tuple[int, int]], list[tuple[int, int, int, int]], list[str]]:
+    """Insert all underlines for one paragraph. Returns (inserted_pairs, skipped, errors)."""
+    if not underlines:
+        return ([], [], [])
+    tokens = extract_paragraph_tokens(article_html, data_pid)
+    inserted: list[tuple[int, int]] = []
+    skipped: list[tuple[int, int, int, int]] = []
+    errors: list[str] = []
+    for u in underlines:
+        try:
+            start, end = find_token_range(tokens, u["phrase"])
+        except ValueError as e:
+            errors.append(f"data_pid={data_pid}: {e}")
+            continue
+        anchor = (block_type, data_pid, start, end)
+        if anchor in existing:
+            skipped.append(anchor)
+            continue
+        ids = insert_underline(conn, location_id, data_pid, u.get("color", "yellow"),
+                               start, end, block_type)
+        inserted.append(ids)
+        existing.add(anchor)
+    return (inserted, skipped, errors)
 
 
 def find_location(
@@ -179,12 +378,16 @@ def insert_notes(
     notes: list[dict],
     default_block_type: int,
 ) -> tuple[list[int], list[tuple[int, int]]]:
+    """Insert Note rows for entries with content. Underline-only entries are skipped here."""
     existing = existing_anchors(conn, location_id)
     cur = conn.cursor()
     now = now_iso()
     inserted: list[int] = []
     skipped: list[tuple[int, int]] = []
     for n in notes:
+        content = n.get("content")
+        if not (isinstance(content, str) and content.strip()):
+            continue  # underline-only entry, no Note row to write
         bt, ident = _resolve_anchor(n, default_block_type)
         if (bt, ident) in existing:
             skipped.append((bt, ident))
@@ -200,7 +403,7 @@ def insert_notes(
                 str(uuid.uuid4()),
                 location_id,
                 n.get("title"),
-                n["content"],
+                content,
                 now,
                 now,
                 bt,
@@ -242,12 +445,18 @@ def repackage(work_dir: Path, output: Path) -> None:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Inject Study Notes into a .jwlibrary backup.")
+    p = argparse.ArgumentParser(
+        description="Inject Study Notes + colored underlines into a .jwlibrary backup."
+    )
     p.add_argument("--input", required=True, type=Path, help="source .jwlibrary file")
     p.add_argument("--output", required=True, type=Path, help="destination .jwlibrary file")
-    p.add_argument("--comments", required=True, type=Path, help="JSON file describing the notes")
+    p.add_argument("--comments", required=True, type=Path,
+                   help="JSON file describing the notes and underlines")
     p.add_argument("--document-id", type=int, default=None, help="exact DocumentId to target")
-    p.add_argument("--title-contains", type=str, default=None, help="substring match on Location.Title")
+    p.add_argument("--title-contains", type=str, default=None,
+                   help="substring match on Location.Title")
+    p.add_argument("--article-html", type=Path, default=None,
+                   help="local cached WOL article HTML; default fetches from wol.jw.org")
     args = p.parse_args()
 
     if not args.input.exists():
@@ -259,6 +468,17 @@ def main() -> int:
     document_id = args.document_id if args.document_id is not None else spec.get("document_id")
     title_contains = args.title_contains or spec.get("title_contains")
     default_bt = spec.get("default_block_type", 1)
+
+    needs_article = any(n.get("underlines") for n in spec["notes"])
+    article_html: str | None = None
+    if needs_article:
+        if args.article_html:
+            article_html = args.article_html.read_text(encoding="utf-8")
+        elif document_id:
+            print(f"Fetching WOL article for DocumentId={document_id}…")
+            article_html = fetch_wol_article(document_id, key_symbol)
+        else:
+            sys.exit("comments include underlines but no document_id or --article-html provided")
 
     with tempfile.TemporaryDirectory(prefix="jwl_notes_") as td:
         work = Path(td)
@@ -277,17 +497,46 @@ def main() -> int:
                 f"Targeting LocationId={loc['LocationId']} "
                 f"DocumentId={loc['DocumentId']} Title={loc['Title']!r}"
             )
-            inserted, skipped = insert_notes(conn, loc["LocationId"], spec["notes"], default_bt)
+            inserted_notes, skipped_notes = insert_notes(
+                conn, loc["LocationId"], spec["notes"], default_bt
+            )
+
+            inserted_underlines: list[tuple[int, int]] = []
+            skipped_underlines: list[tuple[int, int, int, int]] = []
+            underline_errors: list[str] = []
+            if article_html is not None:
+                existing_uls = existing_underline_anchors(conn, loc["LocationId"])
+                for n in spec["notes"]:
+                    underlines = n.get("underlines") or []
+                    if not underlines:
+                        continue
+                    bt, ident = _resolve_anchor(n, default_bt)
+                    ins, skp, errs = insert_underlines_for_note(
+                        conn, loc["LocationId"], ident, bt,
+                        underlines, article_html, existing_uls,
+                    )
+                    inserted_underlines.extend(ins)
+                    skipped_underlines.extend(skp)
+                    underline_errors.extend(errs)
+
             conn.commit()
         finally:
             conn.close()
 
-        if skipped:
-            print(f"Skipped (BlockType, BlockIdentifier) already noted: {skipped}")
-        print(f"Inserted {len(inserted)} note(s); NoteIds={inserted}")
+        if skipped_notes:
+            print(f"Skipped notes (already present): {skipped_notes}")
+        print(f"Inserted {len(inserted_notes)} note(s); NoteIds={inserted_notes}")
 
-        if not inserted:
-            sys.exit("Nothing to write — every paragraph already has a note. No output produced.")
+        if article_html is not None:
+            if skipped_underlines:
+                print(f"Skipped underlines (already present): {len(skipped_underlines)}")
+            print(f"Inserted {len(inserted_underlines)} underline(s)")
+            for err in underline_errors:
+                print(f"  ⚠ {err}", file=sys.stderr)
+
+        wrote_anything = bool(inserted_notes) or bool(inserted_underlines)
+        if not wrote_anything:
+            sys.exit("Nothing new to write. No output produced.")
 
         update_manifest(manifest_path, db_path)
         repackage(work, args.output)
