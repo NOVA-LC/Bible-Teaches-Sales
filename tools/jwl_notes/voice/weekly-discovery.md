@@ -21,19 +21,47 @@ through-Saturday week (the JW week convention). Examples:
 
 ---
 
-## Step 1 — Resolve the bimonthly workbook URL
+## Step 1 — Use WOL's meetings-by-week URL (canonical lookup)
 
-Workbooks are published bimonthly. Pattern:
+WOL has a single URL that resolves all materials for a study week:
+```
+https://wol.jw.org/en/wol/meetings/r1/lp-e/{year}/{iso_week}
+```
+
+Where `{iso_week}` is the ISO week number of the year (1–53).
+
+For May 4-10, 2026 → ISO week 19 → `https://wol.jw.org/en/wol/meetings/r1/lp-e/2026/19`
+
+**This is the lookup that should be used first.** Grep the returned HTML for
+`href="/en/wol/d/r1/lp-e/(\d+)"` and you get the DocumentIds for:
+- the Sunday Watchtower study article (single 7-digit DocId, e.g. `2026320`)
+- the midweek workbook week page (9-digit `2020XXX...` DocId, e.g. `202026161`)
+
+From the workbook week page, drill into individual parts to get their
+DocumentIds.
+
+### Computing the ISO week from a date (Python)
+
+```python
+import datetime as dt
+iso_week = dt.date(2026, 5, 7).isocalendar().week  # → 19
+```
+
+Use the Sunday-of-the-study-week (e.g. May 10) or any day inside it.
+ISO weeks run Monday-to-Sunday — JW study weeks run Sunday-to-Saturday —
+but for any date inside the JW week, ISO week resolves correctly to the
+WOL `meetings/.../{year}/{week}` page.
+
+### Fallback — bimonthly workbook URL
+
+If the meetings-by-week URL fails (e.g., for very old issues), fall back
+to the bimonthly workbook landing page:
 ```
 https://www.jw.org/en/library/jw-meeting-workbook/{months}-{year}-mwb/
 ```
-where `{months}` is `january-february`, `march-april`, `may-june`,
-`july-august`, `september-october`, `november-december` (lowercase,
-hyphenated).
-
-For May 10, 2026 → `https://www.jw.org/en/library/jw-meeting-workbook/may-june-2026-mwb/`
-
-This page lists the nine weeks the workbook covers; no other detail.
+Where `{months}` is `january-february` … `november-december`. From there
+follow the per-week link. This is slower and less canonical — prefer
+WOL's meetings URL.
 
 ---
 
