@@ -449,6 +449,73 @@ def insert_underlines_for_note(
     return (inserted, skipped, errors)
 
 
+def ensure_location(
+    conn: sqlite3.Connection,
+    key_symbol: str,
+    *,
+    issue: int | None = None,
+    document_id: int | None = None,
+    book: int | None = None,
+    chapter: int | None = None,
+    title_contains: str | None = None,
+) -> tuple[dict, bool]:
+    """Look up Location, or create one if missing. Returns (loc_dict, created_bool).
+
+    JW Library only writes a Location row when a publication item is OPENED on
+    a device. This function inserts a missing Location row using the metadata
+    from the comments JSON, so the tool can inject notes/highlights into
+    articles the user hasn't tapped into yet (provided the publication itself
+    is downloaded — JW Library still needs the source content to render).
+
+    Auto-created rows are minimal: KeySymbol + (IssueTagNumber + DocumentId)
+    OR (BookNumber + ChapterNumber); MepsLanguage=0; Type inferred from
+    KeySymbol (1 for 'w' Watchtower, 0 for everything else).
+    """
+    try:
+        loc = find_location(
+            conn, key_symbol,
+            issue=issue, document_id=document_id, book=book, chapter=chapter,
+            title_contains=title_contains,
+        )
+        return (loc, False)
+    except SystemExit:
+        pass
+
+    # Per Location table CHECK constraints (verified against userData.db schema, May 2026):
+    #   Type = 0  → publication article (DocumentId set) OR Bible chapter (Book+Chapter set)
+    #   Type = 1  → whole Bible book (rare; not what we inject against)
+    #   Type = 2/3 → mediator audio/video
+    # We always use Type=0 for both modes — Watchtower articles, mwb workbook items,
+    # CBS book chapters, and Bible chapters are all Type=0.
+    cur = conn.cursor()
+    if book is not None and chapter is not None:
+        cur.execute(
+            """INSERT INTO Location
+               (KeySymbol, BookNumber, ChapterNumber, IssueTagNumber, MepsLanguage, Type)
+               VALUES (?, ?, ?, 0, 0, 0)""",
+            (key_symbol, book, chapter),
+        )
+    else:
+        cur.execute(
+            """INSERT INTO Location
+               (KeySymbol, IssueTagNumber, DocumentId, MepsLanguage, Type)
+               VALUES (?, ?, ?, 0, 0)""",
+            (key_symbol, issue or 0, document_id),
+        )
+    new_id = cur.lastrowid
+    return (
+        {
+            "LocationId": new_id,
+            "KeySymbol": key_symbol,
+            "DocumentId": document_id,
+            "BookNumber": book,
+            "ChapterNumber": chapter,
+            "Title": None,
+        },
+        True,
+    )
+
+
 def find_location(
     conn: sqlite3.Connection,
     key_symbol: str,
@@ -668,19 +735,21 @@ def main() -> int:
         conn = sqlite3.connect(db_path)
         try:
             if is_bible_mode:
-                loc = find_location(conn, key_symbol, book=book, chapter=chapter)
+                loc, created = ensure_location(conn, key_symbol, book=book, chapter=chapter)
+                created_tag = " [auto-created]" if created else ""
                 print(
                     f"Targeting Bible Location: LocationId={loc['LocationId']} "
-                    f"KeySymbol={key_symbol!r} Book={book} Chapter={chapter}"
+                    f"KeySymbol={key_symbol!r} Book={book} Chapter={chapter}{created_tag}"
                 )
             else:
-                loc = find_location(
+                loc, created = ensure_location(
                     conn, key_symbol,
                     issue=issue, document_id=document_id, title_contains=title_contains,
                 )
+                created_tag = " [auto-created]" if created else ""
                 print(
                     f"Targeting LocationId={loc['LocationId']} "
-                    f"DocumentId={loc.get('DocumentId')} Title={loc.get('Title')!r}"
+                    f"DocumentId={loc.get('DocumentId')} Title={loc.get('Title')!r}{created_tag}"
                 )
             inserted_notes, skipped_notes = insert_notes(
                 conn, loc["LocationId"], spec["notes"], default_bt
