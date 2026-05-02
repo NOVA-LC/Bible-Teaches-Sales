@@ -249,6 +249,79 @@ after.** The landing is the CTA.
 
 ---
 
+## Attention-capture without sacrificing the principles
+### (LinkedIn / non-captive audience addendum)
+
+Your comment voice was built for a captive audience (Watchtower study
+attendees who must listen). LinkedIn is the opposite — readers scroll
+past in 1.5 seconds. The nine principles still apply once the reader
+has stopped. The question is *what makes them stop*.
+
+This is where the conversational-craft cohort splits into two camps:
+
+**The ethical camp:** Hormozi (compression-expansion claim hooks),
+Naval (aphoristic pattern interrupts), Mr. Beast (curiosity hooks).
+All three operate attention-capture *without* breaking audience parity
+— their hooks are claim-first, not authority-first.
+
+**The extreme camp:** Andrew Tate. **Important caveat: Tate's content
+ideology and personal conduct are not borrowable. He's facing
+trafficking and sexual-assault charges; his stated views on women are
+not a model for anything.** What *is* borrowable is the discrete
+mechanic of his attention-capture craft, isolated from the ideology.
+Researchers who've studied his rhetorical structure (independent of
+content) identify these mechanics:
+
+- **Sound-bite compression for short-form.** Tate optimizes for
+  20-second TikTok clips and Reels. Each segment is one claim,
+  compressed, repeatable. *Borrowable.* For LinkedIn: write the post
+  so the first two lines work as a standalone screenshot.
+- **Fast-pace certainty.** Calculated pacing — no hedges, no "I think,"
+  no "maybe." Each statement claims the floor. *Borrowable in the
+  craft sense, with a guardrail*: certainty without authority-pose.
+  Hormozi does this cleanly. Tate uses certainty *as* authority —
+  that's the line not to cross.
+- **Polarize against ideas, not people.** Tate polarizes against women
+  (not borrowable — ideologically broken). The mechanic underneath —
+  *take a strong stance against a widely-held idea* — is borrowable
+  when the target is an idea, not a group. Holiday does this cleanly:
+  *"the obstacle is the way"* polarizes against the conventional
+  reading of obstacles, not against people.
+- **Aspirational hook.** Tate's hook is wealth/status/dominance.
+  The *mechanic* is naming what the reader wants and offering a path.
+  *Borrowable*: in coaching/sales, name what the reader actually
+  wants — quieter rest, harder conversations completed, fewer regrets
+  — and connect the post to it.
+- **"Unique knowledge" framing.** Tate frames his content as secret
+  truth most can't see. *Not borrowable* in his form (it's manipulative
+  flattery). The honest version is *"here's what I had to learn the
+  hard way"* — same hook function, audience-parity preserved.
+
+### The borrow rule
+
+**Use Tate's mechanics through Hormozi's filter.** Hormozi captures
+attention with the same compressed-claim-first technique, without
+breaking audience parity (Principle 3) or restraint (Principle 5).
+When in doubt: *would Hormozi post this exact line?* If yes, it's the
+ethical version of the mechanic. If only Tate would post it, rewrite.
+
+### Specific application: LinkedIn opener stack
+
+Combine in this order:
+1. **Sound-bite hook** (Hormozi/Tate compression) — one line, claim
+   or specific concrete moment, screenshottable.
+2. **Confession or specific moment** (Brown / Stevenson / Walker) —
+   second line that earns parity through honesty.
+3. **The body** — your nine-principle voice (Bourdain specificity,
+   Mr. Rogers cadence, Perel one-rotation discipline).
+4. **The landing** — Holiday/Naval parallel-clause inversion or
+   reframed question.
+
+The hook earns the read; the body earns the trust; the landing earns
+the share. Tate-style without Tate's content.
+
+---
+
 ## What to avoid (always)
 
 1. **Listicle openers** — *"5 things I learned…"* / *"Here are 7

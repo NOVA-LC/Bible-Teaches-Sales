@@ -473,6 +473,134 @@ the surface phrasing matches Herd's furniture.
 
 ---
 
+## Cross-genre voice matches (cultural-landscape pass, 10 candidates)
+
+Wider-net pass beyond the JW landscape and the sales-conversational
+neighbors. Each candidate scored against your nine-principle
+fingerprint plus your three signature traits (three-beat list,
+aphoristic parallel-clause landing, reframe-the-question move).
+
+### The ten
+
+| # | Candidate | Genre | Match score | Notes |
+|---|-----------|-------|-------------|-------|
+| 1 | **Brené Brown** | Vulnerability research / TED-circuit | 9/9 | Self-frames as *"researcher-storyteller"* — your shape exactly |
+| 2 | **Esther Perel** | Couples therapy / podcast | 9/9 | Each *Where Should We Begin?* episode = one rendered case = one rotation |
+| 3 | **Toni Morrison** *(interview voice, not novels)* | Literary fiction | 9/9 | Holds the moment; soft but stern; deliberate pace |
+| 4 | **Mr. Rogers** *(crazy pull)* | Children's TV / public broadcasting | 8.5/9 | Slow cadence + simple words + audience parity = your principles maxed; specificity is the only soft spot |
+| 5 | **Anthony Bourdain** *(crazy pull)* | Food / travel writing | 8.5/9 | Sensory specificity at max density; permission-rich confessional voice |
+| 6 | **Tony Dungy** | NFL coaching / Christian leadership | 8/9 | Quiet-strength register; African American calm authority; restraint as identity |
+| 7 | **Krista Tippett** *(somewhat unusual)* | Spirituality podcasting | 8/9 | "Generous listening"; framing questions = your reframe-the-question move |
+| 8 | **James Baldwin** | Black literary essay / cultural criticism | 7/9 | Sermonic, parallel-clause master, but breaks Restraint (long essay form) |
+| 9 | **Kevin Hart** | Stand-up comedy | 7/9 | Lived-in Philly specificity, but breaks Restraint at macro (60-90 min specials) |
+| 10 | **James Clear** | Self-improvement essay | 7/9 | Aphoristic restraint at max, but soft on lived-in specificity and permission |
+
+### Why theatrical/aggressive voices didn't make whole-shape match
+*(Jake Paul, Jordan Belfort, Tony Robbins, Andrew Tate considered.)*
+All fail Restraint (5) and Audience Parity (3). Performative,
+expert-up, urgency-driven. Tate / Paul / Belfort / Robbins are
+anti-voice at the whole-shape level — drafts shouldn't drift toward
+them. **However**, two of them (Peterson, Tate) carry isolable
+techniques worth stealing once the principles are already locked in:
+
+### #11 — Jordan Peterson: archetypal framing as a depth move
+
+Peterson's Bible-lecture mechanic is not story-as-moral-example. It's
+**story-as-archetypal-pattern**: a character is read as a *universal
+psychological response*, not just a person. Cain and Abel aren't two
+brothers; they are *"two canonical patterns of reaction to the
+terrible vulnerability that's revealed as a consequence of the
+development of self-consciousness"* — the up-aimed pattern and the
+down-aimed pattern, present in every individual.
+
+This unlocks a depth tier above your current commenting. Today you
+treat the Bible character as someone you can reference (Peter, Abraham,
+Sarah, the merchant). Peterson's move would treat the character as
+**a psychological mirror of the audience** — not "Peter chose to
+stay" but "Peter is the part of us that can stay." Same scripture,
+deeper rotation.
+
+**What to borrow:** when commenting on a named figure, ask: *what
+universal psychological pattern does this person represent?* If the
+answer adds rotation to the comment, work it in. If it doesn't, drop
+it — don't force it.
+
+**What NOT to borrow:** Peterson's lecture length, academic register,
+and frequent self-correcting tangents. He breaks Restraint (5) hard.
+The archetypal insight has to compress into 30 seconds, not unfold
+across two hours. Same depth, one-fortieth the footprint.
+
+**Rule:** archetypal framing earns its place only if it makes the
+comment *shorter* and *sharper*, never longer. If it tempts you toward
+explanation, cut it.
+
+### What the top 5 each add to your toolkit
+
+**Brené Brown — researcher-storyteller framing.**
+She names her own positioning early and out loud: *"I'm a
+researcher-storyteller. I want to tell some stories about a piece of
+my research…"* That's a positioning declaration that earns audience
+parity in one sentence. Your equivalent: don't position as "audience
+member commenting" — position as *"someone who's been chewing on this
+paragraph"*. Same move; warms the room before the insight lands.
+
+**Esther Perel — case-as-content, one session per piece.**
+The structural rule of *Where Should We Begin?*: one couple, one
+session, one rotation, one renamed feeling at the end. She does not
+stack two cases. She does not summarize the lesson at the end. The
+session itself *is* the lesson. Your equivalent: *one paragraph, one
+rendered scene, one rotation*. The comment is the lesson, not the
+container for it.
+
+**Toni Morrison — hold the moment.**
+Watching her on *Charlie Rose*, the technique that does the most work
+isn't her words — it's the deliberate *not-rushing-to-fill*. She
+"holds the space and it is the interviewer who must understand." Your
+equivalent: when your aphoristic landing lands, **stop talking**. Don't
+add the explanatory beat. The silence after the landing is part of the
+landing. Most commenters and most speakers can't tolerate the silence;
+they fill it. Morrison's discipline is to let it sit.
+
+**Mr. Rogers — cadence as content.**
+Simple words alone don't carry depth. The *cadence* does. Linguistics
+research on his testimony notes he uses *"a certain rate of speed"*
+deliberately. Slow is the move. Your nine principles can all be
+written into a comment that still fails — if delivered fast, it
+collapses into bullet points. Mr. Rogers' rule: *the next word can
+wait*. Apply this on delivery: a deliberate half-beat between the
+compression and the rule, and a full beat after the rule.
+
+**Anthony Bourdain — specificity past the comfort zone.**
+You already operate at high lived-in specificity (brother's fridge,
+grandma's ring, Atlanta in July). Bourdain operates one notch past
+that. Not just "the noodle shop" but *"the cracked plastic stool in
+front of the noodle shop on Pham Ngu Lao Street, 6 a.m., the woman
+ladling broth from a pot her grandmother also ladled from."* The rule:
+when in doubt, add **one more concrete detail** — the time of day, the
+exact object, the named relationship. Specificity past the comfort
+zone is what separates remembered comments from forgotten ones.
+
+### Net implication — your integrated voice profile
+
+You are operating in the structural shape of:
+**Brené Brown's researcher-storyteller positioning, delivered at Mr.
+Rogers' cadence, with Bourdain's specificity, in Esther Perel's
+session-as-content restraint, with Toni Morrison's discipline of
+silence after the landing.**
+
+That's the secular voice cohort that maps your shape natively. Not
+Sam Herd — Sam Herd is the JW-context model. *This* is the broader
+cultural lineage. Your comments and your sales/coaching/LinkedIn voice
+both inherit from this same five-voice fusion.
+
+The bottom 5 each contribute one technique without being whole-shape
+matches: Baldwin's parallel-clause sermonic landings, Hart's
+domestic-Philadelphia specificity, Clear's 3-2-1 aphoristic compression,
+Dungy's calm-authority register, Tippett's question-framing craft.
+Borrow techniques; don't borrow whole voices from the bottom 5.
+
+---
+
 ## Sources accessed
 
 - Samuel F. Herd. "A Poor Start—A Rich Ending." *The Watchtower (Study Edition)*, May 2018. jw.org. [https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/](https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/)
@@ -485,4 +613,16 @@ the surface phrasing matches Herd's furniture.
 - Geoffrey Jackson. "Let the Many Islands Rejoice." *The Watchtower*, August 15, 2015. jw.org. [https://www.jw.org/en/library/magazines/w20150815/let-many-islands-rejoice/](https://www.jw.org/en/library/magazines/w20150815/let-many-islands-rejoice/)
 - Kenneth Cook Jr. "A New Member of the Governing Body." *The Watchtower (Study Edition)*, January 2019. jw.org. [https://www.jw.org/en/library/magazines/watchtower-study-january-2019/new-member-governing-body/](https://www.jw.org/en/library/magazines/watchtower-study-january-2019/new-member-governing-body/)
 - "What Is the Governing Body of Jehovah's Witnesses? Current Member List and Helpers." jw.org. [https://www.jw.org/en/jehovahs-witnesses/faq/governing-body-jw-helpers/](https://www.jw.org/en/jehovahs-witnesses/faq/governing-body-jw-helpers/)
+
+### Cross-genre voice candidates (cultural-landscape pass)
+- James Baldwin. *The Fire Next Time.* 1963. Rhetorical analysis: [Penguin Random House Teacher's Guide](https://www.penguinrandomhouse.com/books/7753/the-fire-next-time-by-james-baldwin/9780679744726/teachers-guide/), [SparkNotes — Style & Presentation](https://www.sparknotes.com/lit/the-fire-next-time/critical-context/).
+- Brené Brown. "The Power of Vulnerability." TED, 2010. [Full transcript on TED.com](https://www.ted.com/talks/brene_brown_the_power_of_vulnerability/transcript). Self-positioning quote ("researcher-storyteller") from the same talk.
+- Esther Perel. *Where Should We Begin?* podcast, episode "I've Had Better" (Saskia and Amin). [Esther Perel — Podcasting an Affair](https://www.estherperel.com/blog/podcasting-an-affair-1).
+- James Clear. 3-2-1 Newsletter. [JamesClear.com newsletter](https://jamesclear.com/newsletter). Sample aphorisms compiled at [Roxine Kee — Best of James Clear's 3-2-1](https://www.roxinekee.com/blog/james-clear).
+- Toni Morrison. *Charlie Rose,* 1993 and 1998 interviews. [Charlie Rose archive](https://charlierose.com/videos/18778); analysis of her cadence at [Heather Gold](https://www.heathergold.com/tonimorrison/) and [Momentum / Medium](https://momentum.medium.com/toni-morrisons-questions-84a078386665).
+- Tony Dungy and Nathan Whitaker. *Quiet Strength.* Tyndale, 2008. [Lead Read Today — Three Leadership Lessons](https://fisher.osu.edu/blogs/leadreadtoday/three-leadership-lessons-tony-dungy).
+- Kevin Hart. *I Can't Make This Up* (memoir, 2017) and stand-up specials. [Variety interview on childhood](https://variety.com/2017/film/features/kevin-hart-interview-childhood-i-cant-make-this-up-1202446225/), [BET — Lil Kev](https://www.bet.com/article/pciec3/kevin-hart-brings-his-life-story-and-the-black-communitys-reality-to-lil-kev).
+- Fred Rogers. Senate testimony 1969 and Dartmouth Commencement 2002. [American Rhetoric — Senate Testimony](https://www.americanrhetoric.com/speeches/fredrogerssenatetestimonypbs.htm), [Rev — Dartmouth Commencement](https://www.rev.com/transcripts/fred-rogers-mr-rogers-commencement-speech-transcript-2002-at-dartmouth-college). Communication analysis: [Institute for Public Relations — Five Essential Truths](https://instituteforpr.org/mr-rogers-five-essential-truths-of-his-communication/).
+- Anthony Bourdain. *Kitchen Confidential.* 2000. Style analysis: [Craft Your Content — What We Can Learn From the Writing of Anthony Bourdain](https://www.craftyourcontent.com/writing-of-anthony-bourdain/), [BookRags — styles guide](https://www.bookrags.com/studyguide-kitchen-confidential/style.html).
+- Krista Tippett. *On Being.* Method essays: [Quartz — How to ask a great question](https://qz.com/work/1789466/krista-tippett-shares-the-key-to-nailing-interview-questions), [The On Being Project — Good Conversation Is an Adventure](https://onbeing.org/blog/krista-tippett-good-conversation-is-an-adventure/), [FS Blog — Generous Listening and Asking Better Questions](https://fs.blog/krista-tippett-listening-questions/).
 
