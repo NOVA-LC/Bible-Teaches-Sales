@@ -601,6 +601,147 @@ Borrow techniques; don't borrow whole voices from the bottom 5.
 
 ---
 
+## Deep mechanics per candidate (cultural-landscape pass, granular)
+
+The earlier 10-voice scoring stopped at positioning labels. This is the
+mechanics-level layer — discrete techniques each candidate uses, what
+to borrow, and how to deploy in your own work.
+
+### 1. Brené Brown — definitional and triple-naming moves
+
+- **Self-positioning declaration up front.** *"I'm a researcher-storyteller."* One sentence; earns parity instantly by refusing the "expert" frame.
+- **Definitional clarity inside vulnerability claims.** *"I define vulnerability as uncertainty, risk, and emotional exposure."* — three abstract nouns made concrete by being named. **Triple-naming** is her signature compression.
+- **"Birthplace of" parallel-list landing.** *"Vulnerability is the birthplace of love, belonging, joy, courage, empathy, and creativity."* Six-noun list, no adjectives, treated as a single beat.
+- **Inversion paradox.** *"We cannot selectively numb emotions. When we numb the painful, we also numb the positive."* — a counter-intuitive truth as the rotation.
+
+**Borrow:** open a comment with a one-sentence positioning declaration, then triple-name the abstraction you're about to unpack. *"I've been chewing on this paragraph all week. What landed was three things — the timing, the wording, and what comes right after."*
+
+### 2. Esther Perel — naming the unnamed dimension
+
+- **Signature aphorism, deployed often:** *"The quality of your life ultimately depends on the quality of your relationships."* — the parallel-clause landing she returns to.
+- **Reframe-by-renaming.** Treats infidelity as *"an expression of longing and loss"* rather than betrayal. The frame change is in the **noun choice**, not the argument.
+- **Erotic intelligence as a coined term.** Naming a dimension nobody else named gave her field a flag — and gave the audience permission to talk about it.
+- **Surfaces the unspoken thing in the room.** In sessions she'll say *"there's an erotic dimension to what just happened"* — labeling the thing the couple is feeling but won't name.
+
+**Borrow:** when commenting, ask *what dimension of this paragraph is everyone feeling but no one is naming?* Then name it. The audience will lean in, because you said the thing they were already feeling.
+
+### 3. Toni Morrison — refusal as method, gaze-pivot
+
+- **Refusal as method.** *"I can't do that. What is the world like if he's not there?"* — refuses the dominant frame, then asks what's left when it's gone. Pivots the **subject** of the sentence away from the assumed center.
+- **Repetition + shifting narrative voice + "rememory."** Three oral-tradition devices used in writing. The repetition isn't decoration — it's how the reader *feels* the weight build.
+- **Call/response embedded in declarative prose.** Rhetorical questions placed where the reader has to answer silently. *"What is the world like if he's not there?"*
+- **Holds the silence.** In interviews, she does not rush to fill. *"It is the interviewer who must understand."*
+
+**Borrow:** when the article assumes a frame, ask *what does this paragraph look like if I refuse the assumed frame?* That refusal becomes your rotation. And when you land the aphorism — stop. Don't add a clarifier. The silence is part of the comment.
+
+### 4. Mr. Rogers — possession-without-condition, directional reframe
+
+- **Possession-without-condition.** *"I like you just the way you are."* — no "if," no "when," no condition. The structure itself is the message.
+- **Directional reframe.** *"Look for the helpers."* — doesn't argue about whether the world is scary; redirects attention. Reframes by *changing what you look at*, not what you think about it.
+- **Selective specification.** *"When I say it's you I like, I'm talking about that part of you that knows that life is far more than anything you can ever see or hear or touch."* — distinguishes which part of "you" he means. Specifies inside the abstraction.
+- **Reaches across time.** *"I would like to tell you what I often told you when you were much younger."* — collapses time, treats the listener as continuous.
+
+**Borrow:** where you'd normally argue, redirect attention instead. Where you'd normally say "you should," say *"the part of us that already knows..."* — selective specification grants the audience credit they didn't expect.
+
+### 5. Anthony Bourdain — preposition-pivot, climactic-moment opener
+
+- **Preposition-pivot for inversion.** *"To fall in love with Asia is one thing. To fall in love in Asia is another."* The whole sentence inverts on a single preposition (with → in). Surgical compression.
+- **Triple-then-expanded-triple landing.** *"It's a gift, the dream, and a curse. The best thing, the happiest thing, yet also the loneliest thing in the world."* Three beats, then a longer three beats. Two layers.
+- **Climactic-moment opener.** Congo episode: opens with the river-crossing tension, *then* back-fills the political/historical context. Don't start at the beginning — start where the heat is.
+- **Self-implication first.** *"Swan around the kitchen, taking credit for others' work."* Dismantles his own authority before judging anyone else's.
+
+**Borrow:** open a comment at the climactic moment of the paragraph (the verb, the verse, the stanza that's doing the most work) — not at the topic sentence. And before any critique, name your own complicity in the same pattern.
+
+### 6. Tony Dungy — three-word philosophies, demand-without-demean
+
+- **Three-word philosophy as identity.** *"Next Man Up."* / *"Faith, family, football."* — short phrases load-bearing for whole leadership systems.
+- **Demand without demean.** *"Treat players the way I want to be treated"* — sets a high bar by what he refuses to do, not by what he insists on.
+- **Habit-change as the leadership frame.** *"Stop making so many decisions during a game"* — the goal is automaticity, not effort. Reframes effort itself.
+- **Coach-as-teacher equivalence.** Refuses the entertainer/disciplinarian/motivator frames; declares the role.
+
+**Borrow:** when applying a paragraph's principle, name the *role-equivalence* the principle is operating under. *"Jehovah is the meteorologist, not the storm-survivor"* (¶2) does this.
+
+### 7. Krista Tippett — formative-origin question, permission tag
+
+- **Formative-origin opener.** *"I am curious about how you would begin to talk about the religious or spiritual background of your childhood, however you think of that."* Asks about origins, not opinions — origin questions plant the speaker in fertile, non-defensive ground.
+- **Permission tag at end of question.** *"...however you think of that."* The permission tag tells the speaker *you don't have to perform an answer in any particular shape*. Disarms.
+- **"Generous listening" as a named methodology.** Naming her own technique gives audiences a frame for what's happening.
+- **Holds long pauses without rescue.** Refuses to fill silence with the next question.
+
+**Borrow:** when introducing a comment, frame it around *the formation* of the principle, not the conclusion. *"What I keep coming back to in this paragraph is what came before this paragraph..."* — origin question shape.
+
+### 8. James Baldwin — pronoun migration, italics-as-rhythm
+
+- **Pronoun migration: I → you → we.** *Fire Next Time* moves through the three pronouns deliberately — starting with self-confession, widening to direct accusation, settling on the universal *we*. The migration *is* the rhetoric.
+- **Italics for visual rhythm.** Italicizes the single word that does the most work. Reading aloud, the italicized word lands harder.
+- **Long sentence with em-dashes as breath marks.** Sentences run for clauses but break at the em-dash for the listener to inhale. The dashes pace the speech.
+- **"Write a sentence as clean as a bone."** His own rule for revision: strip until structural.
+
+**Borrow:** in a longer comment, migrate pronouns deliberately — open in *I* (confession), widen to *we* (parity), close in *us* (collective). The migration earns the landing.
+
+### 9. Kevin Hart — character-of-pain, hyperbolic self-deprecation
+
+- **Pain-as-character.** Hart's father isn't a tragic figure in the bit — he's a "jester" arriving coked up to spelling bees. **Recasting** the painful figure as a comedic character is the move that makes the bit land instead of crash.
+- **Hyperbolic specificity.** Not "my dad embarrassed me" — "*my dad gave my brother and me another family's dog when we wanted a puppy.*" The specificity is inseparable from the laugh.
+- **Self-as-reactor.** Hart's body and face do most of the work; the words are scaffolding. In writing this translates as *describing your own reaction* to an event rather than the event itself.
+- **Wait-pivot.** Hart interrupts himself constantly — *"Wait. Wait."* — to slow the audience and reset the moment.
+
+**Borrow:** when an illustration in the article is heavy (suffering, loss), recast the character — not as a tragic figure but as a person with a recognizable human posture. The audience can absorb humor with weight; pure weight bounces off.
+
+### 10. James Clear — two-noun pivot, feels-like inversion
+
+- **Two-noun pivot.** *"Motion vs. Action."* / *"Identity vs. Behavior."* / *"Systems vs. Goals."* The essay is set up by the binary; the work is showing why they aren't the same.
+- **Feels-like inversion.** *"Motion feels like progress. Action is progress."* — names the seductive misread before naming the reality.
+- **Concrete example pairs in matched form.** *"If I outline 20 ideas for articles, that's motion. If I write and publish one article, that's action."* The pair structure makes the abstraction unforgettable.
+- **3-2-1 as a publishing format.** Restraint enforced by the structure itself, not by willpower.
+
+**Borrow:** if a paragraph hinges on a confusion between two nearby concepts, name the two-noun pivot explicitly. *"This isn't preparation. This is panic dressed up as preparation."*
+
+### 11. Jordan Peterson — "and so" stitching, archetypal compression
+
+- **"And so" as logical-stitching connective.** Heavy use of *"and so"* and *"well"* to sustain reasoning chains across long sentences. The stitching makes complex thought *feel* continuous; the listener doesn't notice the difficulty.
+- **Self-correction interruption.** *"Well, no — that's not quite right."* Models thinking-out-loud. Audience trusts because he's visibly revising.
+- **Archetypal compression.** *"Cain and Abel are two canonical patterns of reaction to the terrible vulnerability that's revealed as a consequence of the development of self-consciousness."* — compresses entire psychology into one sentence. Plain words for genuinely deep things, even when long.
+- **Mythology-as-psychology framing.** Treats every story as a *map of how minds work*, not a moral instruction.
+
+**Borrow:** when you can compress a Bible figure into "this is one of the canonical patterns by which a human responds to X," the comment gains depth — but only if you can keep the compression to *one sentence*. Peterson breaks Restraint at length; you must not.
+
+### 12. Andrew Tate — sound-bite optimization (mechanics only)
+
+- **Compression for short-form.** Each segment is one claim, repeatable, screenshottable in two lines. *Borrowable for LinkedIn opener craft.*
+- **Fast-pace certainty / no hedges.** No "I think," no "maybe." Borrowable as **commitment to the claim**; not borrowable as authority-pose.
+- **Polarize against ideas, not people.** Tate polarizes against women — that's the broken version. The mechanic *underneath* (taking a strong stance against a widely-held idea) is borrowable when the target is an idea, never a group.
+- **Aspirational hook.** Names what the reader wants and offers a path. Borrowable when the want is honest.
+- **NOT borrowable:** dehumanization, "unique knowledge" flattery, urgency-by-fear, authority-pose certainty.
+
+**Borrow rule (already in `secular-voice.md`):** *would Hormozi post this exact line?* If yes, ethical version. If only Tate would, rewrite.
+
+---
+
+## Synthesis — what this changes about your drafting
+
+Until this pass, your principles and mechanics existed at two levels — the
+nine-principle framework, and the "Sam Herd cluster" voice match. The
+twelve mechanics above add a **third layer**: a toolbox of named moves
+you can reach for deliberately when drafting.
+
+When stuck on a comment, walk down this list:
+- **Need a hook?** Brown's positioning declaration. Tippett's
+  formative-origin question. Bourdain's climactic-moment opener.
+- **Need a frame rotation?** Morrison's refusal. Peterson's archetypal
+  compression. Clear's two-noun pivot. Holiday's obstacle-as-path.
+- **Need a label for what the room is feeling?** Voss's *"It seems
+  like..."*. Perel's unnamed-dimension surfacing.
+- **Need a landing?** Mr. Rogers' possession-without-condition. Naval's
+  pursuit-order inversion. Bourdain's preposition-pivot. Brown's
+  triple-naming list.
+- **Need to dismantle your own authority?** Bourdain's self-implication.
+  Hart's hyperbolic self-deprecation.
+
+Twelve named moves. Pick one per comment. Restraint stays the rule.
+
+---
+
 ## Sources accessed
 
 - Samuel F. Herd. "A Poor Start—A Rich Ending." *The Watchtower (Study Edition)*, May 2018. jw.org. [https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/](https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/)
