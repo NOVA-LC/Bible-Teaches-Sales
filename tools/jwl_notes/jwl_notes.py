@@ -192,6 +192,62 @@ def fetch_wol_article(document_id: int, key_symbol: str = "w",
     return html
 
 
+def fetch_wol_bible_chapter(book: int, chapter: int, key_symbol: str = "nwtsty",
+                            cache_dir: Path | None = None) -> str:
+    """Fetch a WOL Bible chapter HTML, caching to disk."""
+    cache_dir = cache_dir or (Path.home() / ".cache" / "jwl_notes")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"{key_symbol}_b_{book}_{chapter}.html"
+    if cache_path.exists():
+        return cache_path.read_text(encoding="utf-8")
+    url = f"https://wol.jw.org/en/wol/b/r1/lp-e/{key_symbol}/{book}/{chapter}"
+    req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        html = resp.read().decode("utf-8", errors="replace")
+    cache_path.write_text(html, encoding="utf-8")
+    return html
+
+
+def extract_verse_tokens(html: str, book: int, chapter: int, verse: int) -> list[str]:
+    """Return the tokenized form of a Bible verse, matching JW Library's per-verse
+    tokenization for BlockType=2 BlockRange.StartToken / EndToken.
+
+    Tokenization rule (verified empirically against Tyler's userData.db):
+    - The verse-number marker link (<a class="vl vx vp">N </a>) is ONE token at index 0.
+    - Cross-reference markers (<a class="b">+</a>) are each ONE token at their position.
+    - Footnote markers (<a class="fn">…</a>) are each ONE token at their position.
+    - Everything else is whitespace-split to words.
+
+    Verses can span multiple <span class="v"> sub-segments (with ids
+    v{book}-{chapter}-{verse}-1, -2, …). All sub-segments are concatenated.
+    """
+    seg_pat = re.compile(
+        rf'<span\s+id="v{book}-{chapter}-{verse}-\d+"\s+class="v">(.*?)</span>',
+        re.DOTALL,
+    )
+    segs = seg_pat.findall(html)
+    if not segs:
+        raise ValueError(f"Bible verse v{book}-{chapter}-{verse}-* not found in chapter HTML")
+    combined = " ".join(segs)
+
+    # Substitute markers with placeholder tokens so they're whitespace-tokenizable
+    combined = re.sub(r'<a[^>]*class="vl[^"]*"[^>]*>.*?</a>', ' \x00VMARK\x00 ',
+                      combined, flags=re.DOTALL)
+    combined = re.sub(r'<a[^>]*class="b"[^>]*>.*?</a>', ' \x00XREF\x00 ',
+                      combined, flags=re.DOTALL)
+    combined = re.sub(r'<a[^>]*class="fn"[^>]*>.*?</a>', ' \x00FN\x00 ',
+                      combined, flags=re.DOTALL)
+    # Strip remaining tags
+    combined = re.sub(r'<[^>]+>', ' ', combined)
+    # Decode common entities
+    combined = (combined.replace("\xa0", " ").replace(" ", " ")
+                .replace("&nbsp;", " ").replace("&amp;", "&")
+                .replace("&#8217;", "'").replace("&#8220;", '"').replace("&#8221;", '"')
+                .replace("&#8212;", "—").replace("&#8211;", "–"))
+    combined = re.sub(r'\s+', ' ', combined).strip()
+    return combined.split()
+
+
 def extract_paragraph_tokens(html: str, data_pid: int) -> list[str]:
     """Return the list of word-tokens for a paragraph, by data_pid.
 
@@ -228,33 +284,71 @@ def _normalize_token(t: str) -> str:
     return re.sub(r'^[^\w]+|[^\w]+$', '', t.lower())
 
 
+# Internal placeholder tokens emitted by extract_verse_tokens for non-text markers
+# (verse number link, cross-references, footnotes). Highlights are allowed to span
+# over these — JW Library does this natively when you drag a selection across a
+# cross-ref symbol.
+_MARKER_TOKENS = frozenset({"\x00VMARK\x00", "\x00XREF\x00", "\x00FN\x00"})
+
+
 def find_token_range(tokens: list[str], phrase: str) -> tuple[int, int]:
-    """Locate a phrase in a paragraph token list.
+    """Locate a phrase in a token list.
 
     Returns (start_token, end_token) — 0-indexed, inclusive.
-    Tries strict match first, then a punctuation-tolerant case-insensitive
-    match. Raises ValueError if neither hits.
+    Tries in order:
+        1. Strict whitespace-token match.
+        2. Punctuation-tolerant case-insensitive match.
+        3. Marker-skipping match — the phrase aligns to text tokens but allows
+           VMARK / XREF / FN marker tokens to fall between phrase words. The
+           returned range INCLUDES those markers (so the highlight covers them
+           in JW Library, matching native UI behavior).
+    Raises ValueError if none match.
     """
     phrase_tokens = phrase.split()
     n = len(phrase_tokens)
     if n == 0:
         raise ValueError("empty phrase")
-    if n > len(tokens):
-        raise ValueError(f"phrase ({n} tokens) longer than paragraph ({len(tokens)} tokens)")
 
-    for i in range(len(tokens) - n + 1):
-        if tokens[i:i + n] == phrase_tokens:
-            return (i, i + n - 1)
+    # 1. Strict
+    if n <= len(tokens):
+        for i in range(len(tokens) - n + 1):
+            if tokens[i:i + n] == phrase_tokens:
+                return (i, i + n - 1)
 
-    norm_tokens = [_normalize_token(t) for t in tokens]
+    # 2. Case-/punctuation-tolerant
+    if n <= len(tokens):
+        norm_tokens = [_normalize_token(t) for t in tokens]
+        norm_phrase = [_normalize_token(t) for t in phrase_tokens]
+        for i in range(len(norm_tokens) - n + 1):
+            if norm_tokens[i:i + n] == norm_phrase:
+                return (i, i + n - 1)
+
+    # 3. Marker-skipping (text tokens only contribute to the match)
+    norm_tokens = [_normalize_token(t) if t not in _MARKER_TOKENS else None for t in tokens]
     norm_phrase = [_normalize_token(t) for t in phrase_tokens]
-    for i in range(len(norm_tokens) - n + 1):
-        if norm_tokens[i:i + n] == norm_phrase:
-            return (i, i + n - 1)
+    for start in range(len(tokens)):
+        if norm_tokens[start] != norm_phrase[0]:
+            continue
+        j = start + 1
+        pi = 1
+        last_match = start
+        while pi < n and j < len(tokens):
+            if norm_tokens[j] is None:  # marker; skip but keep going
+                j += 1
+                continue
+            if norm_tokens[j] == norm_phrase[pi]:
+                last_match = j
+                j += 1
+                pi += 1
+            else:
+                break
+        if pi == n:
+            return (start, last_match)
 
     raise ValueError(
-        f"phrase not found in paragraph: {phrase!r}\n"
-        f"  paragraph tokens: {' '.join(tokens[:30])}{'…' if len(tokens) > 30 else ''}"
+        f"phrase not found: {phrase!r}\n"
+        f"  source tokens: {' '.join(t if t not in _MARKER_TOKENS else '·' for t in tokens[:40])}"
+        f"{'…' if len(tokens) > 40 else ''}"
     )
 
 
@@ -307,30 +401,48 @@ def existing_underline_anchors(conn: sqlite3.Connection, location_id: int) -> se
 def insert_underlines_for_note(
     conn: sqlite3.Connection,
     location_id: int,
-    data_pid: int,
+    identifier: int,
     block_type: int,
     underlines: list[dict],
     article_html: str,
     existing: set[tuple[int, int, int, int]],
+    *,
+    bible_book: int | None = None,
+    bible_chapter: int | None = None,
 ) -> tuple[list[tuple[int, int]], list[tuple[int, int, int, int]], list[str]]:
-    """Insert all underlines for one paragraph. Returns (inserted_pairs, skipped, errors)."""
+    """Insert all underlines for one paragraph or verse. Returns (inserted, skipped, errors).
+
+    For paragraph mode (block_type=1), `identifier` is the paragraph's data-pid.
+    For Bible mode (block_type=2), `identifier` is the verse number; `bible_book`
+    and `bible_chapter` must be provided so the verse text can be located in the
+    chapter HTML.
+    """
     if not underlines:
         return ([], [], [])
-    tokens = extract_paragraph_tokens(article_html, data_pid)
+    if block_type == 2:
+        if bible_book is None or bible_chapter is None:
+            return ([], [], [f"verse {identifier}: Bible book/chapter required for verse underlines"])
+        try:
+            tokens = extract_verse_tokens(article_html, bible_book, bible_chapter, identifier)
+        except ValueError as e:
+            return ([], [], [f"verse {identifier}: {e}"])
+    else:
+        tokens = extract_paragraph_tokens(article_html, identifier)
     inserted: list[tuple[int, int]] = []
     skipped: list[tuple[int, int, int, int]] = []
     errors: list[str] = []
+    label = f"verse {identifier}" if block_type == 2 else f"data_pid={identifier}"
     for u in underlines:
         try:
             start, end = find_token_range(tokens, u["phrase"])
         except ValueError as e:
-            errors.append(f"data_pid={data_pid}: {e}")
+            errors.append(f"{label}: {e}")
             continue
-        anchor = (block_type, data_pid, start, end)
+        anchor = (block_type, identifier, start, end)
         if anchor in existing:
             skipped.append(anchor)
             continue
-        ids = insert_underline(conn, location_id, data_pid, u.get("color", "yellow"),
+        ids = insert_underline(conn, location_id, identifier, u.get("color", "yellow"),
                                start, end, block_type)
         inserted.append(ids)
         existing.add(anchor)
@@ -532,18 +644,16 @@ def main() -> int:
     needs_article = any(n.get("underlines") for n in spec["notes"])
     article_html: str | None = None
     if needs_article:
-        if is_bible_mode:
-            sys.exit(
-                "Bible-verse underlines aren't supported yet (Phase 2D Mk2). "
-                "Strip 'underlines' from Bible-mode notes; use notes-only for now."
-            )
         if args.article_html:
             article_html = args.article_html.read_text(encoding="utf-8")
+        elif is_bible_mode:
+            print(f"Fetching WOL Bible chapter for {key_symbol} {book}/{chapter}…")
+            article_html = fetch_wol_bible_chapter(book, chapter, key_symbol)
         elif document_id:
             print(f"Fetching WOL article for DocumentId={document_id}…")
             article_html = fetch_wol_article(document_id, key_symbol)
         else:
-            sys.exit("comments include underlines but no document_id or --article-html provided")
+            sys.exit("comments include underlines but no document_id/book+chapter or --article-html provided")
 
     with tempfile.TemporaryDirectory(prefix="jwl_notes_") as td:
         work = Path(td)
@@ -589,6 +699,7 @@ def main() -> int:
                     ins, skp, errs = insert_underlines_for_note(
                         conn, loc["LocationId"], ident, bt,
                         underlines, article_html, existing_uls,
+                        bible_book=book, bible_chapter=chapter,
                     )
                     inserted_underlines.extend(ins)
                     skipped_underlines.extend(skp)
