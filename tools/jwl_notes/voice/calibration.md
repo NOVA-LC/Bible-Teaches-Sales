@@ -742,6 +742,75 @@ Twelve named moves. Pick one per comment. Restraint stays the rule.
 
 ---
 
+## JW-landscape mechanics catalog (synthesis from `_research/`, May 2026)
+
+Four background research agents pulled mechanics-level findings on
+30+ JW speakers and 14+ talks. Full per-source detail lives in
+`_research/`. This section integrates promoted findings into the
+top-level voice system.
+
+### Two corrections to earlier calibration
+
+**Correction 1.** The "ice cream sundae" applicational analogy (Jehovah's mercy and righteousness as a sundae needing all its toppings) is **Kenneth Cook's** (older GB), not Gage Fleegle's. Earlier draft had it under Fleegle. Source: cross-referenced in `_research/helpers-younger-mechanics.md` against Cook's documented convention talks.
+
+**Correction 2.** The earlier claim that the younger-GB cohort shares a single relational-opener register ("you know how / have you ever") is **partially refuted** by the research pass. The cohort actually uses 5+ distinct opener mechanics: anticipatory, historical-frame, cultural-statement, room-question, setup-then-question. Tyler's relational-opener instinct derives more from Brené Brown than from the younger-GB cohort. The cohort *does* share light-humor openers (Fleegle running gags, Reinmueller buttons) and modern applicational analogies — those parts of the prior calibration hold.
+
+### Filled-in GB signatures (positions earlier marked `?`)
+
+- **Kenneth Cook Jr.** — *Pastoral-warm conditional invitation.* Signature: *"If that is what you yearn for, then please…"* The closest GB operational match to the Mr. Rogers register. Selective specification + permission tag wrapped together.
+- **Mark Sanderson** — *Second-person-then-first-person self-correction.* Signature: *"When was the last time that you… Or when was the last time I…"* Refuses to let a diagnostic question land only on the audience. Pulls himself into the question.
+- **Gerrit Lösch** — *Historical-frame compression.* Signature: collapses world-scale time (1899 → 1939 → 1943 → personal loss) before private grief. Continental severity. Useful for paragraphs about endurance / scope.
+
+### Comparison matrix — GB speaker × four-slot architecture
+
+When you want a comment to *feel* like a specific GB voice in a specific slot, here's where to reach:
+
+| Speaker | Opener | Label/Parity | Rotation | Landing |
+|---|---|---|---|---|
+| Sam Herd | Small-window opener | Quiet rhetorical Q + immediate self-answer | Story → scripture-paraphrase lock | Parallel-clause inversion |
+| Stephen Lett | Cumulative-escalation hypothetical | (rare — Lett rarely hangs in this slot) | Reductio-by-vivid-image | Aphoristic exhortation |
+| David Splane | Structural exegesis (verb tense, word study) | Permission-and-prohibition pair | Adjacent-verse spotting + cross-reference | Definition-as-rule landing |
+| Geoffrey Jackson | Missionary-narrative scene | Shared-cultural-memory ("we've all…") | Translation-anecdote pivot | Quiet-faith aphorism |
+| Mark Sanderson | Second-person interrogative | Sanderson self-correction (you → I) | Definition-then-redirect | Theological-precision landing |
+| Kenneth Cook | Pastoral-warm conditional invitation | Conditional permission ("if you've felt…") | Applicational-analogy pivot (the sundae) | Pastoral-warm conditional landing |
+| Gerrit Lösch | Historical-frame compression | (rare — Lösch goes scope first) | World-then-personal pivot | Continental-aphorism landing |
+
+### Nine new mechanics promoted to the toolbox
+
+Drawn from across the four research files. Each is genuinely additive — not a variant of an existing mechanic. Slot menus in `drafting-recipe.md` updated in tandem.
+
+| # | Mechanic | Source | Best slot | One-line shape |
+|---|---|---|---|---|
+| 13 | **Schafer concession-pivot** (yes-and-yet) | David Schafer, June 2016 broadcast | Slot 3 (rotation) | Grant the listener's likely objection up front, then pivot without contradicting |
+| 14 | **Reinmueller did-you-notice debrief** | Alex Reinmueller, July 2017 broadcast | Slot 1 or 3 | Walk back through a passage pointing at what the audience didn't catch the first time |
+| 15 | **Noumair voiced-objection / voiced-answer** | Mark Noumair, Rizpah talk | Slot 2 (label/parity) | Speak the audience's silent objection in their voice, then answer it |
+| 16 | **Compressed-image-as-spine** | Universal across AM-talk corpus | Structural (governs all slots) | ONE image runs the whole comment as the load-bearing spine, not as decoration |
+| 17 | **Permission-by-uncertainty** | Recent AM-talks (2023–2025 esp.) | Slot 2 (label/parity) | "Some of us aren't sure…" / "We may not have thought of it this way…" — admits doubt as the entry to the rotation |
+| 18 | **Two-question / interrogative-title pre-empt** | AM 2019, 2024 talk titles | Slot 1 (opener) | Open with two short questions back-to-back; the second one re-frames the first |
+| 19 | **Herd temporal-axis inversion** (then/today) | Sam Herd, multiple sources | Slot 4 (landing) | Parallel-clause inversion specifically pivoted on time: "[X] was Y then; [X] is Y today" |
+| 20 | **Cook pastoral-warm conditional invitation** | Kenneth Cook | Slot 1 or 4 | "If that is what you yearn for…" — opens with the audience's quiet wish; can also land |
+| 21 | **Lösch historical-frame compression** | Gerrit Lösch | Slot 1 (opener) | Collapse a long arc of time into the opening, then drop into personal scale |
+
+### Variants noted (not promoted; documented in `_research/`)
+
+These are real, useful, but they are sub-mechanics of existing toolbox entries and would clutter the main menu:
+
+- Lett cumulative-escalation hypothetical → variant of Bourdain *climactic-moment opener* with Lett's escalation tic
+- Lett reductio-by-vivid-image → variant of cumulative-escalation
+- Splane permission-and-prohibition pair → variant of Splane's structural-analytical mode
+- Sanderson definition-then-redirect → variant of Clear's *two-noun pivot*
+- Herd permission-tag interrogative ("…do we?") → sub-mechanic of Voss labeling
+- Herd domesticated triple-naming → Herd-register variant of Brown's triple-naming
+- Herd personal-learning scripture lock ("I learned that…") → extension of Herd's existing scripture-paraphrase lock
+
+### Talk-level pattern confirmed (architecture validation)
+
+The four-slot architecture in `drafting-recipe.md` is *confirmed by* the AM-talk corpus, not challenged by it. The same shape runs in 30-min talks and 30-sec comments — different density, identical architecture. Load-bearing for the system.
+
+Additional finding: the GB has been migrating *toward* Tyler's register since ~2023 — less exclamation, more permission, more interrogative titles. You're building with the org's current voice trend, not against it.
+
+---
+
 ## Sources accessed
 
 - Samuel F. Herd. "A Poor Start—A Rich Ending." *The Watchtower (Study Edition)*, May 2018. jw.org. [https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/](https://www.jw.org/en/library/magazines/watchtower-study-may-2018/poor-start-rich-ending/)

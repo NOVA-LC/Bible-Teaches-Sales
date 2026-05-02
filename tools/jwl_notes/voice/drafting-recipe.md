@@ -53,6 +53,10 @@ other mechanics in that slot are in reserve for next time.
 | **Bourdain — climactic-moment opener** *("Look at the verb in this verse…")* | When the paragraph has one specific sentence doing all the work |
 | **Hormozi — sound-bite claim** *("Verse 67 was so powerful because…")* | When the paragraph supports a single bold compressed claim |
 | **Brené Brown — "you know how" relational** *("You know how when you miss somebody, you only remember the good?")* | When you need the room to nod before you advance |
+| **Reinmueller did-you-notice debrief** *("Did you catch what's actually in verse N? Most of us didn't the first time.")* | When the rotation depends on a detail the article cited but didn't unpack |
+| **Two-question pre-empt** *("Are we ready? And do we even know what for?")* | When the topic could land flat as a single question — second question re-frames the first |
+| **Cook conditional invitation** *("If that's something you've ever yearned for, then sit with this paragraph for a minute.")* | When the paragraph touches a quiet ache the audience carries silently |
+| **Lösch historical-frame compression** *("In 1914 the world fell apart. In 1939 it fell apart again. In 2026 here we sit.")* | When the paragraph is about endurance, scope, or the long arc |
 
 **Rule:** never open with the article's topic sentence. Always open one
 notch sideways or downstream.
@@ -65,6 +69,8 @@ notch sideways or downstream.
 | **Perel — name the unnamed dimension** *("There's something the article doesn't quite say out loud, but it's in the wording...")* | When the article *implies* a feeling it doesn't name |
 | **Bourdain — self-implication** *("I've done this. I'd be lying if I said I hadn't.")* | Before any critique or insight that could land as judgmental |
 | **Mr. Rogers — possession-without-condition** *("It's hard. We don't have to pretend it isn't.")* | When the audience is carrying weight the article doesn't acknowledge |
+| **Noumair voiced-objection / voiced-answer** *("Some of us are sitting here thinking, 'but what if they don't come back?' That's the right question.")* | When the audience has a silent objection the article never addresses — speak it in their voice first |
+| **Permission-by-uncertainty** *("Some of us aren't sure how to feel about this paragraph yet — and that's okay; the verses themselves take a beat to land.")* | When the paragraph hands the room a shift they may not be ready for |
 
 **Rule:** if the comment is light/observational, leave this slot empty.
 If it's heavy/emotional, fill it before you advance.
@@ -79,9 +85,21 @@ If it's heavy/emotional, fill it before you advance.
 | **Miner — reframed question** *("So the question isn't 'do I see the value' — it's 'am I still searching?'")* | When you want the listener to arrive at the answer themselves |
 | **Holiday — obstacle-becomes-path** *("What looks like the test is actually the training.")* | When the paragraph treats a hardship as the obstacle |
 | **Hormozi — compression-expansion** *(claim → 3 short parallel beats → bridge → rule)* | When the paragraph is best carried by rhythm, not argument |
+| **Schafer concession-pivot (yes-and-yet)** *("Yes, removal is painful. Yes, the empty seat is real. AND — the verses say…")* | When the audience already half-disagrees with where you're going; grant the objection first, then pivot |
 
 **Rule:** ONE rotation per comment. Two rotations dilute. If you have
 two, pick the better one and save the other for next week.
+
+### Compressed-image-as-spine (structural meta-mechanic, runs across slots)
+
+This isn't slot-bound. It's a *governance rule* for the whole comment:
+**ONE concrete image runs the entire comment as the load-bearing spine.**
+The opener sets the image. The label-parity references it. The
+rotation pivots on it. The landing closes it. Confirmed by the
+AM-talk corpus — Lett's parakeet, Morris's diabetes, Herd's red car —
+ONE image carries the whole talk. Same rule for the comment.
+
+If your draft has two images, one is decoration. Cut it.
 
 ### Slot 4 — LANDING (the close)
 
@@ -92,6 +110,8 @@ two, pick the better one and save the other for next week.
 | **Bourdain — preposition-pivot** *("It isn't faith *with* the truth; it's faith *in* it.")* | When the inversion sits on a single small word |
 | **Naval — pursuit-order reframe** *("We notice the storm in that order. The preparation came first.")* | When the comment reorders what the audience already knows |
 | **Holiday — Marcus-style aphorism** *("What stands in the way becomes the way.")* | When the comment closes on universal language |
+| **Herd temporal-axis inversion** (then/today) *("That was true for Peter then. It's true for us today.")* | When the comment hinges on time — past pattern, present application |
+| **Cook conditional invitation** (alternate landing) *("If that's what we yearn for, the verses are waiting.")* | When the landing should leave the room with an open door, not a verdict |
 
 **Rule:** the last sentence is parallel and the last sentence is short.
 **No third sentence after.** No CTA, no tag, no "let's keep that in
