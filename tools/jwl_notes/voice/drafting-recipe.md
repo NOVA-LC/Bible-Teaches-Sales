@@ -1,5 +1,82 @@
 # How to draft a Tyler comment — the mesh
 
+> ## ⚠️ GLOBAL RULES — Watchtower / midweek article processing
+>
+> When processing a *full* article (Watchtower study, midweek workbook
+> week, Congregation Bible Study chapter), the AI MUST apply both
+> mandates below, on every generation, without being told.
+>
+> These are not preferences. They are project-defining requirements.
+> Operator's verbatim instruction: failure to apply them is "fucking
+> useless to the absolute maximum degree."
+>
+> ### Mandate 1 — The "Less is More" Underline Doctrine
+>
+> Apply to **every paragraph that has a corresponding study question.
+> Do not skip paragraphs.** Sparse coverage is failure.
+>
+> Each underline phrase must:
+> - Be a **surgical extraction of 2 to 6 words** — strict cap of 8
+>   for inseparable units of meaning. **Never** a full sentence.
+>   **Never** demographic filler (e.g. "of both Jews"). **Never** an
+>   article-title repeat (don't underline "art of teaching" if the
+>   article *is* "Improve Your Art of Teaching"). **Never** a generic
+>   exhortation ("would do well to cultivate", "let us all", etc.).
+> - Do **exactly one** of these jobs:
+>   - Directly **answer** the printed study question, **or**
+>   - **Explain** the cited scripture (the phrase that bridges the
+>     verse to the article's argument)
+>
+> Color per the semantic system (verified against operator's userData.db):
+> | Color | When |
+> |---|---|
+> | **yellow** | Core answer to the printed question. **Cap: 1–2 per paragraph.** |
+> | **green**  | Scripture-explainer phrase, or a rule/loophole/freedom-revealing reading |
+> | **pink**   | Stop-in-tracks point — strong counsel or warning |
+> | **blue**   | Sobering, chilling, or weighty thought |
+> | **purple** | Encouraging, pastoral, comforting |
+>
+> ### Mandate 2 — The Commentary Mandate
+>
+> For every Watchtower article: autonomously generate **6–8 strategic
+> four-slot voice notes** — without waiting for the operator to feed
+> content. Each note: 60–130 words; opener / label-parity / rotation /
+> landing; in operator's calibrated voice; one per chosen paragraph.
+>
+> ### Mandate 3 — The JSON anchor split
+>
+> Every visible paragraph receives **two JSON entries** (one for the
+> note, one for the underlines), because JW Library renders them at
+> different anchors:
+>
+> | Entry | `data_pid` | What renders |
+> |---|---|---|
+> | Note (`content`) | the **question's** data-pid | Inline comment box AND Notes tab |
+> | Underlines | the **body paragraph's** data-pid | Highlighted text in the article |
+>
+> When a question is shared by two paragraphs (e.g., "11–12. (a)…
+> (b)…"), the note anchors to the shared question's data-pid; each
+> body paragraph gets its own underlines entry on its own body pid.
+>
+> ### What "useless filler" looks like (do not do)
+>
+> - ❌ "of both Jews" (demographic context)
+> - ❌ "art of teaching" (when that's the article title)
+> - ❌ "All Christians would do well to cultivate" (generic exhortation)
+> - ❌ Any phrase longer than 8 words
+> - ❌ A whole sentence with surrounding context
+> - ❌ Skipping a question-bearing paragraph because it "didn't have a strong hook"
+>
+> ### What "load-bearing" looks like (the standard)
+>
+> - ✅ "should be teachers" — directly answers Q1
+> - ✅ "spoke in such a manner" — explains Acts 14:1 in the article's argument
+> - ✅ "knew what was in man" — the John 2:25 phrase the article hangs on
+> - ✅ "with all patience" — the 2 Tim 4:2 word the article emphasizes
+
+---
+
+
 The work above gives you nine principles, twelve named mechanics, three
 voice traditions, and a fingerprint match to Sam Herd. That's input
 material. **It is not a drafting checklist.** Trying to use all of it
