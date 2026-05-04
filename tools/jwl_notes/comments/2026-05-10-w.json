@@ -13,10 +13,14 @@
   "default_block_type": 1,
   "notes": [
     {
+      "paragraph": 1, "data_pid": 36, "block_type": 1, "title": null,
+      "content": "It's easy to think of the ministry like a mail route — just dropping off the literature and moving on. We know we have an urgent message, but sometimes we subconsciously rely entirely on the angels or the person's 'heart condition' to make it land. But look at the phrasing here in Acts 14. The angels do the directing, but Paul and Barnabas still had to speak 'in such a manner' that people believed. The delivery mechanism matters. Our job isn't just to drop off the seed; it's to study the soil well enough to know exactly how to plant it."
+    },
+    {
       "paragraph": 1, "data_pid": 7, "block_type": 1,
       "underlines": [
-        {"phrase": "art of teaching", "color": "yellow"},
-        {"phrase": "All Christians would do well to cultivate", "color": "purple"}
+        {"phrase": "should be teachers", "color": "yellow"},
+        {"phrase": "spoke in such a manner", "color": "green"}
       ]
     },
 
