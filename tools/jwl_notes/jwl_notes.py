@@ -76,6 +76,7 @@ import urllib.request
 import uuid
 import zipfile
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 
 
@@ -208,18 +209,117 @@ def fetch_wol_bible_chapter(book: int, chapter: int, key_symbol: str = "nwtsty",
     return html
 
 
+# Canonical JW Library tokenization regex.
+#
+# Verified verbatim against sircharlo's jwl-backup-merger (line 2076 of
+# jw-backup-merger.py), which is the reference implementation for resolving
+# BlockRange.StartToken / EndToken back to displayed text. JW Library's
+# native renderer applies this same tokenization when computing token offsets
+# for highlights and notes.
+#
+# Empirical proof: ¶1 of DocId 2026320 ("Improve Your Art of Teaching")
+# tokenizes as: position 32 = "This", position 94 = "Paul" — matching what
+# JW Library renders when given BlockRange rows pointing at those offsets.
+#
+# Pattern semantics:
+#   \w+(?:['.:-]\w+)*   — a word, optionally with embedded ' . : - separators
+#                          (so "Mark" "28:19" "mild-tempered" "U.S.A" survive
+#                          as single tokens; "father's" survives as one)
+#   [^\s\w​]       — any single non-word non-whitespace non-ZWSP char
+#                          (so . , ; : ? ! ( ) " " " — etc. each become
+#                          their own token)
+_TOKEN_PATTERN = re.compile(r"\w+(?:['.:-]\w+)*|[^\s\w​]")
+
+
+def jw_tokenize(text: str) -> list[str]:
+    """Tokenize text the same way JW Library does for BlockRange offsets.
+
+    Verified against sircharlo's reference implementation. Use this for
+    BOTH the source-text token list AND the search-phrase token list — they
+    must use the same tokenizer or alignment fails.
+    """
+    return _TOKEN_PATTERN.findall(text)
+
+
+class _PExtractor(HTMLParser):
+    """Extract a paragraph's visible text the same way JW Library does.
+
+    Mirrors sircharlo's PExtractor (lines 35-80 of jw-backup-merger.py) — the
+    reference implementation for resolving JW Library token offsets:
+
+      1. If `pid` is given, only emit text inside the matching <p data-pid="N">.
+         If `pid` is None, emit text from the entire fed fragment.
+      2. Skip text inside <span|sup class="parNum"> (paragraph number markers).
+      3. Skip text inside <span|sup class="verseNum"> (verse number markers).
+      4. Skip text inside <span|sup class="chapterNum"> (chapter number markers).
+      5. Strip raised-bullet "·" characters (JW Library doesn't count them).
+      6. Keep ALL other text content — including citation-link text
+         ("Matt. 28:19, 20"), footnote markers, cross-reference symbols.
+    """
+    def __init__(self, pid=None):
+        super().__init__()
+        self.pid = str(pid) if pid is not None else None
+        self.found = pid is None
+        self.in_parNum = False
+        self.in_verseNum = False
+        self.in_chapterNum = False
+        self.text = ""
+
+    def handle_starttag(self, tag, attrs):
+        d = dict(attrs)
+        if tag == "p" and self.pid is not None:
+            if d.get("data-pid") == self.pid:
+                self.found = True
+        elif self.found and tag in ("span", "sup"):
+            classes = d.get("class", "").split()
+            if "parNum" in classes:
+                self.in_parNum = True
+            if "verseNum" in classes:
+                self.in_verseNum = True
+            if "chapterNum" in classes:
+                self.in_chapterNum = True
+
+    def handle_endtag(self, tag):
+        if tag == "p" and self.pid is not None and self.found:
+            self.found = False
+        elif tag in ("span", "sup"):
+            self.in_parNum = False
+            self.in_verseNum = False
+            self.in_chapterNum = False
+
+    def handle_data(self, data):
+        if (self.found
+                and not self.in_parNum
+                and not self.in_verseNum
+                and not self.in_chapterNum):
+            data = data.replace("·", "")
+            if data:
+                self.text += data
+
+
+def extract_paragraph_tokens(html: str, data_pid: int) -> list[str]:
+    """Return the list of tokens for a paragraph, by data_pid.
+
+    Uses the canonical JW Library extractor + tokenizer pipeline. The returned
+    indices are exactly what BlockRange.StartToken / EndToken expect.
+    """
+    parser = _PExtractor(pid=data_pid)
+    parser.feed(html)
+    if not parser.text:
+        raise ValueError(f"data-pid {data_pid} not found in article HTML")
+    return jw_tokenize(parser.text)
+
+
 def extract_verse_tokens(html: str, book: int, chapter: int, verse: int) -> list[str]:
-    """Return the tokenized form of a Bible verse, matching JW Library's per-verse
-    tokenization for BlockType=2 BlockRange.StartToken / EndToken.
+    """Return the list of tokens for a Bible verse, by (book, chapter, verse).
 
-    Tokenization rule (verified empirically against Tyler's userData.db):
-    - The verse-number marker link (<a class="vl vx vp">N </a>) is ONE token at index 0.
-    - Cross-reference markers (<a class="b">+</a>) are each ONE token at their position.
-    - Footnote markers (<a class="fn">…</a>) are each ONE token at their position.
-    - Everything else is whitespace-split to words.
+    The WOL chapter HTML wraps each verse in <span id="vBOOK-CH-VS-N" class="v">
+    sub-segments. The verse number is rendered as <a class="vl vx vp">N </a> at
+    the start of segment 1; we strip that link so it doesn't contribute tokens
+    (parallel to PExtractor skipping <span class="verseNum">).
 
-    Verses can span multiple <span class="v"> sub-segments (with ids
-    v{book}-{chapter}-{verse}-1, -2, …). All sub-segments are concatenated.
+    Cross-reference symbols (+) and footnote text are left in — JW Library
+    counts those as tokens (per the canonical regex).
     """
     seg_pat = re.compile(
         rf'<span\s+id="v{book}-{chapter}-{verse}-\d+"\s+class="v">(.*?)</span>',
@@ -229,126 +329,95 @@ def extract_verse_tokens(html: str, book: int, chapter: int, verse: int) -> list
     if not segs:
         raise ValueError(f"Bible verse v{book}-{chapter}-{verse}-* not found in chapter HTML")
     combined = " ".join(segs)
-
-    # Substitute markers with placeholder tokens so they're whitespace-tokenizable
-    combined = re.sub(r'<a[^>]*class="vl[^"]*"[^>]*>.*?</a>', ' \x00VMARK\x00 ',
+    # Strip the verse-number link (vl class) — JW Library treats it like
+    # <span class="verseNum"> in PExtractor and skips it entirely.
+    combined = re.sub(r'<a[^>]*class="[^"]*\bvl\b[^"]*"[^>]*>.*?</a>', ' ',
                       combined, flags=re.DOTALL)
-    combined = re.sub(r'<a[^>]*class="b"[^>]*>.*?</a>', ' \x00XREF\x00 ',
-                      combined, flags=re.DOTALL)
-    combined = re.sub(r'<a[^>]*class="fn"[^>]*>.*?</a>', ' \x00FN\x00 ',
-                      combined, flags=re.DOTALL)
-    # Strip remaining tags
-    combined = re.sub(r'<[^>]+>', ' ', combined)
-    # Decode common entities
-    combined = (combined.replace("\xa0", " ").replace(" ", " ")
-                .replace("&nbsp;", " ").replace("&amp;", "&")
-                .replace("&#8217;", "'").replace("&#8220;", '"').replace("&#8221;", '"')
-                .replace("&#8212;", "—").replace("&#8211;", "–"))
-    combined = re.sub(r'\s+', ' ', combined).strip()
-    return combined.split()
+    parser = _PExtractor()
+    parser.feed(combined)
+    return jw_tokenize(parser.text)
 
 
-def extract_paragraph_tokens(html: str, data_pid: int) -> list[str]:
-    """Return the list of word-tokens for a paragraph, by data_pid.
-
-    Strips inline markup (citation links, italics, footnote markers) but keeps
-    the visible word content. Drops the leading paragraph number ("16 ").
-    Empirically aligned with how JW Library tokenizes for BlockRange.StartToken
-    / EndToken offsets.
-    """
-    pattern = re.compile(
-        rf'<p\s+id="p\d+"\s+data-pid="{data_pid}"[^>]*>(.*?)</p>',
-        re.DOTALL,
-    )
-    m = pattern.search(html)
-    if not m:
-        raise ValueError(f"data-pid {data_pid} not found in article HTML")
-    body = m.group(1)
-    # Drop footnote-marker links (typically <a class="fn">…</a>) — invisible to readers.
-    body = re.sub(r'<a\s+[^>]*class="[^"]*fn[^"]*"[^>]*>.*?</a>', ' ', body, flags=re.DOTALL)
-    # Strip remaining tags but keep their text content (citation links read aloud).
-    body = re.sub(r'<[^>]+>', ' ', body)
-    # Decode common HTML entities that affect tokenization.
-    body = (body.replace("&nbsp;", " ").replace("&#160;", " ")
-                .replace("&amp;", "&").replace("&#8217;", "'")
-                .replace("&#8220;", '"').replace("&#8221;", '"')
-                .replace("&#8212;", "—").replace("&#8211;", "–"))
-    body = re.sub(r'\s+', ' ', body).strip()
-    # Strip the leading paragraph number ("16 ") — JW Library doesn't count it as a token.
-    body = re.sub(r'^\d+\s+', '', body)
-    return body.split()
+_WORD_TOKEN_RE = re.compile(r"\w")
 
 
-def _normalize_token(t: str) -> str:
-    """Lowercase + strip surrounding punctuation for tolerant matching."""
-    return re.sub(r'^[^\w]+|[^\w]+$', '', t.lower())
-
-
-# Internal placeholder tokens emitted by extract_verse_tokens for non-text markers
-# (verse number link, cross-references, footnotes). Highlights are allowed to span
-# over these — JW Library does this natively when you drag a selection across a
-# cross-ref symbol.
-_MARKER_TOKENS = frozenset({"\x00VMARK\x00", "\x00XREF\x00", "\x00FN\x00"})
+def _is_word_token(t: str) -> bool:
+    """True iff token contains any word-character (so 'art' yes, ',' no)."""
+    return bool(_WORD_TOKEN_RE.search(t))
 
 
 def find_token_range(tokens: list[str], phrase: str) -> tuple[int, int]:
     """Locate a phrase in a token list.
 
+    Tokenizes the phrase with the same rule as the source, then matches:
+        1. Strict (case-sensitive) sublist match.
+        2. Case-insensitive sublist match.
+        3. Punctuation-skipping match — phrase word-tokens align to source
+           word-tokens; punctuation tokens in the source (footnote markers
+           '*', cross-reference '+', commas, etc.) that fall between phrase
+           words are absorbed into the returned range. Mirrors how JW Library
+           expands a drag-selection over inline footnote/xref symbols.
     Returns (start_token, end_token) — 0-indexed, inclusive.
-    Tries in order:
-        1. Strict whitespace-token match.
-        2. Punctuation-tolerant case-insensitive match.
-        3. Marker-skipping match — the phrase aligns to text tokens but allows
-           VMARK / XREF / FN marker tokens to fall between phrase words. The
-           returned range INCLUDES those markers (so the highlight covers them
-           in JW Library, matching native UI behavior).
-    Raises ValueError if none match.
+    Raises ValueError if not found.
     """
-    phrase_tokens = phrase.split()
+    phrase_tokens = jw_tokenize(phrase)
     n = len(phrase_tokens)
     if n == 0:
         raise ValueError("empty phrase")
+    if n > len(tokens):
+        raise ValueError(
+            f"phrase has {n} tokens but source has only {len(tokens)}: {phrase!r}"
+        )
 
     # 1. Strict
-    if n <= len(tokens):
-        for i in range(len(tokens) - n + 1):
-            if tokens[i:i + n] == phrase_tokens:
-                return (i, i + n - 1)
+    for i in range(len(tokens) - n + 1):
+        if tokens[i:i + n] == phrase_tokens:
+            return (i, i + n - 1)
 
-    # 2. Case-/punctuation-tolerant
-    if n <= len(tokens):
-        norm_tokens = [_normalize_token(t) for t in tokens]
-        norm_phrase = [_normalize_token(t) for t in phrase_tokens]
-        for i in range(len(norm_tokens) - n + 1):
-            if norm_tokens[i:i + n] == norm_phrase:
-                return (i, i + n - 1)
+    # 2. Case-insensitive
+    lt = [t.lower() for t in tokens]
+    lp = [t.lower() for t in phrase_tokens]
+    for i in range(len(lt) - n + 1):
+        if lt[i:i + n] == lp:
+            return (i, i + n - 1)
 
-    # 3. Marker-skipping (text tokens only contribute to the match)
-    norm_tokens = [_normalize_token(t) if t not in _MARKER_TOKENS else None for t in tokens]
-    norm_phrase = [_normalize_token(t) for t in phrase_tokens]
-    for start in range(len(tokens)):
-        if norm_tokens[start] != norm_phrase[0]:
-            continue
-        j = start + 1
-        pi = 1
-        last_match = start
-        while pi < n and j < len(tokens):
-            if norm_tokens[j] is None:  # marker; skip but keep going
-                j += 1
+    # 3. Punctuation-skipping (case-insensitive). Phrase word-tokens must
+    #    align with source word-tokens; punctuation in source between them
+    #    is allowed and included in the returned range.
+    phrase_word_tokens = [(i, t.lower()) for i, t in enumerate(phrase_tokens)
+                          if _is_word_token(t)]
+    if phrase_word_tokens:
+        # Phrase punctuation positions must still match in the source — but
+        # we only loosely require them, so simplest: match only on word tokens.
+        first_w = phrase_word_tokens[0][1]
+        for start in range(len(tokens)):
+            if not _is_word_token(tokens[start]) or tokens[start].lower() != first_w:
                 continue
-            if norm_tokens[j] == norm_phrase[pi]:
-                last_match = j
-                j += 1
-                pi += 1
-            else:
-                break
-        if pi == n:
-            return (start, last_match)
+            j = start
+            pi = 0
+            last_word_match = start
+            ok = True
+            while pi < len(phrase_word_tokens) and j < len(tokens):
+                tok = tokens[j]
+                if _is_word_token(tok):
+                    if tok.lower() == phrase_word_tokens[pi][1]:
+                        last_word_match = j
+                        pi += 1
+                        j += 1
+                    else:
+                        ok = False
+                        break
+                else:
+                    # punctuation in source — skip over (it'll fall inside the
+                    # returned range as long as it's between phrase word tokens)
+                    j += 1
+            if ok and pi == len(phrase_word_tokens):
+                return (start, last_word_match)
 
     raise ValueError(
         f"phrase not found: {phrase!r}\n"
-        f"  source tokens: {' '.join(t if t not in _MARKER_TOKENS else '·' for t in tokens[:40])}"
-        f"{'…' if len(tokens) > 40 else ''}"
+        f"  phrase tokens: {phrase_tokens}\n"
+        f"  source tokens: {' '.join(tokens[:40])}{'…' if len(tokens) > 40 else ''}"
     )
 
 
