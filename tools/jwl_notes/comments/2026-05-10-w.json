@@ -4,44 +4,180 @@
     "article_title": "Improve Your \"Art of Teaching\" in the Ministry",
     "source": "The Watchtower (Study), March 2026",
     "url": "https://wol.jw.org/en/wol/d/r1/lp-e/2026320",
-    "theme_scripture": "2 Tim. 4:2"
+    "theme_scripture": "2 Tim. 4:2",
+    "preparation_standard": "Gold-standard elder-level prep: every body paragraph receives 1-3 targeted underlines (2-6 words each, color-coded by Tyler's semantic system); 8 strategic paragraphs receive a 4-slot voice note. Notes anchor to QUESTION data-pid (renders in inline comment box AND Notes tab). Underlines anchor to BODY paragraph data-pid (where the highlighted text lives)."
   },
   "key_symbol": "w",
   "issue": 20260300,
   "document_id": 2026320,
   "default_block_type": 1,
-  "_anchor_note": "Notes anchor to QUESTION data-pid (40, 56) so they render in JW Library's per-paragraph comment box. Underlines anchor to BODY paragraph data-pid (10, 19) because the text being highlighted lives in the body. Two anchor types per comment, hence two entries per visible paragraph.",
   "notes": [
     {
-      "paragraph": 3,
-      "data_pid": 40,
-      "block_type": 1,
-      "title": null,
-      "content": "You ever had somebody at work, or in your family, who could just see through you — like they knew what you were really feeling before you even said a word? That's what John 2:25 is saying about Jesus. He 'knew what was in man.' Not what they were doing. What was in them. And there's a real difference there. Most of us, when we're teaching out there in the field, we're trying to address what we see — the question they asked, the objection they raised. Jesus addressed what was underneath. The fear behind the question. The hurt behind the objection. The why behind the why. And once you see THAT, the lesson basically writes itself. So if we want to improve the art, we don't need to memorize more answers. We need to learn to see deeper."
-    },
-    {
-      "paragraph": 3,
-      "data_pid": 10,
-      "block_type": 1,
+      "paragraph": 1, "data_pid": 7, "block_type": 1,
       "underlines": [
-        {"phrase": "knew what was in man", "color": "purple"},
-        {"phrase": "Jesus knew how people thought and what their motives were", "color": "yellow"}
+        {"phrase": "art of teaching", "color": "yellow"},
+        {"phrase": "All Christians would do well to cultivate", "color": "purple"}
       ]
     },
+
     {
-      "paragraph": 11,
-      "data_pid": 56,
-      "block_type": 1,
-      "title": null,
-      "content": "Notice the wording of 2 Timothy 4:2 — 'preach the word with all patience and art of teaching.' The article is asking us to lean into the patience side. Most of us — and I'm including myself — when we hear something we don't agree with on a study, our first instinct is to correct. Right then. Not in five minutes. Right now. But Paul put patience BEFORE art of teaching for a reason. The teaching doesn't land until the patience has done its work. Picture trying to plant a seed in soil you just churned up two seconds ago. The soil isn't ready. The seed isn't going down. Patience is what lets the soil settle. Then the teaching sinks in. So when somebody pushes back on a point you know is true — it's not actually a moment to teach. It's a moment to wait. The teaching comes after."
+      "paragraph": 2, "data_pid": 38, "block_type": 1, "title": null,
+      "content": "Notice the verse this paragraph references — Exodus 4:10. That's Moses telling Jehovah, 'I have never been a fluent speaker.' Jehovah's response wasn't 'you're right, I'll find someone else.' He gave Moses a brother to help and sent him anyway. Same thing happens with us. The voice in our head says, 'I didn't go to college,' or 'I don't see the same results other publishers do, what's wrong with me?' That voice is older than us. Moses had it. Jeremiah had it. The article says three ways we can improve — meaning improvement is possible. The starting line isn't 'I'm already good.' It's 'I'm willing.'"
     },
     {
-      "paragraph": 11,
-      "data_pid": 19,
-      "block_type": 1,
+      "paragraph": 2, "data_pid": 8, "block_type": 1,
+      "underlines": [
+        {"phrase": "limited secular education or natural ability", "color": "yellow"},
+        {"phrase": "discouraged about their teaching ability", "color": "blue"},
+        {"phrase": "three ways we can improve", "color": "purple"}
+      ]
+    },
+
+    {
+      "paragraph": 3, "data_pid": 40, "block_type": 1, "title": null,
+      "content": "You ever had somebody at work, or in your family, who could just see through you — like they knew what you were really feeling before you even said a word? That's what John 2:25 is saying about Jesus. He 'knew what was in man.' Not what they were doing. What was in them. And there's a real difference there. Most of us, when we're teaching out there in the field, we're trying to address what we see — the question they asked, the objection they raised. Jesus addressed what was underneath. The fear behind the question. The hurt behind the objection. The why behind the why. And once you see that, the lesson basically writes itself."
+    },
+    {
+      "paragraph": 3, "data_pid": 10, "block_type": 1,
+      "underlines": [
+        {"phrase": "knew what was in man", "color": "yellow"},
+        {"phrase": "spiritually malnourished", "color": "blue"},
+        {"phrase": "matters that affected them personally", "color": "green"}
+      ]
+    },
+
+    {
+      "paragraph": 4, "data_pid": 11, "block_type": 1,
+      "underlines": [
+        {"phrase": "trying to understand their concerns", "color": "yellow"},
+        {"phrase": "without the hope that the Bible offers", "color": "blue"}
+      ]
+    },
+
+    {
+      "paragraph": 5, "data_pid": 12, "block_type": 1,
+      "underlines": [
+        {"phrase": "kindness and respect", "color": "yellow"},
+        {"phrase": "mild-tempered and lowly in heart", "color": "green"},
+        {"phrase": "looked down on the common people", "color": "pink"}
+      ]
+    },
+
+    {
+      "paragraph": 6, "data_pid": 46, "block_type": 1, "title": null,
+      "content": "Look at what Jesus said in Luke 6:27-28. Not just 'tolerate' opposition. Do good. Bless. Pray for. Three escalating verbs. And the article frames the practical move perfectly — give them the benefit of the doubt. Picture this: somebody slams the door. We don't know if they slept three hours, lost their job that morning, or are mad about something that has nothing to do with us. We don't get to know. So the question isn't 'how do I respond to a rejection?' It's 'how do I respond to a person whose day I just walked into?' That changes everything about the next door we knock on."
+    },
+    {
+      "paragraph": 6, "data_pid": 13, "block_type": 1,
+      "underlines": [
+        {"phrase": "benefit of the doubt", "color": "yellow"},
+        {"phrase": "do good to those hating you", "color": "green"},
+        {"phrase": "gracious, seasoned with salt", "color": "purple"}
+      ]
+    },
+
+    {
+      "paragraph": 7, "data_pid": 15, "block_type": 1,
+      "underlines": [
+        {"phrase": "based on God’s Word", "color": "yellow"},
+        {"phrase": "as one having authority", "color": "green"},
+        {"phrase": "centered his teaching on God’s will and Word", "color": "purple"}
+      ]
+    },
+
+    {
+      "paragraph": 8, "data_pid": 16, "block_type": 1,
+      "underlines": [
+        {"phrase": "Scriptural explanation of the prophecies", "color": "yellow"},
+        {"phrase": "about 3,000 people were added", "color": "purple"}
+      ]
+    },
+
+    {
+      "paragraph": 9, "data_pid": 52, "block_type": 1, "title": null,
+      "content": "Look at the line in this paragraph — 'no better tool to reach our listeners' hearts than the Word of God.' That's a strong claim. Now look at Malachi 2:7 quoted right after — teachers should give people the law from God's own mouth. Think about what that means for an actual study. The student isn't asking 'what does Tyler think?' They're asking 'what does the Bible actually say?' When we open the page and let them read it themselves, something shifts. The Bible isn't proving our point. We're pointing to what Jehovah already said. The Bible isn't our argument. It's our anchor."
+    },
+    {
+      "paragraph": 9, "data_pid": 17, "block_type": 1,
+      "underlines": [
+        {"phrase": "no better tool", "color": "yellow"},
+        {"phrase": "letting Jehovah speak", "color": "purple"}
+      ]
+    },
+
+    {
+      "paragraph": 10, "data_pid": 18, "block_type": 1,
+      "underlines": [
+        {"phrase": "the Bible is the main textbook", "color": "yellow"},
+        {"phrase": "give the student time to absorb", "color": "green"},
+        {"phrase": "not a book study or a picture study", "color": "pink"}
+      ]
+    },
+
+    {
+      "paragraph": 11, "data_pid": 56, "block_type": 1, "title": null,
+      "content": "Notice the wording of 2 Timothy 4:2 — 'preach the word with all patience and art of teaching.' The article is asking us to lean into the patience side. Most of us — and I'm including myself — when we hear something we don't agree with on a study, our first instinct is to correct. Right then. Not in five minutes. Right now. But Paul put patience BEFORE art of teaching for a reason. The teaching doesn't land until the patience has done its work. Picture trying to plant a seed in soil you just churned up two seconds ago. The soil isn't ready. The seed isn't going down. Patience is what lets the soil settle. Then the teaching sinks in."
+    },
+    {
+      "paragraph": 11, "data_pid": 19, "block_type": 1,
       "underlines": [
         {"phrase": "preach the word", "color": "yellow"},
         {"phrase": "with all patience", "color": "purple"}
+      ]
+    },
+
+    {
+      "paragraph": 12, "data_pid": 20, "block_type": 1,
+      "underlines": [
+        {"phrase": "drawing out students with questions", "color": "green"},
+        {"phrase": "completely unfamiliar with the Bible", "color": "blue"},
+        {"phrase": "show your Bible students the power", "color": "yellow"}
+      ]
+    },
+
+    {
+      "paragraph": 13, "data_pid": 58, "block_type": 1, "title": null,
+      "content": "Sit with that lighting technician illustration for a second. The tech doesn't shine the light on himself. He doesn't try to be the show. He spends the whole performance making sure somebody else is visible. And here's the catch — when he does his job right, you don't even notice he's there. That's the standard for our teaching. If somebody walks away from a study remembering how interesting we were, we missed. If they walk away saying, 'Jehovah is real to me now,' the light landed where it was supposed to. The teacher who succeeds is the one nobody remembers."
+    },
+    {
+      "paragraph": 13, "data_pid": 22, "block_type": 1,
+      "underlines": [
+        {"phrase": "focus attention on Jehovah", "color": "yellow"},
+        {"phrase": "lighting technician in a theater", "color": "green"}
+      ]
+    },
+
+    {
+      "paragraph": 14, "data_pid": 60, "block_type": 1, "title": null,
+      "content": "There's one phrase in this paragraph doing a lot of work: 'as if he or she were joining a club.' That's the inversion. Most groups out there operate exactly that way — here are the rules, follow them or you're out. This isn't that. Notice the three questions the article suggests asking the student: 'Why does Jehovah hate this practice? Why would he require this? How does this show he loves you?' Three questions about Jehovah's heart, not three rules to memorize. We're not adding members to an organization. We're connecting a person to a Father."
+    },
+    {
+      "paragraph": 14, "data_pid": 23, "block_type": 1,
+      "underlines": [
+        {"phrase": "develop the desire to please Jehovah", "color": "yellow"},
+        {"phrase": "joining a club", "color": "pink"},
+        {"phrase": "what a wonderful Father we have", "color": "purple"}
+      ]
+    },
+
+    {
+      "paragraph": 15, "data_pid": 62, "block_type": 1, "title": null,
+      "content": "Look at this line: 'Try to look at the material through his eyes.' That's the move. We've read this article ten times. We've heard the principles since we were kids. The student is hearing them for the first time. What seems obvious to us isn't obvious to them. What feels like 'finally we're getting somewhere' to us might feel like 'wait, slow down, that just challenged something I've believed my whole life' to them. The teacher who improves the most isn't the one who knows the most. It's the one who keeps remembering the student doesn't yet know what we know."
+    },
+    {
+      "paragraph": 15, "data_pid": 25, "block_type": 1,
+      "underlines": [
+        {"phrase": "ask Jehovah in prayer", "color": "yellow"},
+        {"phrase": "through his eyes", "color": "green"},
+        {"phrase": "close friendship with Jehovah", "color": "purple"}
+      ]
+    },
+
+    {
+      "paragraph": 16, "data_pid": 26, "block_type": 1,
+      "underlines": [
+        {"phrase": "one of the greatest joys", "color": "yellow"},
+        {"phrase": "the future new world", "color": "purple"}
       ]
     }
   ]

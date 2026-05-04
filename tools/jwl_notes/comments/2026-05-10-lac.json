@@ -1,9 +1,10 @@
 {
   "_meta": {
     "study_date": "2026-05-10",
-    "section": "Living as Christians Part 7 — Discussion: \"Follow the Course of Hospitality\"",
+    "section": "Living as Christians Part 7 — Discussion: 'Follow the Course of Hospitality'",
     "url": "https://wol.jw.org/en/wol/d/r1/lp-e/202026161",
-    "anchor_question": "How do we benefit when we extend hospitality to those outside our circle of close friends? (data-pid 39)"
+    "discussion_questions": "data-pids 32 (video Q), 34 (benefit-from-showing), 37 (learn from Jehovah's example), 39 (extend outside circle), 41 (Bible examples)",
+    "preparation_standard": "Notes on the 4 main discussion questions (32, 37, 39, 41). Underlines on the setup and example paragraphs (30, 31, 36) plus the goal-setting paragraph (43)."
   },
   "key_symbol": "mwb",
   "issue": 20260500,
@@ -11,27 +12,47 @@
   "default_block_type": 1,
   "notes": [
     {
-      "paragraph": 30,
-      "data_pid": 30,
-      "block_type": 1,
+      "paragraph": 30, "data_pid": 30, "block_type": 1,
       "underlines": [
-        {"phrase": "follow the course of hospitality", "color": "purple"}
+        {"phrase": "follow the course of hospitality", "color": "yellow"},
+        {"phrase": "Romans 12:13", "color": "green"}
       ]
     },
+
     {
-      "paragraph": 36,
-      "data_pid": 36,
-      "block_type": 1,
+      "paragraph": 32, "data_pid": 32, "block_type": 1, "title": null,
+      "content": "Think about what hospitality actually looks like in real life — not just inviting someone over, but the way you make them feel once they're there. The video shows it well. Hospitality isn't a project; it's a posture. You can have somebody at your kitchen table and still leave them feeling like they're inconveniencing you. Or you can have nothing prepared and they walk away feeling like the most important person in the room. The video isn't really about food. It's about whether the person sitting across from you knows they're welcome before you even say a word."
+    },
+
+    {
+      "paragraph": 36, "data_pid": 36, "block_type": 1,
       "underlines": [
-        {"phrase": "Jehovah is the best example of hospitality", "color": "yellow"}
+        {"phrase": "Jehovah is the best example", "color": "yellow"},
+        {"phrase": "rain and fruitful seasons", "color": "green"}
       ]
     },
+
     {
-      "paragraph": 39,
-      "data_pid": 39,
-      "block_type": 1,
-      "title": null,
+      "paragraph": 37, "data_pid": 37, "block_type": 1, "title": null,
+      "content": "Notice what Acts 14:17 tells us about Jehovah's hospitality. Rain. Fruitful seasons. Filling hearts with food and good cheer. The audience for that hospitality? People who didn't yet know Jehovah's name. Didn't even acknowledge him. He showed up at their table anyway. That's the example. Most of us extend hospitality based on who's RSVP'd — who's part of our circle, who reciprocates. Jehovah's pattern is the opposite. He sets the table for people who haven't accepted the invitation yet. The lesson isn't 'be more generous to your friends.' It's 'extend the table further than the people already at it.'"
+    },
+
+    {
+      "paragraph": 39, "data_pid": 39, "block_type": 1, "title": null,
       "content": "You know how you feel after you do something nice for somebody who'd never do it back? Like you held the door for somebody at the gas station and they didn't even nod — but somehow you walk to your car feeling lighter? That's the benefit. Notice Acts 14:17 — Jehovah gives rain and fruitful seasons to people who don't even know him yet. He's the original example. He extends hospitality to people who aren't going to thank him for it. When we copy that, we're not just helping the other person. We're stretching our own heart bigger. Hospitality outside our circle isn't really for them. It's for us — to keep us from shrinking down to only loving the people who love us back."
+    },
+
+    {
+      "paragraph": 41, "data_pid": 41, "block_type": 1, "title": null,
+      "content": "Other Bible examples of hospitality worth remembering — Abraham running to meet the three strangers in Genesis 18, slaughtering the calf, standing to serve them. Lot insisting the angels stay with him in Genesis 19. Rahab hiding the spies on her roof in Joshua 2. The widow of Zarephath sharing her last meal with Elijah in 1 Kings 17. Notice the pattern across all of them — none of these people knew the long-term outcome of their hospitality. They just opened the door. Abraham didn't know Sarah would conceive. The widow didn't know her flour wouldn't run out. Hospitality isn't transactional. It's offered first, blessed after."
+    },
+
+    {
+      "paragraph": 43, "data_pid": 43, "block_type": 1,
+      "underlines": [
+        {"phrase": "consider how you would like to show hospitality", "color": "green"},
+        {"phrase": "write your goals", "color": "yellow"}
+      ]
     }
   ]
 }
