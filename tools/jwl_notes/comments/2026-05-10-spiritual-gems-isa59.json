@@ -16,14 +16,14 @@
       "content": "Look at how the chapter opens. 'Look! The hand of Jehovah is not too short to save.' Notice the negative framing — Jehovah isn't telling us his hand IS reaching, he's telling us it's NOT too short. Why phrase it that way? Because that's the lie we believe. When something heavy is happening, our default thought is, 'maybe he can't reach me from where I am.' Verse 1 walks straight into that thought and corrects it. The reach is not the problem. Then verse 2 says what IS — our own offenses are the wall. The distance isn't on Jehovah's end. It never was.",
       "underlines": [
         {"phrase": "the hand of Jehovah is not too short", "color": "yellow"},
-        {"phrase": "his ear is not too dull to hear", "color": "purple"}
+        {"phrase": "his ear too dull to hear", "color": "purple"}
       ]
     },
     {
       "verse": 2, "block_type": 2,
       "underlines": [
         {"phrase": "your own errors", "color": "pink"},
-        {"phrase": "have made a separation", "color": "blue"}
+        {"phrase": "separated you from your God", "color": "blue"}
       ]
     },
     {
@@ -37,7 +37,7 @@
     {
       "verse": 17, "block_type": 2,
       "underlines": [
-        {"phrase": "righteousness as a breastplate", "color": "green"},
+        {"phrase": "righteousness like a coat of mail", "color": "green"},
         {"phrase": "garments of vengeance", "color": "pink"}
       ]
     }

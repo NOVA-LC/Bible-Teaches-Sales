@@ -5,7 +5,7 @@
     "source": "The Watchtower (Study), March 2026",
     "url": "https://wol.jw.org/en/wol/d/r1/lp-e/2026320",
     "theme_scripture": "2 Tim. 4:2",
-    "preparation_standard": "Gold-standard elder-level prep: every body paragraph receives 1-3 targeted underlines (2-6 words each, color-coded by Tyler's semantic system); 8 strategic paragraphs receive a 4-slot voice note. Notes anchor to QUESTION data-pid (renders in inline comment box AND Notes tab). Underlines anchor to BODY paragraph data-pid (where the highlighted text lives)."
+    "preparation_standard": "Gold-standard, elder-level prep. Every body paragraph (1-16) underlined with 2-6 word load-bearing phrases (each either answers the printed question or explains the cited scripture). 8 strategic four-slot notes at q1, q3, q6, q7, q11, q13, q14, q15 covering the article's main movements (intro, three principles, capstone). Notes anchor to question data-pid; underlines anchor to body paragraph data-pid."
   },
   "key_symbol": "w",
   "issue": 20260300,
@@ -25,15 +25,10 @@
     },
 
     {
-      "paragraph": 2, "data_pid": 38, "block_type": 1, "title": null,
-      "content": "Notice the verse this paragraph references — Exodus 4:10. That's Moses telling Jehovah, 'I have never been a fluent speaker.' Jehovah's response wasn't 'you're right, I'll find someone else.' He gave Moses a brother to help and sent him anyway. Same thing happens with us. The voice in our head says, 'I didn't go to college,' or 'I don't see the same results other publishers do, what's wrong with me?' That voice is older than us. Moses had it. Jeremiah had it. The article says three ways we can improve — meaning improvement is possible. The starting line isn't 'I'm already good.' It's 'I'm willing.'"
-    },
-    {
       "paragraph": 2, "data_pid": 8, "block_type": 1,
       "underlines": [
-        {"phrase": "limited secular education or natural ability", "color": "yellow"},
-        {"phrase": "discouraged about their teaching ability", "color": "blue"},
-        {"phrase": "three ways we can improve", "color": "purple"}
+        {"phrase": "limited secular education", "color": "yellow"},
+        {"phrase": "discouraged about their teaching ability", "color": "blue"}
       ]
     },
 
@@ -45,7 +40,6 @@
       "paragraph": 3, "data_pid": 10, "block_type": 1,
       "underlines": [
         {"phrase": "knew what was in man", "color": "yellow"},
-        {"phrase": "spiritually malnourished", "color": "blue"},
         {"phrase": "matters that affected them personally", "color": "green"}
       ]
     },
@@ -81,11 +75,14 @@
     },
 
     {
+      "paragraph": 7, "data_pid": 48, "block_type": 1, "title": null,
+      "content": "There's an inversion in this paragraph that's easy to miss. Jesus had more knowledge than anyone he was ever teaching. He'd been with Jehovah before Genesis 1. He could have used that to flatten his listeners — to win every argument by sheer authority. Instead the article says, 'he did not.' He centered his teaching on Scriptures everyone could open and read — same Bible they could look up themselves. Now think about what we do in the field. We don't have Jesus' knowledge, but we have the same temptation. To impress. To win the argument. To talk over the person we're teaching. Jesus had every right to dominate and chose not to. We have no right and still try sometimes."
+    },
+    {
       "paragraph": 7, "data_pid": 15, "block_type": 1,
       "underlines": [
         {"phrase": "based on God’s Word", "color": "yellow"},
-        {"phrase": "as one having authority", "color": "green"},
-        {"phrase": "centered his teaching on God’s will and Word", "color": "purple"}
+        {"phrase": "as one having authority", "color": "green"}
       ]
     },
 
@@ -93,19 +90,17 @@
       "paragraph": 8, "data_pid": 16, "block_type": 1,
       "underlines": [
         {"phrase": "Scriptural explanation of the prophecies", "color": "yellow"},
-        {"phrase": "about 3,000 people were added", "color": "purple"}
+        {"phrase": "not a highly educated man", "color": "purple"},
+        {"phrase": "about 3,000 people were added", "color": "green"}
       ]
     },
 
     {
-      "paragraph": 9, "data_pid": 52, "block_type": 1, "title": null,
-      "content": "Look at the line in this paragraph — 'no better tool to reach our listeners' hearts than the Word of God.' That's a strong claim. Now look at Malachi 2:7 quoted right after — teachers should give people the law from God's own mouth. Think about what that means for an actual study. The student isn't asking 'what does Tyler think?' They're asking 'what does the Bible actually say?' When we open the page and let them read it themselves, something shifts. The Bible isn't proving our point. We're pointing to what Jehovah already said. The Bible isn't our argument. It's our anchor."
-    },
-    {
       "paragraph": 9, "data_pid": 17, "block_type": 1,
       "underlines": [
         {"phrase": "no better tool", "color": "yellow"},
-        {"phrase": "letting Jehovah speak", "color": "purple"}
+        {"phrase": "letting Jehovah speak", "color": "green"},
+        {"phrase": "far superior to human wisdom", "color": "purple"}
       ]
     },
 
@@ -126,7 +121,8 @@
       "paragraph": 11, "data_pid": 19, "block_type": 1,
       "underlines": [
         {"phrase": "preach the word", "color": "yellow"},
-        {"phrase": "with all patience", "color": "purple"}
+        {"phrase": "with all patience", "color": "purple"},
+        {"phrase": "extra time to grasp truths", "color": "green"}
       ]
     },
 
@@ -146,8 +142,9 @@
     {
       "paragraph": 13, "data_pid": 22, "block_type": 1,
       "underlines": [
-        {"phrase": "focus attention on Jehovah", "color": "yellow"},
-        {"phrase": "lighting technician in a theater", "color": "green"}
+        {"phrase": "attention on Jehovah", "color": "yellow"},
+        {"phrase": "lighting technician in a theater", "color": "green"},
+        {"phrase": "in the spotlight", "color": "purple"}
       ]
     },
 
@@ -181,7 +178,7 @@
       "paragraph": 16, "data_pid": 26, "block_type": 1,
       "underlines": [
         {"phrase": "one of the greatest joys", "color": "yellow"},
-        {"phrase": "the future new world", "color": "purple"}
+        {"phrase": "much needed in the future new world", "color": "purple"}
       ]
     }
   ]
