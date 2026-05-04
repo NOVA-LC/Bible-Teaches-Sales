@@ -10,27 +10,38 @@
   "issue": 20260300,
   "document_id": 2026320,
   "default_block_type": 1,
+  "_anchor_note": "Notes anchor to QUESTION data-pid (40, 56) so they render in JW Library's per-paragraph comment box. Underlines anchor to BODY paragraph data-pid (10, 19) because the text being highlighted lives in the body. Two anchor types per comment, hence two entries per visible paragraph.",
   "notes": [
+    {
+      "paragraph": 3,
+      "data_pid": 40,
+      "block_type": 1,
+      "title": null,
+      "content": "You ever had somebody at work, or in your family, who could just see through you — like they knew what you were really feeling before you even said a word? That's what John 2:25 is saying about Jesus. He 'knew what was in man.' Not what they were doing. What was in them. And there's a real difference there. Most of us, when we're teaching out there in the field, we're trying to address what we see — the question they asked, the objection they raised. Jesus addressed what was underneath. The fear behind the question. The hurt behind the objection. The why behind the why. And once you see THAT, the lesson basically writes itself. So if we want to improve the art, we don't need to memorize more answers. We need to learn to see deeper."
+    },
     {
       "paragraph": 3,
       "data_pid": 10,
       "block_type": 1,
-      "title": null,
-      "content": "You ever had somebody at work, or in your family, who could just see through you — like they knew what you were really feeling before you even said a word? That's what John 2:25 is saying about Jesus. He 'knew what was in man.' Not what they were doing. What was in them. And there's a real difference there. Most of us, when we're teaching out there in the field, we're trying to address what we see — the question they asked, the objection they raised. Jesus addressed what was underneath. The fear behind the question. The hurt behind the objection. The why behind the why. And once you see THAT, the lesson basically writes itself. So if we want to improve the art, we don't need to memorize more answers. We need to learn to see deeper.",
       "underlines": [
         {"phrase": "knew what was in man", "color": "purple"},
-        {"phrase": "we can become better teachers if we learn to discern what motivates people", "color": "yellow"}
+        {"phrase": "Jesus knew how people thought and what their motives were", "color": "yellow"}
       ]
+    },
+    {
+      "paragraph": 11,
+      "data_pid": 56,
+      "block_type": 1,
+      "title": null,
+      "content": "Notice the wording of 2 Timothy 4:2 — 'preach the word with all patience and art of teaching.' The article is asking us to lean into the patience side. Most of us — and I'm including myself — when we hear something we don't agree with on a study, our first instinct is to correct. Right then. Not in five minutes. Right now. But Paul put patience BEFORE art of teaching for a reason. The teaching doesn't land until the patience has done its work. Picture trying to plant a seed in soil you just churned up two seconds ago. The soil isn't ready. The seed isn't going down. Patience is what lets the soil settle. Then the teaching sinks in. So when somebody pushes back on a point you know is true — it's not actually a moment to teach. It's a moment to wait. The teaching comes after."
     },
     {
       "paragraph": 11,
       "data_pid": 19,
       "block_type": 1,
-      "title": null,
-      "content": "Notice the wording of 2 Timothy 4:2 — 'preach the word with all patience and art of teaching.' The article is asking us to lean into the patience side. Most of us — and I'm including myself — when we hear something we don't agree with on a study, our first instinct is to correct. Right then. Not in five minutes. Right now. But Paul put patience BEFORE art of teaching for a reason. The teaching doesn't land until the patience has done its work. Picture trying to plant a seed in soil you just churned up two seconds ago. The soil isn't ready. The seed isn't going down. Patience is what lets the soil settle. Then the teaching sinks in. So when somebody pushes back on a point you know is true — it's not actually a moment to teach. It's a moment to wait. The teaching comes after.",
       "underlines": [
         {"phrase": "preach the word", "color": "yellow"},
-        {"phrase": "with all patience and art of teaching", "color": "purple"}
+        {"phrase": "with all patience", "color": "purple"}
       ]
     }
   ]
