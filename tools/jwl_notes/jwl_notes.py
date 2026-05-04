@@ -710,6 +710,9 @@ def main() -> int:
                    help="substring match on Location.Title")
     p.add_argument("--article-html", type=Path, default=None,
                    help="local cached WOL article HTML; default fetches from wol.jw.org")
+    p.add_argument("--verify", action="store_true",
+                   help="after writing output, simulate JW Library's merge to confirm "
+                        "all new rows survive (uses verify_merge.py)")
     args = p.parse_args()
 
     if not args.input.exists():
@@ -819,6 +822,19 @@ def main() -> int:
         update_manifest(manifest_path, db_path)
         repackage(work, args.output)
         print(f"Wrote {args.output}")
+
+    if args.verify:
+        print("\n--- Verifying merge ---")
+        try:
+            from verify_merge import verify
+        except ImportError:
+            sys.path.insert(0, str(Path(__file__).parent))
+            from verify_merge import verify
+        if not verify(args.input, args.output):
+            print("\nVerification FAILED. The output backup has rows that JW Library "
+                  "would silently drop on Restore. Do not import this file as-is.",
+                  file=sys.stderr)
+            return 1
 
     return 0
 
