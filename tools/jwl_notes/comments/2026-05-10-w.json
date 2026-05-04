@@ -81,7 +81,7 @@
     {
       "paragraph": 7, "data_pid": 15, "block_type": 1,
       "underlines": [
-        {"phrase": "based on God’s Word", "color": "yellow"},
+        {"phrase": "freely quoted from the inspired Scriptures", "color": "yellow"},
         {"phrase": "as one having authority", "color": "green"}
       ]
     },
@@ -107,7 +107,7 @@
     {
       "paragraph": 10, "data_pid": 18, "block_type": 1,
       "underlines": [
-        {"phrase": "the Bible is the main textbook", "color": "yellow"},
+        {"phrase": "look up key texts", "color": "yellow"},
         {"phrase": "give the student time to absorb", "color": "green"},
         {"phrase": "not a book study or a picture study", "color": "pink"}
       ]
@@ -120,18 +120,18 @@
     {
       "paragraph": 11, "data_pid": 19, "block_type": 1,
       "underlines": [
-        {"phrase": "preach the word", "color": "yellow"},
-        {"phrase": "with all patience", "color": "purple"},
-        {"phrase": "extra time to grasp truths", "color": "green"}
+        {"phrase": "with all patience", "color": "yellow"},
+        {"phrase": "preach the word", "color": "green"},
+        {"phrase": "extra time to grasp truths", "color": "purple"}
       ]
     },
 
     {
       "paragraph": 12, "data_pid": 20, "block_type": 1,
       "underlines": [
-        {"phrase": "drawing out students with questions", "color": "green"},
-        {"phrase": "completely unfamiliar with the Bible", "color": "blue"},
-        {"phrase": "show your Bible students the power", "color": "yellow"}
+        {"phrase": "completely unfamiliar with the Bible", "color": "yellow"},
+        {"phrase": "show your Bible students the power", "color": "yellow"},
+        {"phrase": "drawing out students with questions", "color": "green"}
       ]
     },
 
