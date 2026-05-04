@@ -10,31 +10,42 @@
 > Operator's verbatim instruction: failure to apply them is "fucking
 > useless to the absolute maximum degree."
 >
-> ### Mandate 1 — The "Less is More" Underline Doctrine
+> ### Mandate 1 — The Full-Answer Underline Doctrine
 >
 > Apply to **every paragraph that has a corresponding study question.
 > Do not skip paragraphs.** Sparse coverage is failure.
 >
-> Each underline phrase must:
-> - Be a **surgical extraction of 2 to 6 words** — strict cap of 8
->   for inseparable units of meaning. **Never** a full sentence.
->   **Never** demographic filler (e.g. "of both Jews"). **Never** an
->   article-title repeat (don't underline "art of teaching" if the
->   article *is* "Improve Your Art of Teaching"). **Never** a generic
->   exhortation ("would do well to cultivate", "let us all", etc.).
-> - Do **exactly one** of these jobs:
->   - Directly **answer** the printed study question, **or**
->   - **Explain** the cited scripture (the phrase that bridges the
->     verse to the article's argument)
+> Each underline phrase must do **exactly one** of these jobs:
+> - **Yellow only:** *fully* answer the printed study question. Not a
+>   2-3 word fragment, not a keyword. The reader looking at the
+>   highlighted phrase alone must be able to read off the complete
+>   answer to the printed question. If a paragraph offers two distinct
+>   answers (e.g. ¶8 — Q2 lists *two* reasons Christians feel
+>   inadequate), use **two yellows** — one per complete answer. There
+>   is no per-paragraph cap on yellows; cover every distinct answer the
+>   paragraph actually gives.
+> - **Other colors:** explain the cited scripture, mark a warning,
+>   sober the reader, or encourage. These are 2-6 word surgical
+>   extractions — *not* full sentences. Strict cap of 8 words for
+>   inseparable units of meaning.
+>
+> Forbidden in any color: demographic filler ("of both Jews"),
+> article-title repeats ("art of teaching" when the article *is*
+> "Improve Your Art of Teaching"), generic exhortations ("would do
+> well to cultivate", "let us all", etc.) used as a yellow.
 >
 > Color per the semantic system (verified against operator's userData.db):
 > | Color | When |
 > |---|---|
-> | **yellow** | Core answer to the printed question. **Cap: 1–2 per paragraph.** |
-> | **green**  | Scripture-explainer phrase, or a rule/loophole/freedom-revealing reading |
-> | **pink**   | Stop-in-tracks point — strong counsel or warning |
-> | **blue**   | Sobering, chilling, or weighty thought |
-> | **purple** | Encouraging, pastoral, comforting |
+> | **yellow** | **Full** answer to the printed question. One yellow per distinct answer the paragraph gives — no upper cap. |
+> | **green**  | Scripture-explainer phrase, or a rule/loophole/freedom-revealing reading. 2-6 words. |
+> | **pink**   | Stop-in-tracks point — strong counsel or warning (what NOT to do). 2-6 words. |
+> | **blue**   | Sobering, chilling, or weighty thought. 2-6 words. |
+> | **purple** | Encouraging, pastoral, comforting. 2-6 words. |
+>
+> Test for a yellow: read the printed question, then read the yellow
+> phrase aloud. If the yellow is not a *grammatical, complete* answer
+> to the question, it's wrong — extend it.
 >
 > ### Mandate 2 — The Commentary Mandate
 >

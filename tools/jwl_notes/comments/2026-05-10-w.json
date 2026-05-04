@@ -5,7 +5,7 @@
     "source": "The Watchtower (Study), March 2026",
     "url": "https://wol.jw.org/en/wol/d/r1/lp-e/2026320",
     "theme_scripture": "2 Tim. 4:2",
-    "preparation_standard": "Gold-standard, elder-level prep. Every body paragraph (1-16) underlined with 2-6 word load-bearing phrases (each either answers the printed question or explains the cited scripture). 8 strategic four-slot notes at q1, q3, q6, q7, q11, q13, q14, q15 covering the article's main movements (intro, three principles, capstone). Notes anchor to question data-pid; underlines anchor to body paragraph data-pid."
+    "preparation_standard": "Gold-standard, elder-level prep. Every body paragraph (1-16) underlined with full-answer phrases — yellows must FULLY answer the printed question (not a 2-3 word fragment); multiple yellows per paragraph when the paragraph offers multiple distinct answers. Greens explain cited scriptures. Pinks warn (what NOT to do). Blues sober. Purples encourage. 8 strategic four-slot notes at q1, q3, q6, q7, q11, q13, q14, q15 covering the article's main movements (intro, three principles, capstone). Notes anchor to question data-pid; underlines anchor to body paragraph data-pid."
   },
   "key_symbol": "w",
   "issue": 20260300,
@@ -19,7 +19,8 @@
     {
       "paragraph": 1, "data_pid": 7, "block_type": 1,
       "underlines": [
-        {"phrase": "should be teachers", "color": "yellow"},
+        {"phrase": "all Christians should be teachers", "color": "yellow"},
+        {"phrase": "All Christians would do well to cultivate that art", "color": "yellow"},
         {"phrase": "spoke in such a manner", "color": "green"}
       ]
     },
@@ -27,8 +28,8 @@
     {
       "paragraph": 2, "data_pid": 8, "block_type": 1,
       "underlines": [
-        {"phrase": "limited secular education", "color": "yellow"},
-        {"phrase": "discouraged about their teaching ability", "color": "blue"}
+        {"phrase": "have limited secular education or natural ability", "color": "yellow"},
+        {"phrase": "do not seem to get the positive results that others do", "color": "yellow"}
       ]
     },
 
@@ -39,15 +40,16 @@
     {
       "paragraph": 3, "data_pid": 10, "block_type": 1,
       "underlines": [
-        {"phrase": "knew what was in man", "color": "yellow"},
-        {"phrase": "matters that affected them personally", "color": "green"}
+        {"phrase": "he understood their needs", "color": "yellow"},
+        {"phrase": "he spoke about matters that affected them personally", "color": "yellow"},
+        {"phrase": "knew what was in man", "color": "green"}
       ]
     },
 
     {
       "paragraph": 4, "data_pid": 11, "block_type": 1,
       "underlines": [
-        {"phrase": "trying to understand their concerns", "color": "yellow"},
+        {"phrase": "by trying to understand their concerns", "color": "yellow"},
         {"phrase": "without the hope that the Bible offers", "color": "blue"}
       ]
     },
@@ -55,8 +57,8 @@
     {
       "paragraph": 5, "data_pid": 12, "block_type": 1,
       "underlines": [
-        {"phrase": "kindness and respect", "color": "yellow"},
-        {"phrase": "mild-tempered and lowly in heart", "color": "green"},
+        {"phrase": "Jesus treated people with kindness and respect", "color": "yellow"},
+        {"phrase": "mild-tempered and lowly in heart", "color": "yellow"},
         {"phrase": "looked down on the common people", "color": "pink"}
       ]
     },
@@ -68,9 +70,9 @@
     {
       "paragraph": 6, "data_pid": 13, "block_type": 1,
       "underlines": [
-        {"phrase": "benefit of the doubt", "color": "yellow"},
-        {"phrase": "do good to those hating you", "color": "green"},
-        {"phrase": "gracious, seasoned with salt", "color": "purple"}
+        {"phrase": "give those who reject our message the benefit of the doubt", "color": "yellow"},
+        {"phrase": "let [our] words always be gracious, seasoned with salt", "color": "yellow"},
+        {"phrase": "do good to those hating you", "color": "green"}
       ]
     },
 
@@ -81,7 +83,8 @@
     {
       "paragraph": 7, "data_pid": 15, "block_type": 1,
       "underlines": [
-        {"phrase": "freely quoted from the inspired Scriptures", "color": "yellow"},
+        {"phrase": "Jesus freely quoted from the inspired Scriptures", "color": "yellow"},
+        {"phrase": "centered his teaching on God’s will and Word", "color": "yellow"},
         {"phrase": "as one having authority", "color": "green"}
       ]
     },
@@ -89,7 +92,7 @@
     {
       "paragraph": 8, "data_pid": 16, "block_type": 1,
       "underlines": [
-        {"phrase": "Scriptural explanation of the prophecies", "color": "yellow"},
+        {"phrase": "he touched the hearts of his listeners with his Scriptural explanation of the prophecies", "color": "yellow"},
         {"phrase": "not a highly educated man", "color": "purple"},
         {"phrase": "about 3,000 people were added", "color": "green"}
       ]
@@ -98,17 +101,17 @@
     {
       "paragraph": 9, "data_pid": 17, "block_type": 1,
       "underlines": [
-        {"phrase": "no better tool", "color": "yellow"},
-        {"phrase": "letting Jehovah speak", "color": "green"},
-        {"phrase": "far superior to human wisdom", "color": "purple"}
+        {"phrase": "no better tool to reach our listeners’ hearts than the Word of God", "color": "yellow"},
+        {"phrase": "the Bible contains something far superior to human wisdom", "color": "yellow"},
+        {"phrase": "letting Jehovah speak", "color": "green"}
       ]
     },
 
     {
       "paragraph": 10, "data_pid": 18, "block_type": 1,
       "underlines": [
-        {"phrase": "look up key texts", "color": "yellow"},
-        {"phrase": "give the student time to absorb", "color": "green"},
+        {"phrase": "look up key texts and help your student reason on them", "color": "yellow"},
+        {"phrase": "give the student time to absorb the meaning", "color": "yellow"},
         {"phrase": "not a book study or a picture study", "color": "pink"}
       ]
     },
@@ -120,18 +123,17 @@
     {
       "paragraph": 11, "data_pid": 19, "block_type": 1,
       "underlines": [
-        {"phrase": "with all patience", "color": "yellow"},
-        {"phrase": "preach the word", "color": "green"},
-        {"phrase": "extra time to grasp truths", "color": "purple"}
+        {"phrase": "preach the word . . . with all patience", "color": "yellow"},
+        {"phrase": "Some students may need extra time to grasp truths", "color": "yellow"}
       ]
     },
 
     {
       "paragraph": 12, "data_pid": 20, "block_type": 1,
       "underlines": [
+        {"phrase": "drawing out students with questions", "color": "yellow"},
         {"phrase": "completely unfamiliar with the Bible", "color": "yellow"},
-        {"phrase": "show your Bible students the power", "color": "yellow"},
-        {"phrase": "drawing out students with questions", "color": "green"}
+        {"phrase": "show your Bible students the power of God’s Word", "color": "yellow"}
       ]
     },
 
@@ -142,7 +144,7 @@
     {
       "paragraph": 13, "data_pid": 22, "block_type": 1,
       "underlines": [
-        {"phrase": "attention on Jehovah", "color": "yellow"},
+        {"phrase": "focus attention on Jehovah, not on ourselves", "color": "yellow"},
         {"phrase": "lighting technician in a theater", "color": "green"},
         {"phrase": "in the spotlight", "color": "purple"}
       ]
@@ -155,9 +157,9 @@
     {
       "paragraph": 14, "data_pid": 23, "block_type": 1,
       "underlines": [
-        {"phrase": "develop the desire to please Jehovah", "color": "yellow"},
-        {"phrase": "joining a club", "color": "pink"},
-        {"phrase": "what a wonderful Father we have", "color": "purple"}
+        {"phrase": "help your student develop the desire to please Jehovah", "color": "yellow"},
+        {"phrase": "what a wonderful Father we have", "color": "yellow"},
+        {"phrase": "joining a club", "color": "pink"}
       ]
     },
 
@@ -168,8 +170,8 @@
     {
       "paragraph": 15, "data_pid": 25, "block_type": 1,
       "underlines": [
-        {"phrase": "ask Jehovah in prayer", "color": "yellow"},
-        {"phrase": "through his eyes", "color": "green"},
+        {"phrase": "ask Jehovah in prayer to help you analyze your art of teaching", "color": "yellow"},
+        {"phrase": "Try to look at the material through his eyes", "color": "yellow"},
         {"phrase": "close friendship with Jehovah", "color": "purple"}
       ]
     },
@@ -177,8 +179,8 @@
     {
       "paragraph": 16, "data_pid": 26, "block_type": 1,
       "underlines": [
-        {"phrase": "one of the greatest joys", "color": "yellow"},
-        {"phrase": "much needed in the future new world", "color": "purple"}
+        {"phrase": "Teaching others about Jehovah is one of the greatest joys we can experience", "color": "yellow"},
+        {"phrase": "much needed in the future new world", "color": "yellow"}
       ]
     }
   ]
