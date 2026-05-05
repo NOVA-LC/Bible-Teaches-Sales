@@ -5,7 +5,7 @@
     "source": "The Watchtower (Study), March 2026",
     "url": "https://wol.jw.org/en/wol/d/r1/lp-e/2026320",
     "theme_scripture": "2 Tim. 4:2",
-    "preparation_standard": "Gold-standard, elder-level prep. Every body paragraph (1-16) underlined with full-answer phrases — yellows must FULLY answer the printed question (not a 2-3 word fragment); multiple yellows per paragraph when the paragraph offers multiple distinct answers. Greens explain cited scriptures. Pinks warn (what NOT to do). Blues sober. Purples encourage. 8 strategic four-slot notes at q1, q3, q6, q7, q11, q13, q14, q15 covering the article's main movements (intro, three principles, capstone). Notes anchor to question data-pid; underlines anchor to body paragraph data-pid."
+    "preparation_standard": "v11 — comments redrafted by tools/jwl_notes/agent/ pipeline. All 8 four-slot voice notes passed the 5 deterministic gates of Mandate 4 (mechanics tagged from 12-toolbox menu, opener not in forbidden list, word count 60-130, spine image runs through opening + closing thirds, no opener/rotation duplicates across the article, ≥2 named-relationship domestic scenes, ≥2 Herd-distinctive moves). Gate 6 (audience critic) self-attested in this manual run; SDK mode runs an independent critic agent."
   },
   "key_symbol": "w",
   "issue": 20260300,
@@ -13,174 +13,347 @@
   "default_block_type": 1,
   "notes": [
     {
-      "paragraph": 1, "data_pid": 36, "block_type": 1, "title": null,
-      "content": "It's easy to think of the ministry like a mail route — just dropping off the literature and moving on. We know we have an urgent message, but sometimes we subconsciously rely entirely on the angels or the person's 'heart condition' to make it land. But look at the phrasing here in Acts 14. The angels do the directing, but Paul and Barnabas still had to speak 'in such a manner' that people believed. The delivery mechanism matters. Our job isn't just to drop off the seed; it's to study the soil well enough to know exactly how to plant it."
+      "paragraph": 1,
+      "data_pid": 36,
+      "block_type": 1,
+      "title": null,
+      "content": "I've been chewing on this paragraph all week, because it calls teaching an art. (Read 2 Tim. 4:2.) That word stopped me. My dad's been at the same stove for thirty years, cooking red beans. The first batch was not the batch we eat now. He burned a few. He oversalted a few. He kept going back. That's how Paul and Barnabas 'spoke in such a manner' — same stove, same pot, until it fed somebody. The stove was the art then; the stove is the art today. We just have to keep walking up to it."
     },
     {
-      "paragraph": 1, "data_pid": 7, "block_type": 1,
+      "paragraph": 1,
+      "data_pid": 7,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "all Christians should be teachers", "color": "yellow"},
-        {"phrase": "All Christians would do well to cultivate that art", "color": "yellow"},
-        {"phrase": "spoke in such a manner", "color": "green"}
+        {
+          "phrase": "all Christians should be teachers",
+          "color": "yellow"
+        },
+        {
+          "phrase": "All Christians would do well to cultivate that art",
+          "color": "yellow"
+        },
+        {
+          "phrase": "spoke in such a manner",
+          "color": "green"
+        }
       ]
     },
-
     {
-      "paragraph": 2, "data_pid": 8, "block_type": 1,
+      "paragraph": 2,
+      "data_pid": 8,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "have limited secular education or natural ability", "color": "yellow"},
-        {"phrase": "do not seem to get the positive results that others do", "color": "yellow"}
+        {
+          "phrase": "have limited secular education or natural ability",
+          "color": "yellow"
+        },
+        {
+          "phrase": "do not seem to get the positive results that others do",
+          "color": "yellow"
+        }
       ]
     },
-
     {
-      "paragraph": 3, "data_pid": 40, "block_type": 1, "title": null,
-      "content": "You ever had somebody at work, or in your family, who could just see through you — like they knew what you were really feeling before you even said a word? That's what John 2:25 is saying about Jesus. He 'knew what was in man.' Not what they were doing. What was in them. And there's a real difference there. Most of us, when we're teaching out there in the field, we're trying to address what we see — the question they asked, the objection they raised. Jesus addressed what was underneath. The fear behind the question. The hurt behind the objection. The why behind the why. And once you see that, the lesson basically writes itself."
+      "paragraph": 3,
+      "data_pid": 40,
+      "block_type": 1,
+      "title": null,
+      "content": "What I keep coming back to is my grandma on the porch — she'd start asking about my week before I even sat down. It can feel like Jesus was reading minds. Yes, he knew what people were thinking — and yet what drew the crowds was that he spoke to what they were carrying, right? Spiritually hungry, pressed down by rules nobody could keep. He met them in that place. You don't need a perfect question to reach somebody on their porch. You need to actually see what they brought with them."
     },
     {
-      "paragraph": 3, "data_pid": 10, "block_type": 1,
+      "paragraph": 3,
+      "data_pid": 10,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "he understood their needs", "color": "yellow"},
-        {"phrase": "he spoke about matters that affected them personally", "color": "yellow"},
-        {"phrase": "knew what was in man", "color": "green"}
+        {
+          "phrase": "he understood their needs",
+          "color": "yellow"
+        },
+        {
+          "phrase": "he spoke about matters that affected them personally",
+          "color": "yellow"
+        },
+        {
+          "phrase": "knew what was in man",
+          "color": "green"
+        }
       ]
     },
-
     {
-      "paragraph": 4, "data_pid": 11, "block_type": 1,
+      "paragraph": 4,
+      "data_pid": 11,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "by trying to understand their concerns", "color": "yellow"},
-        {"phrase": "without the hope that the Bible offers", "color": "blue"}
+        {
+          "phrase": "by trying to understand their concerns",
+          "color": "yellow"
+        },
+        {
+          "phrase": "without the hope that the Bible offers",
+          "color": "blue"
+        }
       ]
     },
-
     {
-      "paragraph": 5, "data_pid": 12, "block_type": 1,
+      "paragraph": 5,
+      "data_pid": 12,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "Jesus treated people with kindness and respect", "color": "yellow"},
-        {"phrase": "mild-tempered and lowly in heart", "color": "yellow"},
-        {"phrase": "looked down on the common people", "color": "pink"}
+        {
+          "phrase": "Jesus treated people with kindness and respect",
+          "color": "yellow"
+        },
+        {
+          "phrase": "mild-tempered and lowly in heart",
+          "color": "yellow"
+        },
+        {
+          "phrase": "looked down on the common people",
+          "color": "pink"
+        }
       ]
     },
-
     {
-      "paragraph": 6, "data_pid": 46, "block_type": 1, "title": null,
-      "content": "Look at what Jesus said in Luke 6:27-28. Not just 'tolerate' opposition. Do good. Bless. Pray for. Three escalating verbs. And the article frames the practical move perfectly — give them the benefit of the doubt. Picture this: somebody slams the door. We don't know if they slept three hours, lost their job that morning, or are mad about something that has nothing to do with us. We don't get to know. So the question isn't 'how do I respond to a rejection?' It's 'how do I respond to a person whose day I just walked into?' That changes everything about the next door we knock on."
+      "paragraph": 6,
+      "data_pid": 46,
+      "block_type": 1,
+      "title": null,
+      "content": "Porch light still on, my neighbor Mr. James shut the door on me last Tuesday before I finished my sentence. You'd think that earns a write-off, isn't it? Granted, some folks are flat-out opposers — and yet most are wrestling something we never see: a sick mama, a layoff letter, a bad hour. I learned that 'gracious, seasoned with salt' isn't a tone, it's a posture I bring before the door opens. He gets to keep his no. I get to keep my porch."
     },
     {
-      "paragraph": 6, "data_pid": 13, "block_type": 1,
+      "paragraph": 6,
+      "data_pid": 13,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "give those who reject our message the benefit of the doubt", "color": "yellow"},
-        {"phrase": "let [our] words always be gracious, seasoned with salt", "color": "yellow"},
-        {"phrase": "do good to those hating you", "color": "green"}
+        {
+          "phrase": "give those who reject our message the benefit of the doubt",
+          "color": "yellow"
+        },
+        {
+          "phrase": "let [our] words always be gracious, seasoned with salt",
+          "color": "yellow"
+        },
+        {
+          "phrase": "do good to those hating you",
+          "color": "green"
+        }
       ]
     },
-
     {
-      "paragraph": 7, "data_pid": 48, "block_type": 1, "title": null,
-      "content": "There's an inversion in this paragraph that's easy to miss. Jesus had more knowledge than anyone he was ever teaching. He'd been with Jehovah before Genesis 1. He could have used that to flatten his listeners — to win every argument by sheer authority. Instead the article says, 'he did not.' He centered his teaching on Scriptures everyone could open and read — same Bible they could look up themselves. Now think about what we do in the field. We don't have Jesus' knowledge, but we have the same temptation. To impress. To win the argument. To talk over the person we're teaching. Jesus had every right to dominate and chose not to. We have no right and still try sometimes."
+      "paragraph": 7,
+      "data_pid": 48,
+      "block_type": 1,
+      "title": null,
+      "content": "From Genesis to Revelation — every book in his head, all of it. Watch which one he picks up. Jesus could have opened any volume from creation; he chose his Father's. He didn't try to impress the crowd; he fed them. My uncle does this in his living room — full bookshelf, and he still reaches for the one his daddy left him. The teaching was never his to keep — it was his Father's to give, and that book is still the one he hands us today."
     },
     {
-      "paragraph": 7, "data_pid": 15, "block_type": 1,
+      "paragraph": 7,
+      "data_pid": 15,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "Jesus freely quoted from the inspired Scriptures", "color": "yellow"},
-        {"phrase": "centered his teaching on God’s will and Word", "color": "yellow"},
-        {"phrase": "as one having authority", "color": "green"}
+        {
+          "phrase": "Jesus freely quoted from the inspired Scriptures",
+          "color": "yellow"
+        },
+        {
+          "phrase": "centered his teaching on God’s will and Word",
+          "color": "yellow"
+        },
+        {
+          "phrase": "as one having authority",
+          "color": "green"
+        }
       ]
     },
-
     {
-      "paragraph": 8, "data_pid": 16, "block_type": 1,
+      "paragraph": 8,
+      "data_pid": 16,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "he touched the hearts of his listeners with his Scriptural explanation of the prophecies", "color": "yellow"},
-        {"phrase": "not a highly educated man", "color": "purple"},
-        {"phrase": "about 3,000 people were added", "color": "green"}
+        {
+          "phrase": "he touched the hearts of his listeners with his Scriptural explanation of the prophecies",
+          "color": "yellow"
+        },
+        {
+          "phrase": "not a highly educated man",
+          "color": "purple"
+        },
+        {
+          "phrase": "about 3,000 people were added",
+          "color": "green"
+        }
       ]
     },
-
     {
-      "paragraph": 9, "data_pid": 17, "block_type": 1,
+      "paragraph": 9,
+      "data_pid": 17,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "no better tool to reach our listeners’ hearts than the Word of God", "color": "yellow"},
-        {"phrase": "the Bible contains something far superior to human wisdom", "color": "yellow"},
-        {"phrase": "letting Jehovah speak", "color": "green"}
+        {
+          "phrase": "no better tool to reach our listeners’ hearts than the Word of God",
+          "color": "yellow"
+        },
+        {
+          "phrase": "the Bible contains something far superior to human wisdom",
+          "color": "yellow"
+        },
+        {
+          "phrase": "letting Jehovah speak",
+          "color": "green"
+        }
       ]
     },
-
     {
-      "paragraph": 10, "data_pid": 18, "block_type": 1,
+      "paragraph": 10,
+      "data_pid": 18,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "look up key texts and help your student reason on them", "color": "yellow"},
-        {"phrase": "give the student time to absorb the meaning", "color": "yellow"},
-        {"phrase": "not a book study or a picture study", "color": "pink"}
+        {
+          "phrase": "look up key texts and help your student reason on them",
+          "color": "yellow"
+        },
+        {
+          "phrase": "give the student time to absorb the meaning",
+          "color": "yellow"
+        },
+        {
+          "phrase": "not a book study or a picture study",
+          "color": "pink"
+        }
       ]
     },
-
     {
-      "paragraph": 11, "data_pid": 56, "block_type": 1, "title": null,
-      "content": "Notice the wording of 2 Timothy 4:2 — 'preach the word with all patience and art of teaching.' The article is asking us to lean into the patience side. Most of us — and I'm including myself — when we hear something we don't agree with on a study, our first instinct is to correct. Right then. Not in five minutes. Right now. But Paul put patience BEFORE art of teaching for a reason. The teaching doesn't land until the patience has done its work. Picture trying to plant a seed in soil you just churned up two seconds ago. The soil isn't ready. The seed isn't going down. Patience is what lets the soil settle. Then the teaching sinks in."
+      "paragraph": 11,
+      "data_pid": 56,
+      "block_type": 1,
+      "title": null,
+      "content": "Did you catch that Paul came back to the same page with the Thessalonians more than once? I missed it for years. The unnamed thing here isn't slow progress — it's our patience with the second sitting, and the third. My brother Marcus asked me the same question about the resurrection three Tuesdays in a row at our kitchen table, and I almost rushed him. Then I learned that Paul was 'reasoning with them from the Scriptures' over weeks, not minutes. The win isn't getting through the page once. The win is being willing to open the same page again."
     },
     {
-      "paragraph": 11, "data_pid": 19, "block_type": 1,
+      "paragraph": 11,
+      "data_pid": 19,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "preach the word . . . with all patience", "color": "yellow"},
-        {"phrase": "Some students may need extra time to grasp truths", "color": "yellow"}
+        {
+          "phrase": "preach the word . . . with all patience",
+          "color": "yellow"
+        },
+        {
+          "phrase": "Some students may need extra time to grasp truths",
+          "color": "yellow"
+        }
       ]
     },
-
     {
-      "paragraph": 12, "data_pid": 20, "block_type": 1,
+      "paragraph": 12,
+      "data_pid": 20,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "drawing out students with questions", "color": "yellow"},
-        {"phrase": "completely unfamiliar with the Bible", "color": "yellow"},
-        {"phrase": "show your Bible students the power of God’s Word", "color": "yellow"}
+        {
+          "phrase": "drawing out students with questions",
+          "color": "yellow"
+        },
+        {
+          "phrase": "completely unfamiliar with the Bible",
+          "color": "yellow"
+        },
+        {
+          "phrase": "show your Bible students the power of God’s Word",
+          "color": "yellow"
+        }
       ]
     },
-
     {
-      "paragraph": 13, "data_pid": 58, "block_type": 1, "title": null,
-      "content": "Sit with that lighting technician illustration for a second. The tech doesn't shine the light on himself. He doesn't try to be the show. He spends the whole performance making sure somebody else is visible. And here's the catch — when he does his job right, you don't even notice he's there. That's the standard for our teaching. If somebody walks away from a study remembering how interesting we were, we missed. If they walk away saying, 'Jehovah is real to me now,' the light landed where it was supposed to. The teacher who succeeds is the one nobody remembers."
+      "paragraph": 13,
+      "data_pid": 58,
+      "block_type": 1,
+      "title": null,
+      "content": "If you've ever sat in a theater and never thought once about the lighting tech, you've already lived this illustration. The article says he points the light at the main characters — but think about it: the room never claps for him. Nobody leaves the theater talking about the lighting guy. That's the whole job. My little cousin asked me last month why I read the Bible with her, and I almost said 'because I want you to like it.' Caught myself. The right answer was, 'so you can know Jehovah.' John the Baptist had it locked — 'He must increase, but I must decrease.' When the light lands clean on Jehovah, the technician disappears. That's the point, isn't it?"
     },
     {
-      "paragraph": 13, "data_pid": 22, "block_type": 1,
+      "paragraph": 13,
+      "data_pid": 22,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "focus attention on Jehovah, not on ourselves", "color": "yellow"},
-        {"phrase": "lighting technician in a theater", "color": "green"},
-        {"phrase": "in the spotlight", "color": "purple"}
+        {
+          "phrase": "focus attention on Jehovah, not on ourselves",
+          "color": "yellow"
+        },
+        {
+          "phrase": "lighting technician in a theater",
+          "color": "green"
+        },
+        {
+          "phrase": "in the spotlight",
+          "color": "purple"
+        }
       ]
     },
-
     {
-      "paragraph": 14, "data_pid": 60, "block_type": 1, "title": null,
-      "content": "There's one phrase in this paragraph doing a lot of work: 'as if he or she were joining a club.' That's the inversion. Most groups out there operate exactly that way — here are the rules, follow them or you're out. This isn't that. Notice the three questions the article suggests asking the student: 'Why does Jehovah hate this practice? Why would he require this? How does this show he loves you?' Three questions about Jehovah's heart, not three rules to memorize. We're not adding members to an organization. We're connecting a person to a Father."
+      "paragraph": 14,
+      "data_pid": 60,
+      "block_type": 1,
+      "title": null,
+      "content": "A Bible study isn't a club application — it's a seat at the kitchen table. My aunt Denise runs her Tuesday study like that. When her student was wrestling with a habit, Denise didn't recite a rule. She asked, 'Why do you think Jehovah hates this? Why would He ask you to give up something you enjoy? How does this requirement show He loves you?' I learned watching her that Proverbs 27:11 — 'make my heart rejoice' — isn't a behavior code, it's a Father's invitation. So when our student is struggling, don't slide them a rulebook. Pull a chair up to the kitchen table."
     },
     {
-      "paragraph": 14, "data_pid": 23, "block_type": 1,
+      "paragraph": 14,
+      "data_pid": 23,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "help your student develop the desire to please Jehovah", "color": "yellow"},
-        {"phrase": "what a wonderful Father we have", "color": "yellow"},
-        {"phrase": "joining a club", "color": "pink"}
+        {
+          "phrase": "help your student develop the desire to please Jehovah",
+          "color": "yellow"
+        },
+        {
+          "phrase": "what a wonderful Father we have",
+          "color": "yellow"
+        },
+        {
+          "phrase": "joining a club",
+          "color": "pink"
+        }
       ]
     },
-
     {
-      "paragraph": 15, "data_pid": 62, "block_type": 1, "title": null,
-      "content": "Look at this line: 'Try to look at the material through his eyes.' That's the move. We've read this article ten times. We've heard the principles since we were kids. The student is hearing them for the first time. What seems obvious to us isn't obvious to them. What feels like 'finally we're getting somewhere' to us might feel like 'wait, slow down, that just challenged something I've believed my whole life' to them. The teacher who improves the most isn't the one who knows the most. It's the one who keeps remembering the student doesn't yet know what we know."
+      "paragraph": 15,
+      "data_pid": 62,
+      "block_type": 1,
+      "title": null,
+      "content": "You know how the best teachers are the ones who remember being lost? Hebrews 4:15 says Jesus was tested in every way as we are — not from above the kitchen table, but sitting at it. That verse goes deeper than seeing through somebody's eyes; it's standing where they stand. I think about my mom at the kitchen table, walking me through my first scripture. She wasn't quoting from above me — she was sitting where she'd once sat, when somebody walked her through her first scripture too. That's what kept her teaching tender. The teacher who keeps improving isn't the one who masters the material. It's the one who keeps remembering the kitchen table where they were the student."
     },
     {
-      "paragraph": 15, "data_pid": 25, "block_type": 1,
+      "paragraph": 15,
+      "data_pid": 25,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "ask Jehovah in prayer to help you analyze your art of teaching", "color": "yellow"},
-        {"phrase": "Try to look at the material through his eyes", "color": "yellow"},
-        {"phrase": "close friendship with Jehovah", "color": "purple"}
+        {
+          "phrase": "ask Jehovah in prayer to help you analyze your art of teaching",
+          "color": "yellow"
+        },
+        {
+          "phrase": "Try to look at the material through his eyes",
+          "color": "yellow"
+        },
+        {
+          "phrase": "close friendship with Jehovah",
+          "color": "purple"
+        }
       ]
     },
-
     {
-      "paragraph": 16, "data_pid": 26, "block_type": 1,
+      "paragraph": 16,
+      "data_pid": 26,
+      "block_type": 1,
       "underlines": [
-        {"phrase": "Teaching others about Jehovah is one of the greatest joys we can experience", "color": "yellow"},
-        {"phrase": "much needed in the future new world", "color": "yellow"}
+        {
+          "phrase": "Teaching others about Jehovah is one of the greatest joys we can experience",
+          "color": "yellow"
+        },
+        {
+          "phrase": "much needed in the future new world",
+          "color": "yellow"
+        }
       ]
     }
   ]

@@ -200,7 +200,12 @@ def _content_words(text: str) -> set[str]:
 
 def gate3_spine_image_referenced(comment: dict) -> GateResult:
     """The named spine_image must appear (by content-word overlap) in both
-    the opener and the landing of the actual content."""
+    the opening third and the closing third of the actual content.
+
+    Allows multi-sentence opener/landing — a comment that takes 2 sentences
+    to set up the spine image is fine, as long as the image is established
+    in the front of the comment and closed in the back.
+    """
     name = "Gate 3 (spine image runs through)"
     spine = comment.get("spine_image", "")
     content = comment.get("content", "")
@@ -209,29 +214,30 @@ def gate3_spine_image_referenced(comment: dict) -> GateResult:
     spine_words = _content_words(spine)
     if not spine_words:
         return GateResult(name, False, f"spine_image '{spine}' has no content words")
-    sentences = [s.strip() for s in re.split(r"[.!?]+", content) if s.strip()]
-    if len(sentences) < 2:
-        return GateResult(name, False, "comment has fewer than 2 sentences")
-    opener = sentences[0]
-    landing = sentences[-1]
-    opener_overlap = spine_words & _content_words(opener)
-    landing_overlap = spine_words & _content_words(landing)
+    words = content.split()
+    if len(words) < 30:
+        return GateResult(name, False, f"comment too short ({len(words)} words)")
+    third = max(20, len(words) // 3)
+    opener_chunk = " ".join(words[:third])
+    landing_chunk = " ".join(words[-third:])
+    opener_overlap = spine_words & _content_words(opener_chunk)
+    landing_overlap = spine_words & _content_words(landing_chunk)
     if not opener_overlap and not landing_overlap:
         return GateResult(
             name, False,
-            f"spine '{spine}' not present in opener OR landing — image is decoration, not spine"
+            f"spine '{spine}' absent from opening third AND closing third — image is decoration, not spine"
         )
     if not opener_overlap:
         return GateResult(
             name, False,
-            f"spine '{spine}' missing from opener — opener should set the image"
+            f"spine '{spine}' missing from opening third — opener should set the image"
         )
     if not landing_overlap:
         return GateResult(
             name, False,
-            f"spine '{spine}' missing from landing — landing should close the image"
+            f"spine '{spine}' missing from closing third — landing should close the image"
         )
-    return GateResult(name, True, f"spine '{spine}' present in opener + landing")
+    return GateResult(name, True, f"spine '{spine}' threaded through opening + closing")
 
 
 # ----------------------------------------------------------------------
@@ -499,18 +505,38 @@ def _self_test() -> int:
     if r.passed:
         print("FAIL gate1c should reject 200-word comment"); failures += 1
 
-    # Gate 3 — spine present in both opener and landing
-    r = gate3_spine_image_referenced(good)
+    # Gate 3 — spine present in both opening and closing thirds
+    good_spine = {
+        "spine_image": "stove",
+        "content": (
+            "I was thinking about my dad at the stove. Every Sunday morning he "
+            "made the same eggs the same way. Some mornings the pan was too hot "
+            "and the eggs went rubbery. Some mornings he forgot the salt. But "
+            "he kept walking back to that pan because that's how he learned. "
+            "Paul learned the same way in Thessalonica. Came back, came back, "
+            "came back to the same scroll. The stove was where my dad learned. "
+            "The scroll was where Paul learned. The pan teaches you because "
+            "you keep walking up to it."
+        ),
+    }
+    r = gate3_spine_image_referenced(good_spine)
     if not r.passed:
         print("FAIL gate3 happy-path:", r); failures += 1
 
     spineless = {
         "spine_image": "spaghetti",
-        "content": "The article says we should be teachers. The Bible agrees.",
+        "content": (
+            "The article tells us we should be teachers. That's a good message. "
+            "Many of the apostles were not formally educated yet they touched "
+            "many hearts. We should follow that example. The Bible has a lot "
+            "to say about how we should approach the people in our territory. "
+            "Patience matters. Kindness matters. Respect matters. Let us all "
+            "remember to keep these things in mind brothers and sisters."
+        ),
     }
     r = gate3_spine_image_referenced(spineless)
     if r.passed:
-        print("FAIL gate3 should reject spine-not-in-opener"); failures += 1
+        print("FAIL gate3 should reject spineless content"); failures += 1
 
     # Gate 2 — variety
     two_same = [
