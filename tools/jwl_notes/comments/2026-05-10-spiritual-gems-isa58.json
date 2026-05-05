@@ -4,7 +4,7 @@
     "section": "Spiritual Gems Q2 — open share",
     "bible_reading_week": "Isaiah 58-59",
     "url": "https://wol.jw.org/en/wol/b/r1/lp-e/nwtsty/23/58",
-    "preparation_standard": "Targeted gems from Isa 58 — the fast Jehovah chooses (v6), the dawn light (v8), the 'Here I am!' answer (v9). Each verse gets 2-6 word color-coded underlines; v6 and v9 get four-slot voice notes."
+    "preparation_standard": "v12 Spiritual Gems Q2 (Isaiah 58) — both verses redrafted to the different-domain standard. v6: dad-and-cardboard-solar-system / Isa 58:6 + James 1:27. v9: coffee-shop-regular / conditional structure of verses 6-8 → 'Here I am' in v9. Both store the v11 in `alternate_content` for day-of call."
   },
   "key_symbol": "nwtsty",
   "book": 23,
@@ -12,34 +12,69 @@
   "default_block_type": 2,
   "notes": [
     {
-      "verse": 6, "block_type": 2, "title": null,
-      "content": "Notice how Jehovah redefines fasting in this verse. Most of us hear the word 'fast' and think — give something up. Skip a meal. Deny yourself. Verse 6 says no — the fast Jehovah picks is loosening the shackles, sending oppressed ones away free, breaking the yoke. It's not about what you take FROM yourself. It's about what you take OFF somebody else. That flips the whole frame. Religious self-denial, in Jehovah's eyes, isn't really religious unless it ends up making someone else's life lighter. The truest 'fast' has nothing to do with the meal you skipped. It has to do with the chain you helped break.",
+      "verse": 6,
+      "block_type": 2,
+      "title": null,
+      "content": "My dad once stayed up until 4am building a cardboard solar system for my brother's school project. My brother had tried, given up, gone to bed crying around 11. Dad heard him through the wall, walked into his room, said 'go to sleep, I got you,' and did the project himself. My brother woke up to a solar system on the kitchen table. Dad hadn't slept. Now look at Isaiah 58:6. Jehovah redefines fasting. Most of us think fasting means denying ourselves something — skip a meal, give something up. But verse 6 says no. The fast Jehovah picks is 'loosening the shackles, untying the bands of the yoke bar, sending oppressed ones away free.' That's not what you take FROM yourself. That's what you take OFF somebody else. James 1:27 says it the same way — pure and undefiled religion is 'to look after orphans and widows in their tribulation.' Not denying yourself food. Carrying weight that wasn't yours. So the truest fast has nothing to do with what's missing from your plate. It has everything to do with what's no longer on theirs.",
       "underlines": [
-        {"phrase": "the fast that I choose", "color": "yellow"},
-        {"phrase": "remove the fetters of wickedness", "color": "green"},
-        {"phrase": "let the oppressed go free", "color": "purple"}
+        {
+          "phrase": "the fast that I choose",
+          "color": "yellow"
+        },
+        {
+          "phrase": "remove the fetters of wickedness",
+          "color": "green"
+        },
+        {
+          "phrase": "let the oppressed go free",
+          "color": "purple"
+        }
+      ],
+      "alternate_content": "Notice how Jehovah redefines fasting in this verse. Most of us hear the word 'fast' and think — give something up. Skip a meal. Deny yourself. Verse 6 says no — the fast Jehovah picks is loosening the shackles, sending oppressed ones away free, breaking the yoke. It's not about what you take FROM yourself. It's about what you take OFF somebody else. That flips the whole frame. Religious self-denial, in Jehovah's eyes, isn't really religious unless it ends up making someone else's life lighter. The truest 'fast' has nothing to do with the meal you skipped. It has to do with the chain you helped break."
+    },
+    {
+      "verse": 8,
+      "block_type": 2,
+      "underlines": [
+        {
+          "phrase": "your light will shine through like the dawn",
+          "color": "purple"
+        },
+        {
+          "phrase": "the glory of Jehovah will be your rear guard",
+          "color": "purple"
+        }
       ]
     },
     {
-      "verse": 8, "block_type": 2,
+      "verse": 9,
+      "block_type": 2,
+      "title": null,
+      "content": "There's a coffee shop near my job where the manager knows everybody by name. You walk in, before you reach the counter, she's already pouring. When she sees you, she says 'I got you.' That doesn't happen the first day. You earn that by showing up over and over until 'I got you' is just the air you walk into. Now look at Isaiah 58:9 — 'Then you will call, and Jehovah will answer; you will cry for help, and he will say, \"Here I am.\"' That phrase — 'Here I am' — is what Samuel said to Jehovah in 1 Samuel 3. Same posture, same readiness. But here, the parent says it to the child. Now read backward. Verse 6 says 'remove the yoke.' Verse 7 says 'share your bread with the hungry.' Verse 8 says 'your light will shine through.' THEN verse 9 — 'Here I am.' That's not a vending machine. That's the manager who already knows your order. Show up consistently in the work he asked you to do, and 'Here I am' becomes the air you walk into.",
       "underlines": [
-        {"phrase": "your light will shine through like the dawn", "color": "purple"},
-        {"phrase": "the glory of Jehovah will be your rear guard", "color": "purple"}
-      ]
+        {
+          "phrase": "you will cry for help",
+          "color": "yellow"
+        },
+        {
+          "phrase": "Here I am!",
+          "color": "purple"
+        }
+      ],
+      "alternate_content": "Look at the very last words of Isaiah 58:9 — 'Here I am!' We usually picture us calling out to Jehovah, like a kid calling for a parent. But notice — this verse flips it. We call out, then Jehovah responds — 'Here I am!' That's the same phrase Samuel used when Jehovah called him as a boy in 1 Samuel 3. Same posture, same readiness — but here, the parent is the one saying it to the kid. Jehovah is the one ready to be called on. Not waiting to be impressed. Not waiting to be earned. Just ready. 'Here I am.' That's how he answers."
     },
     {
-      "verse": 9, "block_type": 2, "title": null,
-      "content": "Look at the very last words of Isaiah 58:9 — 'Here I am!' We usually picture us calling out to Jehovah, like a kid calling for a parent. But notice — this verse flips it. We call out, then Jehovah responds — 'Here I am!' That's the same phrase Samuel used when Jehovah called him as a boy in 1 Samuel 3. Same posture, same readiness — but here, the parent is the one saying it to the kid. Jehovah is the one ready to be called on. Not waiting to be impressed. Not waiting to be earned. Just ready. 'Here I am.' That's how he answers.",
+      "verse": 11,
+      "block_type": 2,
       "underlines": [
-        {"phrase": "you will cry for help", "color": "yellow"},
-        {"phrase": "Here I am!", "color": "purple"}
-      ]
-    },
-    {
-      "verse": 11, "block_type": 2,
-      "underlines": [
-        {"phrase": "Jehovah will always lead you", "color": "purple"},
-        {"phrase": "like a well-watered garden", "color": "green"}
+        {
+          "phrase": "Jehovah will always lead you",
+          "color": "purple"
+        },
+        {
+          "phrase": "like a well-watered garden",
+          "color": "green"
+        }
       ]
     }
   ]
