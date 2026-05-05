@@ -1,0 +1,146 @@
+name: weekly-prep
+
+# Auto-runs the agent system every Monday at 13:00 UTC (08:00 CT) to
+# generate the upcoming Sunday's Watchtower study notes + the midweek
+# meeting prep. Discovery + drafting + gate-check + email all happen
+# in this job — operator wakes up Monday with prep in their inbox.
+#
+# Required repo secrets:
+#   ANTHROPIC_API_KEY   — for the agent workers
+#   RESEND_API_KEY      — to email the result
+#   RESEND_FROM         — verified sender (e.g. "Tyler <tyler@gonenova.com>")
+#   RESEND_TO           — recipient (e.g. "tylerjavonbrown@gmail.com")
+#
+# Optional:
+#   SEED_BACKUP_URL     — HTTPS URL to the seed .jwlibrary backup. If set,
+#                         the workflow injects the JSON into the seed and
+#                         emails the resulting .jwlibrary. If unset, the
+#                         workflow emails the JSON only.
+#
+# Manual trigger (workflow_dispatch) lets you regen any week on demand.
+
+on:
+  schedule:
+    # Every Monday at 13:00 UTC. Cron syntax: minute hour dom month dow.
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
+    inputs:
+      study_date:
+        description: "ISO date inside the JW study week (default: next Sunday)"
+        required: false
+        default: ""
+      target:
+        description: "Which publication to draft for"
+        required: false
+        default: "wt"
+        type: choice
+        options: [wt, mwb, both]
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Resolve study date
+        id: study_date
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.study_date }}" ]; then
+            STUDY_DATE="${{ inputs.study_date }}"
+          else
+            # Default: the upcoming Sunday from today
+            STUDY_DATE=$(python -c "
+          import datetime as dt
+          today = dt.date.today()
+          # Sunday is weekday 6 in Python's date.weekday()
+          days = (6 - today.weekday()) % 7
+          if days == 0:
+              days = 7  # if today IS Sunday, use NEXT Sunday's study
+          print((today + dt.timedelta(days=days)).isoformat())
+          ")
+          fi
+          echo "study_date=${STUDY_DATE}" >> "$GITHUB_OUTPUT"
+          echo "Study date: ${STUDY_DATE}"
+
+      - name: Discover this week's materials
+        working-directory: tools/jwl_notes
+        run: |
+          python -m agent.discover_week --study-date "${{ steps.study_date.outputs.study_date }}"
+
+      - name: Generate WT prep JSON
+        if: ${{ inputs.target != 'mwb' }}
+        working-directory: tools/jwl_notes
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python -m agent.build_week \
+            --study-date "${{ steps.study_date.outputs.study_date }}" \
+            --target wt \
+            --output "comments/${{ steps.study_date.outputs.study_date }}-w.json"
+
+      - name: Generate midweek prep JSON
+        if: ${{ inputs.target == 'mwb' || inputs.target == 'both' }}
+        working-directory: tools/jwl_notes
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python -m agent.build_week \
+            --study-date "${{ steps.study_date.outputs.study_date }}" \
+            --target mwb \
+            --output "comments/${{ steps.study_date.outputs.study_date }}-mwb.json"
+
+      - name: Inject into seed backup (if SEED_BACKUP_URL configured)
+        id: inject
+        if: ${{ env.SEED_BACKUP_URL != '' }}
+        working-directory: tools/jwl_notes
+        env:
+          SEED_BACKUP_URL: ${{ secrets.SEED_BACKUP_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL "${SEED_BACKUP_URL}" -o /tmp/seed.jwlibrary
+          INPUT=/tmp/seed.jwlibrary
+          OUTPUT=/tmp/prep.jwlibrary
+          for COMMENTS in comments/${{ steps.study_date.outputs.study_date }}-*.json; do
+            [ -f "$COMMENTS" ] || continue
+            python jwl_notes.py --input "$INPUT" --output "$OUTPUT" \
+              --comments "$COMMENTS" --verify
+            INPUT=$OUTPUT
+          done
+          echo "backup_path=${OUTPUT}" >> "$GITHUB_OUTPUT"
+
+      - name: Email JSON + (optional) backup via Resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          RESEND_TO: ${{ secrets.RESEND_TO }}
+          STUDY_DATE: ${{ steps.study_date.outputs.study_date }}
+          BACKUP_PATH: ${{ steps.inject.outputs.backup_path }}
+        working-directory: tools/jwl_notes
+        run: |
+          python agent/email_run.py \
+            --study-date "$STUDY_DATE" \
+            --comments-glob "comments/${STUDY_DATE}-*.json" \
+            ${BACKUP_PATH:+--backup "$BACKUP_PATH"}
+
+      - name: Upload artifacts (run log + JSON)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-prep-${{ steps.study_date.outputs.study_date }}
+          path: |
+            tools/jwl_notes/comments/${{ steps.study_date.outputs.study_date }}-*.json
+            tools/jwl_notes/agent/runs/
+          retention-days: 30

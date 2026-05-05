@@ -147,6 +147,19 @@ def scrape_article(html: str) -> list[ParagraphData]:
 MAX_ATTEMPTS = 3
 
 
+def _issue_month_year(issue: int | None) -> str:
+    """20260300 → 'March 2026'."""
+    if not issue:
+        return ""
+    s = str(issue)
+    if len(s) != 8:
+        return s
+    year, month = int(s[:4]), int(s[4:6])
+    months = ["", "January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"]
+    return f"{months[month]} {year}" if 1 <= month <= 12 else s
+
+
 def _draft_with_gates(
     para: ParagraphData,
     article_meta: dict,
@@ -335,20 +348,26 @@ def assemble_comments_json(
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    p.add_argument("--article-id", type=int, required=True,
-                   help="WOL DocumentId (e.g., 2026320)")
-    p.add_argument("--key-symbol", default="w",
-                   help="Publication key symbol (w, mwb, etc.)")
-    p.add_argument("--issue", type=int, required=True,
-                   help="Issue tag, e.g., 20260300")
     p.add_argument("--study-date", required=True,
-                   help="ISO date, e.g., 2026-05-10")
+                   help="ISO date in the JW study week, e.g., 2026-05-17. "
+                        "If only --study-date is given, all article metadata "
+                        "is auto-discovered via agent.discover_week.")
+    p.add_argument("--article-id", type=int, default=None,
+                   help="WOL DocumentId override (skips auto-discovery)")
+    p.add_argument("--key-symbol", default=None,
+                   help="Publication key symbol (default 'w' for the WT study)")
+    p.add_argument("--issue", type=int, default=None,
+                   help="Issue tag override, e.g., 20260300")
+    p.add_argument("--target", choices=["wt", "mwb"], default="wt",
+                   help="Which publication to draft for: wt (Sunday Watchtower) "
+                        "or mwb (midweek workbook). Default: wt.")
     p.add_argument("--article-title", default=None,
                    help="Override article title (else fetched from page)")
     p.add_argument("--article-source", default=None,
                    help="e.g., 'The Watchtower (Study), March 2026'")
-    p.add_argument("--output", type=Path, required=True,
-                   help="Output comments JSON path")
+    p.add_argument("--output", type=Path, default=None,
+                   help="Output comments JSON path. Default: "
+                        "comments/<study-date>-<key-symbol>.json")
     p.add_argument("--backend", choices=["auto", "sdk", "in_session"],
                    default="auto",
                    help="Worker backend (default auto: SDK if key present)")
@@ -360,6 +379,48 @@ def main() -> int:
     args = p.parse_args()
 
     load_dotenv()
+
+    # Auto-discover anything the operator didn't supply.
+    if args.article_id is None or args.key_symbol is None or args.issue is None:
+        from discover_week import discover  # local import to avoid hard dep
+        print(f"Auto-discovering materials for study week containing "
+              f"{args.study_date} ...", flush=True)
+        wd = discover(study_date=args.study_date)
+        for w in wd.warnings:
+            print(f"  ⚠ discovery warning: {w}", file=sys.stderr)
+        if args.target == "wt":
+            if wd.wt_document_id is None:
+                print("ERROR: WT DocumentId could not be discovered. "
+                      "Pass --article-id manually.", file=sys.stderr)
+                return 2
+            args.article_id = args.article_id or wd.wt_document_id
+            args.key_symbol = args.key_symbol or "w"
+            args.issue = args.issue or wd.wt_issue or 0
+            args.article_title = args.article_title or wd.wt_title
+            args.article_source = args.article_source or (
+                f"The Watchtower (Study), "
+                f"{_issue_month_year(wd.wt_issue) if wd.wt_issue else 'unknown issue'}"
+            )
+        else:  # mwb
+            if wd.mwb_document_id is None:
+                print("ERROR: mwb DocumentId could not be discovered. "
+                      "Pass --article-id manually.", file=sys.stderr)
+                return 2
+            args.article_id = args.article_id or wd.mwb_document_id
+            args.key_symbol = args.key_symbol or "mwb"
+            args.issue = args.issue or wd.mwb_issue or 0
+            args.article_title = args.article_title or f"Midweek Meeting — {wd.week_label}"
+            args.article_source = args.article_source or (
+                f"Our Christian Life and Ministry — "
+                f"Meeting Workbook ({_issue_month_year(wd.mwb_issue) if wd.mwb_issue else 'unknown issue'})"
+            )
+        print(f"  → DocId={args.article_id}  key_symbol={args.key_symbol}  "
+              f"issue={args.issue}", flush=True)
+        print(f"  → title: {args.article_title!r}", flush=True)
+
+    if args.output is None:
+        out_dir = _HERE.parent / "comments"
+        args.output = out_dir / f"{args.study_date}-{args.key_symbol}.json"
 
     print(f"Fetching WOL article DocumentId={args.article_id} ...", flush=True)
     html = fetch_wol_article(args.article_id, args.key_symbol)

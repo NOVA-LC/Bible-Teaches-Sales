@@ -38,23 +38,42 @@ Per-paragraph fan-out: one fresh agent per paragraph (comment + underlines), plu
 
 ## Usage
 
-### Generate a week's prep autonomously
+### Generate a week's prep with one flag
+
+`--study-date` is enough. Everything else (DocId, article title, theme scripture, issue tag, source line) is auto-discovered from WOL via `agent.discover_week`. Reliable across issue boundaries — it parses the meetings page, never increments DocIds by arithmetic.
 
 ```
 cd tools/jwl_notes
-python -m agent.build_week \
-  --article-id 2026320 \
-  --key-symbol w \
-  --issue 20260300 \
-  --study-date 2026-05-10 \
-  --article-title "Improve Your 'Art of Teaching' in the Ministry" \
-  --article-source "The Watchtower (Study), March 2026" \
-  --output comments/2026-05-10-w.json
+
+# Sunday Watchtower study (default)
+python -m agent.build_week --study-date 2026-05-17
+
+# Midweek workbook (Bible reading + LAC + Spiritual Gems)
+python -m agent.build_week --study-date 2026-05-17 --target mwb
+
+# See what would be discovered without running the agent workers
+python -m agent.discover_week --study-date 2026-05-17
 ```
 
 Output:
-- On full success: writes `comments/2026-05-10-w.json` and prints `✅ All gates passed.`
+- On full success: writes `comments/<date>-<key>.json` and prints `✅ All gates passed.`
 - On any failure: prints `❌ REFUSED TO SHIP` and lists which paragraphs failed which gates. The gate log lives at `agent/runs/<study-date>-<key>-<docid>/gates.log`.
+
+### Auto-run every week (GitHub Actions)
+
+`.github/workflows/weekly-prep.yml` runs every Monday at 13:00 UTC, regenerates the upcoming Sunday's WT prep, and emails the JSON (and optionally the injected `.jwlibrary`) via Resend.
+
+Setup once in repo settings → Secrets and variables → Actions:
+
+| Secret | Value |
+|---|---|
+| `ANTHROPIC_API_KEY` | Your rotated key |
+| `RESEND_API_KEY` | Your Resend key |
+| `RESEND_FROM` | e.g. `Tyler <tyler@gonenova.com>` |
+| `RESEND_TO` | e.g. `tylerjavonbrown@gmail.com` |
+| `SEED_BACKUP_URL` *(optional)* | HTTPS URL to your seed `.jwlibrary` backup. If set, the workflow injects + emails the `.jwlibrary`. If unset, JSON only. |
+
+You can also trigger ad-hoc from the Actions tab → weekly-prep → Run workflow → enter a study date.
 
 ### Inject + verify + email (existing pipeline)
 
