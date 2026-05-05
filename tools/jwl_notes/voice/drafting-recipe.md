@@ -54,6 +54,39 @@
 > content. Each note: 60–130 words; opener / label-parity / rotation /
 > landing; in operator's calibrated voice; one per chosen paragraph.
 >
+> ### Mandate 4 — The Pre-Ship Self-Audit (six gates)
+>
+> **No comment ships until all six gates pass.** Five gates are
+> deterministic code (`tools/jwl_notes/agent/gates.py`). The sixth is a
+> separate critic agent (different model context from the drafter).
+>
+> When invoked autonomously via `tools/jwl_notes/agent/build_week.py`,
+> these gates are enforced by the orchestrator — workers are respawned
+> with feedback for each failure, up to 3 attempts, and the orchestrator
+> *refuses to write the JSON* if any gate cannot be made to pass. There
+> is no silent shipping.
+>
+> When drafting in-conversation (no orchestrator), Claude must print the
+> gate audit before declaring a draft done. If any gate fails, redraft
+> and reprint. Skipping the audit is a documented violation.
+>
+> | # | Gate | What it checks |
+> |---|---|---|
+> | 1 | **Mechanics tagged** | Every beat tagged with a mechanic from the 12-toolbox menu. Opener mechanic from opener menu, landing from landing menu. No "Look at..." / "Notice..." / "You ever had..." openers. Word count in [60, 130]. |
+> | 2 | **Variety across the week** | No opener mechanic and no rotation mechanic repeats across notes within the same article. Same mechanic twice = lazy. |
+> | 3 | **Spine image runs through** | The named `spine_image` appears (by content-word overlap) in BOTH the opener and the landing of the actual content. If the image is only in the opener, it's decoration — cut it or extend it. |
+> | 4 | **Domestic-scene quota** | At least 2 notes per article must contain a real named-relationship domestic scene (brother, mom, dad, grandma, neighbor by name — NOT generic "you ever had somebody at work"). |
+> | 5 | **Herd distinctive-move quota** | At least 2 notes per article must deploy one of H1-H5 (temporal-axis inversion, household-economy verb-list, permission-tag interrogative, ask-and-self-answer, "I learned that" scripture lock). |
+> | 6 | **Audience experience (critic agent)** | Separate worker reads the comment as the brother in the third row and answers three questions honestly: (a) **Moved** — would you retell this in the car on the way home? (b) **Encouraged** — does the listener walk out lighter, sharper, or seen — not lectured? (c) **Memorable** — is there ONE sentence the room could quote tomorrow? All three must be yes. |
+>
+> Gates 1, 3 operate per-comment. Gates 2, 4, 5 operate over the full
+> article. Gate 6 operates per-comment but uses a *different agent* than
+> the drafter so it isn't grading its own work.
+>
+> The first five gates verify the **mechanics**. Gate 6 verifies the
+> **encounter**. A comment that passes 1-5 but fails 6 is technically
+> correct furniture in an empty room.
+>
 > ### Mandate 3 — The JSON anchor split
 >
 > Every visible paragraph receives **two JSON entries** (one for the
