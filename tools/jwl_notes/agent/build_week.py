@@ -144,7 +144,11 @@ def scrape_article(html: str) -> list[ParagraphData]:
 # The retry loop — up to MAX_ATTEMPTS per paragraph
 # ----------------------------------------------------------------------
 
-MAX_ATTEMPTS = 3
+MAX_ATTEMPTS = 25  # raised from 3 per operator: "should never fail, should keep
+                   # doing till it makes a good comment." Cap is high enough that
+                   # a paragraph either passes by attempt ~25 or the prompt/gate
+                   # has a bug. Safety: prevents infinite loops from runaway cost
+                   # if a gate becomes impossible to satisfy.
 
 
 def _issue_month_year(issue: int | None) -> str:
