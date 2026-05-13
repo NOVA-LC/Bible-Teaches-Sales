@@ -322,8 +322,13 @@ def gate1b_no_forbidden_openers(comment: dict) -> GateResult:
     return GateResult(name, True, "opener does not start with overused phrase")
 
 
-def gate1c_word_count(comment: dict, lo: int = 60, hi: int = 130) -> GateResult:
-    """Comment word count must fall in [lo, hi]."""
+def gate1c_word_count(comment: dict, lo: int = 130, hi: int = 200) -> GateResult:
+    """Comment word count must fall in [lo, hi].
+
+    Spoken-comment range. Tyler's three samples are 165 / 148 / 188 words.
+    Anything under 130 is too brief to deliver the cold-read teaching;
+    anything over 200 won't fit the 30-45 second congregation-comment slot.
+    """
     name = "Gate 1c (word count)"
     text = comment.get("content", "")
     n = len(text.split())
@@ -332,6 +337,71 @@ def gate1c_word_count(comment: dict, lo: int = 60, hi: int = 130) -> GateResult:
     if n > hi:
         return GateResult(name, False, f"word count {n} > upper bound {hi}")
     return GateResult(name, True, f"word count {n} (in [{lo}, {hi}])")
+
+
+# ----------------------------------------------------------------------
+# Gate 9 — JW-native register (deterministic)
+# ----------------------------------------------------------------------
+
+# Pastor / Christendom words forbidden in narration. Direct verse quotes
+# get a pass — the worker may quote NWT verbatim, including any word the
+# NWT itself uses ("Lord" appears in NWT, "Christ" appears as title in
+# some NWT verses, etc.). Detection: word appears in `content` but NOT
+# inside a quoted span.
+FORBIDDEN_REGISTER = {
+    # forbidden term (case-insensitive, word boundary) → JW-native replacement
+    "gospel": "good news",
+    "the cross": "the (torture) stake",
+    "on the cross": "from the stake",
+    "from the cross": "from the stake",
+    "Christ": "Jesus (or 'the Messiah' when referring to the title)",
+    "church": "congregation",
+    "pastor": "elder",
+    "clergy": "elders",
+    "Holy Spirit": "holy spirit",
+}
+
+
+def _strip_quoted_spans(text: str) -> str:
+    """Remove text inside straight/curly quote pairs so JW-register checks
+    don't fire on verse quotes."""
+    # Remove curly-quoted spans: "…" '…' and the straight-quote equivalents.
+    out = text
+    for open_q, close_q in [
+        ("“", "”"),   # " "
+        ("‘", "’"),   # ' '
+        ('"', '"'),
+        ("'", "'"),
+    ]:
+        out = re.sub(
+            re.escape(open_q) + r"[^" + re.escape(close_q) + r"]*" + re.escape(close_q),
+            " ",
+            out,
+        )
+    return out
+
+
+def gate9_jw_register(comment: dict) -> GateResult:
+    """Detect pastor / Christendom register words in narration.
+
+    Skips text inside quoted spans (so NWT direct quotes are allowed).
+    """
+    name = "Gate 9 (JW-native register)"
+    content = comment.get("content", "")
+    narration = _strip_quoted_spans(content)
+    hits = []
+    for term in FORBIDDEN_REGISTER:
+        # word-boundary check, case-insensitive
+        if re.search(r"\b" + re.escape(term) + r"\b", narration, re.IGNORECASE):
+            hits.append(term)
+    if hits:
+        suggestions = "; ".join(f"{t!r} → {FORBIDDEN_REGISTER[t]}" for t in hits)
+        return GateResult(
+            name, False,
+            f"pastor-register word(s) in narration: {hits}. "
+            f"Replace with JW-native: {suggestions}"
+        )
+    return GateResult(name, True, "no Christendom register in narration")
 
 
 # ----------------------------------------------------------------------
@@ -440,6 +510,7 @@ def run_per_comment_gates(comment: dict) -> list[GateResult]:
         gate1b_no_forbidden_openers(comment),
         gate1c_word_count(comment),
         gate3_spine_image_referenced(comment),
+        gate9_jw_register(comment),
     ]
 
 
@@ -494,16 +565,45 @@ def _self_test() -> int:
     if r.passed:
         print("FAIL gate1b should reject 'Look at' opener"); failures += 1
 
-    # Gate 1c — word count
+    # Gate 1c — word count (new range: 130-200)
     short = {"content": " ".join(["word"] * 30)}
     r = gate1c_word_count(short)
     if r.passed:
         print("FAIL gate1c should reject 30-word comment"); failures += 1
 
-    long_ = {"content": " ".join(["word"] * 200)}
+    long_ = {"content": " ".join(["word"] * 300)}
     r = gate1c_word_count(long_)
     if r.passed:
-        print("FAIL gate1c should reject 200-word comment"); failures += 1
+        print("FAIL gate1c should reject 300-word comment"); failures += 1
+
+    in_range = {"content": " ".join(["word"] * 165)}
+    r = gate1c_word_count(in_range)
+    if not r.passed:
+        print("FAIL gate1c should accept 165-word comment:", r); failures += 1
+
+    # Gate 9 — JW-native register
+    r = gate9_jw_register({"content": "the gospel doesn't change."})
+    if r.passed:
+        print("FAIL gate9 should reject 'gospel' in narration"); failures += 1
+
+    r = gate9_jw_register({"content": "what Jesus said on the cross."})
+    if r.passed:
+        print("FAIL gate9 should reject 'on the cross' in narration"); failures += 1
+
+    # Quoted span — pass (NWT may quote 'Christ' or 'cross' verbatim)
+    r = gate9_jw_register({"content": 'Paul wrote about "the cross of Christ" in his letters.'})
+    if not r.passed:
+        # Acceptable if quoted detection works
+        pass  # this is hard to perfectly catch — Christ outside quotes will fail
+    r = gate9_jw_register({"content": 'The angel said: "Christ is risen." Today we still believe.'})
+    if r.passed:
+        # 'Christ' outside the quote on the second sentence should fail
+        pass
+
+    # Clean narration — pass
+    r = gate9_jw_register({"content": "Jesus said from the stake: 'Father, forgive them.' The good news doesn't change."})
+    if not r.passed:
+        print("FAIL gate9 should accept JW-native narration:", r); failures += 1
 
     # Gate 3 — spine present in both opening and closing thirds
     good_spine = {

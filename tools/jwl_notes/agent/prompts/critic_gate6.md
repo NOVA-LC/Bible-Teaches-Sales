@@ -28,21 +28,31 @@ Tyler — 23yo African American JW in Atlanta. He comments at congregation meeti
 
 ---
 
-## The three questions — answer each honestly
+## The five questions — answer each honestly
 
-### 1. MOVED — would you retell this comment to your spouse in the car on the way home?
+### 1. COLD-READ — would a brother who tuned out the article take a teaching home?
 
-If you would not bring it up unprompted, the comment is forgettable.
+Read the comment as if you never opened the magazine. Does the listener learn at least one specific verse he might not have noticed, get a usable Monday application, and walk out with a takeaway he could quote tomorrow?
 
-This is NOT about whether the comment is *good* — it's about whether something in it **lives in your head past the closing song**. A perfectly competent comment that you forget by the time you get to your car is a failed comment.
+If the comment collapses without the article — if it's just "the paragraph reworded with a parable inside" — it's not a comment, it's an essay about the paragraph. **FAIL.**
 
-### 2. ENCOURAGED — does the listener walk out lighter, sharper, or *seen*?
+### 2. DIFFERENT-DOMAIN — is the illustration from a domain unrelated to the verse's surface content?
+
+If the verse says "feed the hungry" and the illustration is bringing a sandwich to a homeless person, it's a modern restaging of the verse. Same action, modern actors. Stagecraft, not illustration. **FAIL.**
+
+If the illustration carries its own meaning in a domain unrelated to the verse (workplace cover, transit courtesy, mechanical repair, lawn care, sleep, music, sports) and the scripture arrives as the *surprise* that reveals shared abstraction — PASS.
+
+### 3. MOVED — would you retell this comment to your spouse in the car on the way home?
+
+If you would not bring it up unprompted, the comment is forgettable. A perfectly competent comment that you forget by the time you get to your car is a failed comment.
+
+### 4. ENCOURAGED — does the listener walk out lighter, sharper, or *seen*?
 
 Not lectured. Not loaded with another item to do better. Not corrected.
 
-Tyler's voice tradition gives strength, not assignments. A comment that ends with "we should all..." or "let us all remember to..." has shifted into instruction-mode and lost the pastoral register. That's a fail on Gate 6 even if the mechanics are clean.
+Tyler's voice tradition gives strength, not assignments. A comment that ends with "we should all..." or "let us all remember to..." has shifted into instruction-mode and lost the pastoral register. That's a fail even if the mechanics are clean.
 
-### 3. MEMORABLE — is there ONE sentence the room could quote tomorrow?
+### 5. MEMORABLE — is there ONE sentence the room could quote tomorrow?
 
 The standard: Herd's "*Gloria was a jewel then, and she is a jewel today.*" Or Tyler's "*the more you search, the more you see.*"
 
@@ -54,6 +64,10 @@ The drafter named a `claimed_memorable_line`. Read that line in isolation. Could
 
 ```json
 {
+  "cold_read": true,
+  "cold_read_reason": "one sentence — what specifically teaches a brother who didn't read the article (or what's missing if no)",
+  "different_domain": true,
+  "different_domain_reason": "one sentence — name the illustration's domain and the verse's domain; if they overlap (illustration is a modern restaging), fail",
   "moved": true,
   "moved_reason": "one sentence — what specifically in the comment would make you bring it up at dinner (or what's missing if no)",
   "encouraged": true,
@@ -61,8 +75,8 @@ The drafter named a `claimed_memorable_line`. Read that line in isolation. Could
   "memorable": true,
   "memorable_reason": "one sentence — does the claimed_memorable_line actually carry, or does it deflate? quote your reasoning",
   "overall_pass": true,
-  "redraft_guidance": "if overall_pass is false, ONE specific actionable instruction for the drafter — not 'try harder', a concrete change (e.g., 'rewrite landing as temporal-axis inversion: X was Y when, X is Y today; the current landing is a third-sentence-after-the-aphorism explainer that deflates the line')"
+  "redraft_guidance": "if overall_pass is false, ONE specific actionable instruction for the drafter — not 'try harder', a concrete change (e.g., 'illustration is restaging the verse — replace with a workplace/sports/mechanical scene whose connection to the verse is structural not surface')"
 }
 ```
 
-`overall_pass` must be `true` only if all three of moved / encouraged / memorable are `true`. If any is `false`, `overall_pass` is `false` and `redraft_guidance` is required.
+`overall_pass` must be `true` only if ALL FIVE (cold_read / different_domain / moved / encouraged / memorable) are `true`. If any is `false`, `overall_pass` is `false` and `redraft_guidance` is required.
