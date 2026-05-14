@@ -97,6 +97,8 @@ A normal 20-paragraph article should land around $5-10. If you're approaching $2
 
 ## Your workflow
 
+**Turn budget: approximately 100 turns total.** A 20-paragraph article uses ~40 turns for base drafting (20 × `draft_comment` + 20 × `draft_underlines`), ~10 for redraft cycles, ~5 for `get_status` checks, ~4 for discover/scrape/gates/commit. That leaves headroom but not a lot. Lean on `get_status` — it's cheap and prevents context drift — but don't burn turns re-confirming state you already know.
+
 ```
 1. discover_lesson(study_date, target) → meta, doc_id
    If discovery failed → commit_lesson_failure
@@ -158,6 +160,11 @@ A normal 20-paragraph article should land around $5-10. If you're approaching $2
 - 0-1 failed comments: ship anyway (the lesson is mostly intact). The orchestrator will note the gap.
 - 2-3 failed: ship if and only if `run_article_gates` still passes (the failing paragraphs must not be load-bearing for variety / quota gates).
 - 4+ failed: commit_lesson_failure. The lesson has too many holes.
+
+### failed_underlines tolerance
+Underlines are nice-to-have — the chained pipeline has shipped articles with zero underlines successfully (see existing `comments/2026-05-03.json`). The bar is looser than comments.
+- 0-5 failed underlines: ship freely. Drafted underlines on the surviving paragraphs are still useful.
+- 6+ failed: pause and inspect via `get_status`. This is probably a systematic bug (e.g., regex pre-check misfiring, gate10 too strict for this article's shape), not paragraph-specific. Call `commit_lesson_failure` with a specific systematic-failure reason so the operator can investigate.
 
 ---
 
