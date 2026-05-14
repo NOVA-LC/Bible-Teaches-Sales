@@ -12,7 +12,7 @@ Cost: one shared CostTracker passed into every subagent call so the
 $20/article kill switch sees real token spend (not estimates).
 
 CLI:
-    python -m agent.lesson --study-date 2026-05-17 [--target wt|mwb] [--email]
+    python -m agent.lesson_agent --study-date 2026-05-17 [--target wt|mwb] [--email]
 
 Returns 0 on shipped lesson; 1 on commit_lesson_failure.
 """
@@ -85,13 +85,17 @@ class LessonState:
     the tool handlers; get_status() reads from this verbatim."""
 
     def __init__(self, study_date: str, target: str, email_enabled: bool,
-                 cost_tracker: CostTracker, run_dir: Path, log_fh):
+                 cost_tracker: CostTracker, run_dir: Path, log_fh,
+                 paragraph_filter: list[int] | None = None):
         self.study_date = study_date
         self.target = target
         self.email_enabled = email_enabled
         self.cost_tracker = cost_tracker
         self.run_dir = run_dir
         self.log_fh = log_fh
+        # Test/debug aid: when set, scrape_paragraphs filters to this subset
+        # so the agent works on a slice. None = whole article.
+        self.paragraph_filter = set(paragraph_filter) if paragraph_filter else None
 
         # Discovery + scrape outputs
         self.article_meta: dict | None = None
@@ -215,6 +219,10 @@ def _make_tool_handlers(state: LessonState):
             paragraphs = scrape_article(html)
         except Exception as e:
             return {"ok": False, "reason": f"scrape failed: {e}"}
+        # Apply the test/debug paragraph filter if set on the LessonState
+        # (used by --paragraphs CLI flag for cheap slice smoke tests).
+        if state.paragraph_filter is not None:
+            paragraphs = [p for p in paragraphs if p.paragraph_number in state.paragraph_filter]
         state.paragraphs = paragraphs
         state.paragraph_by_num = {p.paragraph_number: p for p in paragraphs}
         return {
@@ -656,7 +664,8 @@ TOOLS: list[dict] = [
 
 def run_lesson(study_date: str, target: str = "wt",
                email_enabled: bool = False,
-               model: str = DEFAULT_MODEL) -> int:
+               model: str = DEFAULT_MODEL,
+               paragraph_filter: list[int] | None = None) -> int:
     """Run the lesson agent end-to-end. Returns process exit code."""
     load_dotenv()
 
@@ -685,6 +694,7 @@ def run_lesson(study_date: str, target: str = "wt",
         cost_tracker=cost_tracker,
         run_dir=run_dir,
         log_fh=log_fh,
+        paragraph_filter=paragraph_filter,
     )
 
     handlers = _make_tool_handlers(state)
@@ -826,12 +836,20 @@ def main() -> int:
                    help="Email the JSON via Resend after commit (requires RESEND_API_KEY)")
     p.add_argument("--model", default=DEFAULT_MODEL,
                    help=f"Model for the lesson agent (default {DEFAULT_MODEL})")
+    p.add_argument("--paragraphs", default=None,
+                   help="Comma-separated paragraph numbers to process (slice). "
+                        "Default: all. Useful for cheap smoke tests / paragraph-"
+                        "specific regression testing. E.g. --paragraphs 1,2,11")
     args = p.parse_args()
+    pfilter: list[int] | None = None
+    if args.paragraphs:
+        pfilter = [int(x.strip()) for x in args.paragraphs.split(",") if x.strip()]
     return run_lesson(
         study_date=args.study_date,
         target=args.target,
         email_enabled=args.email,
         model=args.model,
+        paragraph_filter=pfilter,
     )
 
 

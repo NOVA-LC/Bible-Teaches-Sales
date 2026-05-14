@@ -120,6 +120,29 @@ class WeekDiscovery:
 # ----------------------------------------------------------------------
 
 def _fetch(url: str, timeout: int = 30) -> str:
+    """HTTP GET. WOL's meetings + search endpoints hang reliably on Python
+    urllib (curl on the same URL completes — likely a TLS keep-alive /
+    chunked-transfer interaction). Try curl as primary, urllib fallback.
+
+    Mirrors the pattern in comment_agent._fetch_cached. Article/chapter
+    fetches in jwl_notes.fetch_wol_article + research.py don't hit this
+    bug (different URL pattern) and stay on urllib.
+    """
+    import subprocess
+    # Try curl first
+    try:
+        proc = subprocess.run(
+            ["curl", "-fsSL", "--max-time", str(timeout),
+             "-A", DEFAULT_UA, url],
+            capture_output=True, timeout=timeout + 5,
+        )
+        if proc.returncode == 0 and proc.stdout:
+            return proc.stdout.decode("utf-8", errors="replace")
+    except FileNotFoundError:
+        pass  # curl not on PATH — fall through to urllib
+    except Exception:
+        pass  # network blip — fall through to urllib
+    # Fallback: urllib
     req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return resp.read().decode("utf-8", errors="replace")
