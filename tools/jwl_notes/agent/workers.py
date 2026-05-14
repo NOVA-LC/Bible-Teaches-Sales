@@ -131,6 +131,11 @@ class SDKWorker:
         self._client = Anthropic()
         self._model = model
         self._max_tokens = max_tokens
+        # Stashed after every _call so external cost trackers (e.g. the
+        # comment agent's CostTracker) can roll up sub-worker token spend
+        # against per-paragraph/per-article kill switches. Overwritten on
+        # each call — callers must read it immediately after their call.
+        self.last_usage = None
         # Legacy single-prompt drafter (kept for backward compat)
         self._comment_prompt = _load_prompt("paragraph_comment.md")
         self._underline_prompt = _load_prompt("paragraph_underlines.md")
@@ -164,6 +169,9 @@ class SDKWorker:
                 "content": json.dumps(user_payload, indent=2, ensure_ascii=False),
             }],
         )
+        # Stash usage so the caller can roll it into a cost tracker. Read
+        # immediately after the call — gets overwritten on the next _call.
+        self.last_usage = getattr(msg, "usage", None)
         # Concatenate all text blocks
         text = "".join(
             b.text for b in msg.content if getattr(b, "type", None) == "text"

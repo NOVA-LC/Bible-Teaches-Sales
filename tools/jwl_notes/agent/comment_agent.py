@@ -145,6 +145,110 @@ class CostTracker:
 
 
 # ----------------------------------------------------------------------
+# Pre-gate constraint enforcement (H + I from review)
+# ----------------------------------------------------------------------
+
+_VALID_COMMENT_TYPES = {"A", "B", "C", "D", "F", "H"}
+_VALID_HERD_MOVES = {"H1", "H2", "H3", "H4", "H5"}
+
+
+def _check_constraints(
+    payload: dict,
+    prior_state: dict,
+    extra_constraints: dict,
+) -> list[GateResult]:
+    """Enforce forbidden_types (Flip from review item H) and
+    extra_constraints (item I) at the Python level inside commit_comment.
+
+    The prompt teaches the agent these are hard, but the prompt is not a
+    Python guard. The lesson agent will pass `forbidden_types` frequently
+    (article-level Gate 11 squeeze) and `extra_constraints` on Gate 4/5
+    redrafts; a single agent slip would tank an article. This catches the
+    slip and returns specific failure reasons so the agent revises in-
+    context.
+
+    Returns the list of FAILED pre-gates. Empty list means clean — proceed
+    to run_per_comment_gates.
+    """
+    fails: list[GateResult] = []
+
+    ct = (payload.get("comment_type") or "").upper().strip()
+
+    # Forbidden types (item H)
+    forbidden = [
+        (t or "").upper().strip()
+        for t in (prior_state or {}).get("forbidden_types", []) or []
+    ]
+    if ct and ct in forbidden:
+        fails.append(GateResult(
+            "Pre-gate (forbidden_types)",
+            False,
+            f"comment_type {ct!r} is in forbidden_types {forbidden}. "
+            "The orchestrator forbade this type for article-level variety "
+            "(Gate 11). Pick a different type and redraft.",
+        ))
+        return fails  # short-circuit: no point checking other constraints
+
+    # extra_constraints (item I)
+    ec = extra_constraints or {}
+
+    # force_domestic_scene: Type A or B with domestic_scene.present=true
+    if ec.get("force_domestic_scene") is True:
+        if ct not in {"A", "B"}:
+            fails.append(GateResult(
+                "Pre-gate (force_domestic_scene)",
+                False,
+                f"force_domestic_scene=true requires Type A or B "
+                f"(only those types use domestic scenes), got {ct!r}.",
+            ))
+        else:
+            ds = payload.get("domestic_scene") or {}
+            if not (isinstance(ds, dict) and ds.get("present") and ds.get("named_relationship")):
+                fails.append(GateResult(
+                    "Pre-gate (force_domestic_scene)",
+                    False,
+                    "force_domestic_scene=true requires domestic_scene.present=true "
+                    "with a real named_relationship (brother/mom/dad/grandma/"
+                    "neighbor/coworker by name/etc.). Got: "
+                    f"{ds!r}",
+                ))
+
+    # force_herd_move: herd_distinctive_moves must contain the requested move
+    forced_move = ec.get("force_herd_move")
+    if forced_move:
+        forced_move = str(forced_move).upper().strip()
+        if forced_move not in _VALID_HERD_MOVES:
+            fails.append(GateResult(
+                "Pre-gate (force_herd_move)",
+                False,
+                f"force_herd_move={forced_move!r} is not a valid H1-H5 code.",
+            ))
+        else:
+            moves = payload.get("herd_distinctive_moves") or []
+            moves_upper = [str(m).upper().strip() for m in moves if m]
+            if forced_move not in moves_upper:
+                fails.append(GateResult(
+                    "Pre-gate (force_herd_move)",
+                    False,
+                    f"force_herd_move={forced_move!r} requires that move in "
+                    f"herd_distinctive_moves. Got: {moves!r}",
+                ))
+
+    # force_invert_mode: transformation_mechanism must be 'invert'
+    if ec.get("force_invert_mode") is True:
+        mech = (payload.get("transformation_mechanism") or "").lower().strip()
+        if mech != "invert":
+            fails.append(GateResult(
+                "Pre-gate (force_invert_mode)",
+                False,
+                f"force_invert_mode=true requires "
+                f"transformation_mechanism='invert', got {mech!r}.",
+            ))
+
+    return fails
+
+
+# ----------------------------------------------------------------------
 # Tool implementations — closures over paragraph + worker + tracker
 # ----------------------------------------------------------------------
 
@@ -246,6 +350,7 @@ def _make_tool_handlers(
         try:
             tracker.sub_calls["suggest_type"] += 1
             result = worker.select_comment_type(selector_payload)
+            tracker.add_usage(getattr(worker, "last_usage", None))
             return result
         except Exception as e:
             return {"error": f"selector failed: {e}"}
@@ -374,6 +479,7 @@ def _make_tool_handlers(
         try:
             tracker.sub_calls["critique"] += 1
             verdict = worker.critique(critic_input)
+            tracker.add_usage(getattr(worker, "last_usage", None))
             return verdict  # pass through verbatim
         except Exception as e:
             return {
@@ -406,7 +512,21 @@ def _make_tool_handlers(
                 ],
             }
 
-        # Variant 2: full payload → gates
+        # Variant 2: full payload → constraint pre-gates → standard gates.
+        # Pre-gates (H + I) catch agent-side rule violations before the
+        # type-aware gates run, so the agent gets a precise reason and the
+        # lesson agent's article-level gates aren't burdened with cleanup.
+        pre_fails = _check_constraints(payload, prior_state, extra_constraints)
+        if pre_fails:
+            commit_state["last_gates"] = pre_fails
+            return {
+                "accepted": False,
+                "gate_results": [
+                    {"gate": g.gate, "passed": g.passed, "reason": g.reason}
+                    for g in pre_fails
+                ],
+            }
+
         gate_results = run_per_comment_gates(payload)
         passed = all(g.passed for g in gate_results)
         commit_state["last_gates"] = gate_results
