@@ -463,8 +463,10 @@ def assemble_comments_json(
                 "title": None,
                 "content": comment["content"],
             })
-        # Underline row (anchored to the BODY pid)
-        if underlines:
+        # Underline row (anchored to the BODY pid). Skip if payload is empty
+        # or self-declared deferred-to-scripture — those paragraphs have no
+        # narrated answer to underline.
+        if underlines and underlines.get("underlines"):
             notes.append({
                 "paragraph": para.paragraph_number,
                 "data_pid": para.body_pid,
@@ -527,6 +529,13 @@ def main() -> int:
                         "(default: all). E.g. --paragraphs 1,3,7")
     p.add_argument("--dry-run-list", action="store_true",
                    help="Print discovered paragraphs and exit")
+    p.add_argument("--use-agent-underlines", action="store_true",
+                   help="Use the tool-using underline agent (underline_agent.py) "
+                        "instead of the chained _draft_underlines_with_gates "
+                        "loop. The agent has verify_phrase_verbatim and "
+                        "commit_underlines tools, so it can self-correct "
+                        "verbatim/paraphrase errors inside one context window "
+                        "instead of restarting 25 times.")
     args = p.parse_args()
 
     load_dotenv()
@@ -637,7 +646,11 @@ def main() -> int:
                 drafted_comments[para.body_pid] = comment
 
         # Underlines (always)
-        ul, ul_history = _draft_underlines_with_gates(para, worker)
+        if args.use_agent_underlines:
+            from underline_agent import draft_underlines_with_agent  # type: ignore
+            ul, ul_history = draft_underlines_with_agent(para)
+        else:
+            ul, ul_history = _draft_underlines_with_gates(para, worker)
         for g in ul_history:
             print(f"  {g}", flush=True)
             log_fh.write(f"{g}\n")
