@@ -59,6 +59,115 @@ MAX_TOKENS = 4096
 ARTICLE_COST_KILL_USD = 20.0
 ARTICLE_REDRAFT_CYCLE_CAP = 5
 
+
+# ----------------------------------------------------------------------
+# Checkpoint / resume — persist drafts so re-runs don't burn API on
+# already-committed paragraphs. State layout:
+#   <run_dir>/state/
+#     meta.json                # article_meta, failed_*, redraft_cycles_used
+#     comments/<body_pid>.json # one per drafted comment
+#     underlines/<body_pid>.json
+# ----------------------------------------------------------------------
+
+def _state_dir(state) -> Path:
+    return state.run_dir / "state"
+
+
+def _atomic_write_json(path: Path, payload: dict) -> None:
+    """Write JSON atomically: temp file + rename. Avoids partial writes
+    if the process is killed mid-write."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False, default=str),
+        encoding="utf-8",
+    )
+    tmp.replace(path)
+
+
+def _save_meta(state) -> None:
+    _atomic_write_json(_state_dir(state) / "meta.json", {
+        "study_date": state.study_date,
+        "target": state.target,
+        "article_meta": state.article_meta,
+        "failed_comments": sorted(state.failed_comments),
+        "failed_underlines": sorted(state.failed_underlines),
+        "redraft_cycles_used": state.redraft_cycles_used,
+        "saved_at": datetime.utcnow().isoformat() + "Z",
+    })
+
+
+def _save_comment(state, body_pid: int, comment: dict) -> None:
+    _atomic_write_json(_state_dir(state) / "comments" / f"{body_pid}.json", comment)
+    _save_meta(state)
+
+
+def _save_underline(state, body_pid: int, payload: dict) -> None:
+    _atomic_write_json(_state_dir(state) / "underlines" / f"{body_pid}.json", payload)
+    _save_meta(state)
+
+
+def _delete_comment(state, body_pid: int) -> None:
+    p = _state_dir(state) / "comments" / f"{body_pid}.json"
+    if p.exists():
+        p.unlink()
+
+
+def _load_state(state) -> dict:
+    """Populate state.drafted_comments / drafted_underlines / failed_* /
+    article_meta / redraft_cycles_used from a previous run's saved state.
+    Returns a summary dict for logging."""
+    sd = _state_dir(state)
+    summary = {"loaded": False, "comments": 0, "underlines": 0,
+               "failed_comments": 0, "failed_underlines": 0,
+               "redraft_cycles": 0}
+    if not sd.exists():
+        return summary
+    meta_path = sd / "meta.json"
+    if not meta_path.exists():
+        # State dir exists but no meta — nothing trustworthy to load.
+        return summary
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except Exception:
+        return summary
+    # Only load if it's the same run (study_date + target match). In
+    # production the run_dir path includes both, so a mismatch shouldn't
+    # happen — but the check is cheap insurance against operator error
+    # (e.g., manually pointing at the wrong dir).
+    if (meta.get("study_date") != state.study_date
+            or meta.get("target") != state.target):
+        return summary
+    state.article_meta = meta.get("article_meta") or state.article_meta
+    state.failed_comments = list(meta.get("failed_comments", []))
+    state.failed_underlines = list(meta.get("failed_underlines", []))
+    state.redraft_cycles_used = meta.get("redraft_cycles_used", 0)
+    cdir = sd / "comments"
+    if cdir.exists():
+        for f in cdir.glob("*.json"):
+            try:
+                bp = int(f.stem)
+                state.drafted_comments[bp] = json.loads(f.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+    udir = sd / "underlines"
+    if udir.exists():
+        for f in udir.glob("*.json"):
+            try:
+                bp = int(f.stem)
+                state.drafted_underlines[bp] = json.loads(f.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+    summary.update({
+        "loaded": True,
+        "comments": len(state.drafted_comments),
+        "underlines": len(state.drafted_underlines),
+        "failed_comments": len(state.failed_comments),
+        "failed_underlines": len(state.failed_underlines),
+        "redraft_cycles": state.redraft_cycles_used,
+    })
+    return summary
+
 _FATAL_ERROR_MARKERS = (
     "credit balance is too low",
     "invalid x-api-key",
@@ -249,6 +358,15 @@ def _make_tool_handlers(state: LessonState):
         para = state.paragraph_by_num[paragraph_number]
         if para.question_pid is None:
             return {"ok": False, "reason": f"¶{paragraph_number} has no question_pid; no comment needed"}
+        # Resume-cache hit: return without calling the subagent.
+        if para.body_pid in state.drafted_comments:
+            cached = state.drafted_comments[para.body_pid]
+            return {
+                "ok": True, "accepted": True, "from_cache": True,
+                "comment_type": cached.get("comment_type"),
+                "memorable_line": cached.get("memorable_line"),
+                "word_count": len((cached.get("content") or "").split()),
+            }
         prior_state = _compute_prior_state()
         article_meta_full = {
             "article_title": state.article_meta.get("title"),
@@ -274,6 +392,11 @@ def _make_tool_handlers(state: LessonState):
                     "reason": "comment agent gave up; see gates.log",
                     "gate_history_tail": [str(g) for g in history[-5:]]}
         state.drafted_comments[para.body_pid] = comment
+        # Persist immediately so a kill/crash doesn't lose this draft.
+        try:
+            _save_comment(state, para.body_pid, comment)
+        except Exception as save_err:
+            state.log(f"    ⚠ checkpoint save failed (non-fatal): {save_err}")
         # If this paragraph had previously failed, clear the entry
         if paragraph_number in state.failed_comments:
             state.failed_comments.remove(paragraph_number)
@@ -289,6 +412,14 @@ def _make_tool_handlers(state: LessonState):
         if paragraph_number not in state.paragraph_by_num:
             return {"ok": False, "reason": f"unknown paragraph_number {paragraph_number}"}
         para = state.paragraph_by_num[paragraph_number]
+        # Resume-cache hit: return without calling the subagent.
+        if para.body_pid in state.drafted_underlines:
+            cached = state.drafted_underlines[para.body_pid]
+            return {
+                "ok": True, "accepted": True, "from_cache": True,
+                "deferred_to_scripture": bool(cached.get("deferred_to_scripture")),
+                "underline_count": len(cached.get("underlines", [])),
+            }
         try:
             payload, history = draft_underlines_with_agent(
                 para, cost_tracker=state.cost_tracker,
@@ -304,6 +435,10 @@ def _make_tool_handlers(state: LessonState):
             return {"ok": False, "accepted": False,
                     "reason": "underline agent gave up; see gates.log"}
         state.drafted_underlines[para.body_pid] = payload
+        try:
+            _save_underline(state, para.body_pid, payload)
+        except Exception as save_err:
+            state.log(f"    ⚠ checkpoint save failed (non-fatal): {save_err}")
         if paragraph_number in state.failed_underlines:
             state.failed_underlines.remove(paragraph_number)
         return {
@@ -389,8 +524,13 @@ def _make_tool_handlers(state: LessonState):
             return {"ok": False, "reason": f"unknown paragraph_number {paragraph_number}"}
         para = state.paragraph_by_num[paragraph_number]
         # Remove the existing comment so forbidden_types is recomputed without
-        # this paragraph's own type counting against it
+        # this paragraph's own type counting against it. Also delete from disk
+        # so a checkpoint-resume doesn't restore the rejected draft.
         state.drafted_comments.pop(para.body_pid, None)
+        try:
+            _delete_comment(state, para.body_pid)
+        except Exception:
+            pass
         prior_state = _compute_prior_state()
         article_meta_full = {
             "article_title": state.article_meta.get("title"),
@@ -413,6 +553,10 @@ def _make_tool_handlers(state: LessonState):
             return {"ok": False, "accepted": False,
                     "reason": "comment agent gave up on redraft"}
         state.drafted_comments[para.body_pid] = comment
+        try:
+            _save_comment(state, para.body_pid, comment)
+        except Exception as save_err:
+            state.log(f"    ⚠ checkpoint save failed (non-fatal): {save_err}")
         if paragraph_number in state.failed_comments:
             state.failed_comments.remove(paragraph_number)
         return {
@@ -665,7 +809,8 @@ TOOLS: list[dict] = [
 def run_lesson(study_date: str, target: str = "wt",
                email_enabled: bool = False,
                model: str = DEFAULT_MODEL,
-               paragraph_filter: list[int] | None = None) -> int:
+               paragraph_filter: list[int] | None = None,
+               fresh: bool = False) -> int:
     """Run the lesson agent end-to-end. Returns process exit code."""
     load_dotenv()
 
@@ -683,8 +828,14 @@ def run_lesson(study_date: str, target: str = "wt",
     # Set up run directory + log
     run_dir = _HERE / "runs" / f"{study_date}-{target}-lesson"
     run_dir.mkdir(parents=True, exist_ok=True)
+    # Optional fresh-start: wipe persisted state so the run starts from
+    # scratch (default is to auto-resume any saved drafts).
+    if fresh:
+        import shutil
+        shutil.rmtree(run_dir / "state", ignore_errors=True)
     log_path = run_dir / "gates.log"
-    log_fh = log_path.open("w", encoding="utf-8")
+    # Append mode preserves prior gates.log across resumes.
+    log_fh = log_path.open("a", encoding="utf-8")
 
     cost_tracker = CostTracker()
     state = LessonState(
@@ -696,6 +847,18 @@ def run_lesson(study_date: str, target: str = "wt",
         log_fh=log_fh,
         paragraph_filter=paragraph_filter,
     )
+
+    # Auto-resume: load any saved state from a previous run.
+    resume_summary = _load_state(state)
+    if resume_summary["loaded"] and (resume_summary["comments"] or resume_summary["underlines"]):
+        state.log(
+            f"=== RESUMED from saved state: "
+            f"{resume_summary['comments']} comments, "
+            f"{resume_summary['underlines']} underlines, "
+            f"{resume_summary['failed_comments']} failed comments, "
+            f"{resume_summary['failed_underlines']} failed underlines, "
+            f"{resume_summary['redraft_cycles']} redraft cycles used ==="
+        )
 
     handlers = _make_tool_handlers(state)
     client = Anthropic()
@@ -840,6 +1003,11 @@ def main() -> int:
                    help="Comma-separated paragraph numbers to process (slice). "
                         "Default: all. Useful for cheap smoke tests / paragraph-"
                         "specific regression testing. E.g. --paragraphs 1,2,11")
+    p.add_argument("--fresh", action="store_true",
+                   help="Wipe any saved state in the run dir before starting. "
+                        "Default is auto-resume — drafts saved from a previous "
+                        "run are loaded and the agent skips already-drafted "
+                        "paragraphs at zero API cost.")
     args = p.parse_args()
     pfilter: list[int] | None = None
     if args.paragraphs:
@@ -850,6 +1018,7 @@ def main() -> int:
         email_enabled=args.email,
         model=args.model,
         paragraph_filter=pfilter,
+        fresh=args.fresh,
     )
 
 

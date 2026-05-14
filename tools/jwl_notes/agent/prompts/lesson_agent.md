@@ -22,14 +22,16 @@ Wraps `discover_week.discover`. Pulls the WT or midweek workbook DocumentId, tit
 Wraps `fetch_wol_article` + `scrape_article`. Pulls the full article HTML and returns the per-paragraph list (paragraph_number, body_pid, question_pid, question_text, body_text, cited_scriptures). Call this SECOND, after discover. The list is ordered by visible paragraph number.
 
 ### `draft_comment(paragraph_number, extra_constraints=None)`
-Invokes the comment agent for one paragraph. Returns `{comment, gate_history, accepted, cost_summary}`. The comment agent has its own ~20-turn budget and ~$0.15-0.30 cost per paragraph — you don't see its internals, only the verdict.
+Invokes the comment agent for one paragraph. Returns `{ok, accepted, comment_type, memorable_line, word_count, [from_cache]}`. The comment agent has its own ~20-turn budget and ~$0.15-0.30 cost per paragraph.
+
+**Resume cache**: if this paragraph was already drafted in a previous run that crashed or was killed, the saved comment is returned at zero API cost with `from_cache: true`. You see it the same as a fresh draft. The agent did not re-run.
 
 Pass `extra_constraints` to enforce article-level needs (`force_domestic_scene`, `force_herd_move`, `force_invert_mode`, `experience_seed` for Type B). The agent will refuse to ship a draft that violates them.
 
 `forbidden_types` is computed FROM your accumulating state — you do not pass it explicitly; `draft_comment` infers it from prior_types in your `get_status()` view.
 
 ### `draft_underlines(paragraph_number)`
-Invokes the underline agent for one paragraph. Returns `{payload, gate_history, accepted, cost_summary}`. A deterministic pre-check fires first for "Read X:Y-Z" bodies — returns `deferred_to_scripture` at zero cost. Otherwise the agent loops ~5-12 turns.
+Invokes the underline agent for one paragraph. Returns `{ok, accepted, deferred_to_scripture, underline_count, [from_cache]}`. A deterministic pre-check fires first for "Read X:Y-Z" bodies — returns `deferred_to_scripture` at zero cost. Otherwise the agent loops ~5-12 turns. **Resume cache** applies here too — already-drafted underlines return with `from_cache: true` at zero API cost.
 
 ### `get_status()`
 Returns your own internal state (cheap, no SDK call):
