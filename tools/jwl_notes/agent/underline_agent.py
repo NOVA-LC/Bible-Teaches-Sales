@@ -44,9 +44,12 @@ DEFAULT_MODEL = "claude-sonnet-4-6"
 MAX_TOKENS = 2048
 
 # Body shapes that are just "Read X:Y-Z" — no narrated answer to underline.
-# Matches: "Read Job 42:10-13.", "Read 2 Timothy 3:1-5", "See Isaiah 60:1, 2"
+# Matches: "Read Job 42:10-13.", "Read 2 Timothy 3:1-5", "See Isaiah 60:1, 2".
+# Optional leading paragraph-number (e.g. "16 Read Genesis 1:26-28.") is
+# defensive — scrape_article strips it before reaching here, but the CLI
+# and any other entry-point that constructs bodies directly may not.
 _DEFERRED_BODY_RE = re.compile(
-    r"^\s*(?:read|see)\s+\d?\s?[a-z][a-z]+\.?\s+\d+:\d+(?:[\s,\-–]+\d+)*\.?\s*$",
+    r"^\s*(?:\d+\s+)?(?:read|see)\s+\d?\s?[a-z][a-z]+\.?\s+\d+:\d+(?:[\s,\-–]+\d+)*\.?\s*$",
     re.IGNORECASE,
 )
 
