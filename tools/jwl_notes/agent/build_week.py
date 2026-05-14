@@ -188,9 +188,56 @@ def _draft_with_gates(
     log_path: Path,
 ) -> tuple[dict | None, list[GateResult]]:
     """Try to produce a comment that passes per-comment gates + the critic.
+
+    Free-thinking pipeline per paragraph:
+      1. Phase 0 (Python) — fetch_deep_brief: pull NWT verse text + 3-verse
+         context window + up to 5 cross-ref targets + footnotes for every
+         scripture cited in the paragraph. This is real study material.
+      2. Phase 1 (Sonnet) — worker.select_comment_type: picks A/B/C/D/F/H
+         based on paragraph type, research-brief gem candidates, and
+         prior types used in the article (variety constraint).
+      3. Phase 2 (Sonnet) — worker.draft_typed_comment(type): drafts the
+         comment in the chosen type's specific shape with the research
+         brief as input.
+      4. Per-comment gates (type-aware).
+      5. Gate 6 critic (separate worker call).
+
     Returns (comment_or_None, gate_history)."""
+    from .research import fetch_deep_brief  # type: ignore
+
     history: list[GateResult] = []
     feedback = ""
+
+    # Phase 0 — pull the deep brief ONCE per paragraph (cached on disk)
+    try:
+        brief = fetch_deep_brief(
+            para.body_text,
+            explicit_citations=para.cited_scriptures or None,
+        )
+        brief_serialized = [
+            {
+                "citation": vs.citation,
+                "text": vs.text[:500],
+                "context_before": vs.context_before[-3:],
+                "context_after": vs.context_after[:3],
+                "cross_refs": vs.cross_refs[:5],
+                "footnotes": vs.footnotes[:2],
+            }
+            for vs in brief.cited_studies
+        ]
+        history.append(GateResult(
+            "Research brief", True,
+            f"{len(brief.cited_studies)} verse(s), "
+            f"{sum(len(vs.cross_refs) for vs in brief.cited_studies)} cross-refs total"
+        ))
+    except Exception as e:
+        history.append(GateResult(
+            "Research brief", False, f"fetch failed: {e}; drafting without brief"
+        ))
+        brief_serialized = []
+
+    prior_types = [c.get("comment_type", "A") for c in prior_comments if c.get("comment_type")]
+
     for attempt in range(1, MAX_ATTEMPTS + 1):
         prior_mechs = []
         prior_rels = []
@@ -201,7 +248,7 @@ def _draft_with_gates(
             if ds.get("present") and ds.get("named_relationship"):
                 prior_rels.append(ds["named_relationship"])
             prior_herd.extend(c.get("herd_distinctive_moves") or [])
-        payload = {
+        base_payload = {
             "article_title": article_meta["article_title"],
             "article_source": article_meta["article_source"],
             "study_date": article_meta["study_date"],
@@ -210,14 +257,46 @@ def _draft_with_gates(
             "question_pid": para.question_pid,
             "question_text": para.question_text,
             "body_paragraph_text": para.body_text,
+            "cited_scriptures": para.cited_scriptures,
+            "research_brief": brief_serialized,
             "prior_mechanics_this_week": sorted(set(prior_mechs)),
             "prior_named_relationships_this_week": sorted(set(prior_rels)),
             "prior_herd_moves_this_week": sorted(set(prior_herd)),
+            "prior_types_used_this_article": prior_types,
             "attempt": attempt,
             "redraft_feedback": feedback,
         }
+
+        # Phase 1 — select comment type (cheaper; one call before drafting)
         try:
-            comment = worker.draft_comment(payload)
+            selection = worker.select_comment_type(base_payload)
+            chosen_type = (selection.get("chosen_type") or "A").upper().strip()
+            if chosen_type not in {"A", "B", "C", "D", "F", "H"}:
+                chosen_type = "A"
+            history.append(GateResult(
+                f"Type selector attempt {attempt}", True,
+                f"chose {chosen_type}: {selection.get('rationale', '')[:120]}"
+            ))
+        except Exception as e:
+            if _is_fatal_worker_error(e):
+                raise SystemExit(
+                    "\n❌ FATAL: " + str(e)[:200] +
+                    "\n   Fix at https://console.anthropic.com/ then rerun."
+                )
+            history.append(GateResult(
+                f"Type selector attempt {attempt}", False,
+                f"selector error: {e}; defaulting to A"
+            ))
+            chosen_type = "A"
+            selection = {"chosen_type": "A"}
+
+        draft_payload = {**base_payload, "type_selection": selection}
+
+        # Phase 2 — draft in the chosen type's shape
+        try:
+            comment = worker.draft_typed_comment(chosen_type, draft_payload)
+            # Always tag the output with the chosen type for downstream gates
+            comment["comment_type"] = chosen_type
         except Exception as e:
             history.append(GateResult(
                 f"draft attempt {attempt}", False, f"worker error: {e}"

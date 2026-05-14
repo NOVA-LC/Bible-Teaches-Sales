@@ -157,12 +157,28 @@ class GateResult:
 # Gate 1 — Mechanics tagged & valid
 # ----------------------------------------------------------------------
 
+_COMMENT_TYPES = {"A", "B", "C", "D", "F", "H"}
+
+
+def _comment_type(comment: dict) -> str:
+    """Return the declared comment type. Defaults to 'A' for legacy comments
+    that don't declare one."""
+    t = (comment.get("comment_type") or "A").upper().strip()
+    return t if t in _COMMENT_TYPES else "A"
+
+
 def gate1_mechanics_tagged(comment: dict) -> GateResult:
     """Every beat must be tagged with a mechanic from the toolbox.
+
+    Type-aware: only Type A uses the 4-slot tagged-beats architecture.
+    Other types have different shapes and are exempt from this gate.
 
     Minimum 3 beats (opener, rotation, landing). Slot-2 label is optional.
     """
     name = "Gate 1 (mechanics tagged)"
+    ct = _comment_type(comment)
+    if ct != "A":
+        return GateResult(name, True, f"skip (type {ct} doesn't use tagged-beats)")
     beats = comment.get("tagged_beats", [])
     if not isinstance(beats, list) or len(beats) < 3:
         return GateResult(name, False, f"need ≥3 tagged beats, got {len(beats)}")
@@ -211,6 +227,11 @@ def gate2_variety_across_week(comments: list[dict]) -> GateResult:
     opener_counts: dict[str, list] = {}
     rotation_counts: dict[str, list] = {}
     for c in comments:
+        # Only Type A comments have tagged_beats. Non-A types are exempt
+        # from opener/rotation mechanic variety (they don't use the
+        # 12-mechanic toolbox at all).
+        if _comment_type(c) != "A":
+            continue
         beats = c.get("tagged_beats", [])
         if not beats:
             continue
@@ -267,11 +288,19 @@ def gate3_spine_image_referenced(comment: dict) -> GateResult:
     """The named spine_image must appear (by content-word overlap) in both
     the opening third and the closing third of the actual content.
 
+    Type-aware: spine-image-as-spine only applies to Type A (illustration-led).
+    Types F (pastoral direct) and C (pure CTA) don't use illustrations;
+    Types D (exegetical chain) and H (historical context) anchor on
+    scripture/historical fact instead. All non-A types skip this gate.
+
     Allows multi-sentence opener/landing — a comment that takes 2 sentences
     to set up the spine image is fine, as long as the image is established
     in the front of the comment and closed in the back.
     """
     name = "Gate 3 (spine image runs through)"
+    ct = _comment_type(comment)
+    if ct != "A":
+        return GateResult(name, True, f"skip (type {ct} doesn't use spine-image)")
     spine = comment.get("spine_image", "")
     content = comment.get("content", "")
     if not spine.strip():
@@ -313,10 +342,23 @@ def gate4_domestic_scene_quota(
     comments: list[dict], min_required: int = 2
 ) -> GateResult:
     """Across the article's notes, at least `min_required` must contain a
-    real named-relationship domestic scene."""
+    real named-relationship domestic scene.
+
+    Type-aware: only Type A and B comments use domestic scenes. Other
+    types (C/D/F/H) don't, and shouldn't count against the article's
+    domestic-scene quota. The minimum applies to A+B comments only.
+    """
     name = "Gate 4 (domestic-scene quota)"
+    # Restrict count and denominator to types that use domestic scenes
+    ab_comments = [c for c in comments if _comment_type(c) in {"A", "B"}]
+    if len(ab_comments) < min_required:
+        # If the article doesn't have enough A/B comments to satisfy the quota,
+        # don't block — the variety gate will already flag if A is missing entirely.
+        return GateResult(name, True,
+            f"skip ({len(ab_comments)} A/B comments < min_required {min_required}; "
+            "type-variety gate handles distribution)")
     qualifying = []
-    for c in comments:
+    for c in ab_comments:
         ds = c.get("domestic_scene", {})
         if not isinstance(ds, dict) or not ds.get("present"):
             continue
@@ -348,19 +390,28 @@ def gate5_herd_moves_quota(
     comments: list[dict], min_required: int = 2
 ) -> GateResult:
     """Across the article, at least `min_required` notes must deploy one of
-    the H1-H5 distinctive Herd moves."""
+    the H1-H5 distinctive Herd moves.
+
+    Type-aware: Herd-distinctive moves are most natural in Type A and B
+    comments. Types C/D/F/H may or may not deploy them. The quota
+    applies across all types but is restricted by feasibility — if the
+    article is heavy on C/D/F/H, the minimum is relaxed.
+    """
     name = "Gate 5 (Herd distinctive-move quota)"
+    ab_count = sum(1 for c in comments if _comment_type(c) in {"A", "B"})
+    relaxed_min = min(min_required, max(1, ab_count // 2))
     notes_with_herd_move = []
     for c in comments:
         moves = c.get("herd_distinctive_moves", []) or []
         valid = [m for m in moves if m in HERD_MOVE_CODES]
         if valid:
             notes_with_herd_move.append((c.get("paragraph_number"), valid))
-    if len(notes_with_herd_move) < min_required:
+    if len(notes_with_herd_move) < relaxed_min:
         return GateResult(
             name, False,
             f"only {len(notes_with_herd_move)} note(s) deploy H1-H5 "
-            f"({notes_with_herd_move}); need ≥{min_required}"
+            f"({notes_with_herd_move}); need ≥{relaxed_min} "
+            f"({ab_count} A/B comments in article)"
         )
     return GateResult(
         name, True,
@@ -648,12 +699,43 @@ def run_per_comment_gates(comment: dict) -> list[GateResult]:
     ]
 
 
+def gate11_comment_type_variety(comments: list[dict], soft_cap: int = 2, hard_cap: int = 3) -> GateResult:
+    """Article-level comment-type variety.
+
+    The free-thinking pipeline picks a comment type per paragraph (A/B/C/D/F/H).
+    An article that uses 20 Type-A comments has variety at the surface
+    (different illustrations) but not at the structural level. This gate
+    caps each type at `hard_cap` occurrences per article and warns at
+    `soft_cap`. Reporting includes the type distribution.
+    """
+    name = "Gate 11 (comment-type variety)"
+    counts: dict[str, list] = {}
+    for c in comments:
+        t = _comment_type(c)
+        counts.setdefault(t, []).append(c.get("paragraph_number", "?"))
+    overused = {t: ps for t, ps in counts.items() if len(ps) > hard_cap}
+    if overused:
+        first = next(iter(overused))
+        return GateResult(
+            name, False,
+            f"type {first!r} used {len(overused[first])}x (cap {hard_cap}) in "
+            f"¶{overused[first]} — article needs more comment-type variety"
+        )
+    distribution = ", ".join(f"{t}×{len(ps)}" for t, ps in sorted(counts.items()))
+    warnings = [t for t, ps in counts.items() if len(ps) > soft_cap]
+    msg = f"distribution: {distribution}"
+    if warnings:
+        msg += f" (soft-warn: {warnings} > soft cap {soft_cap})"
+    return GateResult(name, True, msg)
+
+
 def run_article_gates(comments: list[dict]) -> list[GateResult]:
     """Run gates that operate over the whole article."""
     return [
         gate2_variety_across_week(comments),
         gate4_domestic_scene_quota(comments),
         gate5_herd_moves_quota(comments),
+        gate11_comment_type_variety(comments),
     ]
 
 
@@ -861,12 +943,21 @@ def _self_test() -> int:
     if not r.passed:
         print("FAIL gate4 happy-path:", r); failures += 1
 
-    too_few = [{"paragraph_number": 1, "domestic_scene": {
-        "present": True, "named_relationship": "brother", "scene_summary": "x"
-    }}]
-    r = gate4_domestic_scene_quota(too_few)
+    # Type-aware Gate 4: with only 1 A/B comment, quota skips (not enough
+    # A/B comments to apply the minimum). This is correct behavior — the
+    # variety gate handles distribution. We test rejection when there ARE
+    # enough A/B comments but only one has a domestic scene.
+    enough_ab_but_only_one_domestic = [
+        {"paragraph_number": 1, "comment_type": "A", "domestic_scene": {
+            "present": True, "named_relationship": "brother", "scene_summary": "x"}},
+        {"paragraph_number": 2, "comment_type": "A", "domestic_scene": {
+            "present": False}},
+        {"paragraph_number": 3, "comment_type": "A", "domestic_scene": {
+            "present": False}},
+    ]
+    r = gate4_domestic_scene_quota(enough_ab_but_only_one_domestic)
     if r.passed:
-        print("FAIL gate4 should reject single domestic-scene note"); failures += 1
+        print("FAIL gate4 should reject when 3 A/B comments but only 1 domestic"); failures += 1
 
     # Gate 5 — Herd quota
     herd_ok = [

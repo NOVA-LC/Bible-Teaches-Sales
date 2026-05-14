@@ -111,7 +111,7 @@ def _extract_json(text: str) -> dict:
 class SDKWorker:
     """Dispatches to Claude via the official Anthropic SDK."""
 
-    def __init__(self, model: str = "claude-opus-4-7", max_tokens: int = 2048):
+    def __init__(self, model: str = "claude-sonnet-4-6", max_tokens: int = 2048):
         load_dotenv()
         try:
             import anthropic  # noqa: F401
@@ -128,9 +128,21 @@ class SDKWorker:
         self._client = Anthropic()
         self._model = model
         self._max_tokens = max_tokens
+        # Legacy single-prompt drafter (kept for backward compat)
         self._comment_prompt = _load_prompt("paragraph_comment.md")
         self._underline_prompt = _load_prompt("paragraph_underlines.md")
         self._critic_prompt = _load_prompt("critic_gate6.md")
+        # Free-thinking pipeline: shared core + type selector + per-type drafters
+        self._shared_core = _load_prompt("_shared_core.md")
+        self._select_type_prompt = _load_prompt("select_comment_type.md")
+        self._type_prompts = {
+            "A": _load_prompt("types/A_illustration_led.md"),
+            "B": _load_prompt("types/B_experience_led.md"),
+            "C": _load_prompt("types/C_pure_cta.md"),
+            "D": _load_prompt("types/D_exegetical_chain.md"),
+            "F": _load_prompt("types/F_pastoral_direct.md"),
+            "H": _load_prompt("types/H_historical_context.md"),
+        }
 
     def _call(self, system_prompt: str, user_payload: dict) -> dict:
         """Single SDK round-trip. Returns parsed JSON from the response."""
@@ -163,6 +175,33 @@ class SDKWorker:
 
     def critique(self, payload: dict) -> dict:
         return self._call(self._critic_prompt, payload)
+
+    # -- Free-thinking pipeline --------------------------------------------
+
+    def select_comment_type(self, payload: dict) -> dict:
+        """Phase 1 of the typed pipeline. Picks comment type A/B/C/D/F/H
+        given paragraph + research_brief + prior types used this article.
+        Returns {'chosen_type': 'A', 'rationale': '...', ...}."""
+        return self._call(self._select_type_prompt, payload)
+
+    def draft_typed_comment(self, comment_type: str, payload: dict) -> dict:
+        """Phase 2 of the typed pipeline. Drafts a comment in the chosen
+        type's specific shape. The shared core + type prompt are both
+        loaded as the system prompt (concatenated, so the shared
+        non-negotiables apply on top of the type-specific shape)."""
+        if comment_type not in self._type_prompts:
+            raise ValueError(
+                f"Unknown comment type {comment_type!r}; "
+                f"valid: {sorted(self._type_prompts)}"
+            )
+        # Compose the system prompt: shared core first (universal rules),
+        # then the type-specific prompt (shape + examples + output schema).
+        composed = (
+            self._shared_core
+            + "\n\n---\n\n"
+            + self._type_prompts[comment_type]
+        )
+        return self._call(composed, payload)
 
 
 # ----------------------------------------------------------------------
