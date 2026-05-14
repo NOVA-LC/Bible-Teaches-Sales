@@ -446,6 +446,74 @@ def _strip_quoted_spans(text: str) -> str:
     return out
 
 
+_VALID_TRANSFORMATION_MODES = {"release", "equip", "invert"}
+
+
+def gate10_working_tool_substance(comment: dict) -> GateResult:
+    """The Working-Tool Doctrine — Mandate 5.
+
+    Validates that the comment declares three states (open / mechanism /
+    close), the modes are valid, and the open/close states' content words
+    appear in the first/last 30 words of the actual content respectively.
+
+    Critic-agent dispatch (Gate 6) handles the harder judgment calls
+    (verse-acts-on-listener-directly, close-state genuinely renamed) —
+    this gate enforces the deterministic structural requirements.
+    """
+    name = "Gate 10 (working-tool substance)"
+
+    open_state = (comment.get("audience_state_at_open") or "").strip()
+    mode = (comment.get("transformation_mechanism") or "").strip().lower()
+    close_state = (comment.get("audience_state_at_close") or "").strip()
+
+    if not open_state:
+        return GateResult(name, False,
+            "missing audience_state_at_open — name the weight the brother walks in carrying")
+    if not close_state:
+        return GateResult(name, False,
+            "missing audience_state_at_close — name the renamed feeling/equipped action/inverted view")
+    if mode not in _VALID_TRANSFORMATION_MODES:
+        return GateResult(name, False,
+            f"transformation_mechanism must be one of {sorted(_VALID_TRANSFORMATION_MODES)}, got {mode!r}")
+
+    open_words = _content_words(open_state)
+    close_words = _content_words(close_state)
+    if not open_words:
+        return GateResult(name, False, f"audience_state_at_open has no content words: {open_state!r}")
+    if not close_words:
+        return GateResult(name, False, f"audience_state_at_close has no content words: {close_state!r}")
+
+    # The open- and close-state must describe genuinely different states.
+    # Approximation: at least one content-word from each is NOT in the other.
+    if open_words == close_words or (open_words <= close_words and close_words <= open_words):
+        return GateResult(name, False,
+            "open-state and close-state have identical content words — not a renamed feeling")
+
+    content = comment.get("content", "")
+    words = content.split()
+    if len(words) < 30:
+        return GateResult(name, False, f"comment too short ({len(words)} words) for state-naming")
+    first_30 = " ".join(words[:30])
+    last_30 = " ".join(words[-30:])
+    first_30_words = _content_words(first_30)
+    last_30_words = _content_words(last_30)
+
+    open_anchor = open_words & first_30_words
+    close_anchor = close_words & last_30_words
+    if not open_anchor:
+        return GateResult(name, False,
+            f"audience_state_at_open ({open_state!r}) is not named in the first 30 words "
+            "of the comment — the listener can't be released from a weight you didn't name")
+    if not close_anchor:
+        return GateResult(name, False,
+            f"audience_state_at_close ({close_state!r}) is not named in the last 30 words "
+            "of the comment — the renamed feeling must be on the listener's lips, not implied")
+
+    return GateResult(name, True,
+        f"mode={mode}, open-state anchored ({sorted(open_anchor)}), "
+        f"close-state anchored ({sorted(close_anchor)})")
+
+
 def gate9_jw_register(comment: dict) -> GateResult:
     """Detect pastor / Christendom register words in narration.
 
@@ -576,6 +644,7 @@ def run_per_comment_gates(comment: dict) -> list[GateResult]:
         gate1c_word_count(comment),
         gate3_spine_image_referenced(comment),
         gate9_jw_register(comment),
+        gate10_working_tool_substance(comment),
     ]
 
 
@@ -669,6 +738,50 @@ def _self_test() -> int:
     r = gate9_jw_register({"content": "Jesus said from the stake: 'Father, forgive them.' The good news doesn't change."})
     if not r.passed:
         print("FAIL gate9 should accept JW-native narration:", r); failures += 1
+
+    # Gate 10 — Working-Tool Substance
+    happy_path = {
+        "audience_state_at_open": "the resentment you walked in with from the closed door yesterday",
+        "transformation_mechanism": "release",
+        "audience_state_at_close": "lighter shoulders after naming the person and saying forgive them",
+        "content": (
+            "If somebody slammed a door on you yesterday and you walked in with that resentment "
+            "still chewing on you, you're not the only one. Look at Luke 23:34. Jesus prayed "
+            "from the stake while they were driving the nails — 'Father, forgive them; they "
+            "don't know what they're doing.' Not after. While. So before you walk out of this "
+            "hall, name the one person who's still in your head. Say it. Watch the resentment "
+            "leave your shoulders lighter than when you sat down."
+        ),
+    }
+    r = gate10_working_tool_substance(happy_path)
+    if not r.passed:
+        print("FAIL gate10 happy-path:", r); failures += 1
+
+    # Missing open-state
+    miss_open = {**happy_path, "audience_state_at_open": ""}
+    r = gate10_working_tool_substance(miss_open)
+    if r.passed:
+        print("FAIL gate10 should reject missing open-state"); failures += 1
+
+    # Invalid mode
+    bad_mode = {**happy_path, "transformation_mechanism": "explain"}
+    r = gate10_working_tool_substance(bad_mode)
+    if r.passed:
+        print("FAIL gate10 should reject invalid mechanism"); failures += 1
+
+    # Open- and close-state identical content words → not renamed
+    identical = {**happy_path, "audience_state_at_close": "the resentment chewing closed door yesterday"}
+    # Make it match open_words almost exactly
+    identical["audience_state_at_close"] = identical["audience_state_at_open"]
+    r = gate10_working_tool_substance(identical)
+    if r.passed:
+        print("FAIL gate10 should reject identical open/close states"); failures += 1
+
+    # Open-state not anchored in first 30 words
+    not_anchored = {**happy_path, "audience_state_at_open": "completely unrelated phrase quantum mechanics"}
+    r = gate10_working_tool_substance(not_anchored)
+    if r.passed:
+        print("FAIL gate10 should reject when open-state not in first 30 words"); failures += 1
 
     # Gate 3 — spine present in both opening and closing thirds
     good_spine = {

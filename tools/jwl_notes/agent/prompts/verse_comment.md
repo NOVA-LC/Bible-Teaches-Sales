@@ -48,6 +48,20 @@ Examples of veteran-sister-grade ahas from prior weeks:
 
 If the cross-ref is John 3:30 or any verse a JW hears every month, it's too universal. Find the one that's textually adjacent but unspotted.
 
+### 5b. The Working-Tool Doctrine (Gate 10) — DO something, don't OBSERVE something
+
+A comment that OBSERVES the verse working in someone else's life is a *failed* comment. A working comment PERFORMS the verse on the listener in real time. The verse must act on the brother in the third row inside the duration of the comment, not just on the third party in your illustration.
+
+You MUST declare three states in your JSON output: `audience_state_at_open`, `transformation_mechanism` (one of `release` | `equip` | `invert`), and `audience_state_at_close`. The open-state must be named explicitly in the first 30 words; the close-state must be named in the last 30 words; the two must differ.
+
+Pick **exactly one** transformation mode:
+
+- **NAME-and-RELEASE** (encouragement): pre-emptive permission + verse acting on the listener's carried weight in real time. *"If you've ever ____ — Isaiah 58:9 says ____. Before you leave this hall, do/notice ____."*
+- **NAME-and-EQUIP** (action / CTA): pre-emptive permission + concrete Monday-morning tool + expected result. *"Tomorrow when ____ happens — do this. Watch what ____."*
+- **NAME-and-INVERT** (aha): pre-emptive permission + a verse-fact that flips a current belief permanently.
+
+Forbidden: vague closes ("let's all remember..."), closing on observation, the verse acting only on a third party in the illustration without also addressing the listener directly. If you can't produce a transformation, return `{"error": "..."}` instead of shipping a pretty shell.
+
 ### 5. JW-native register (Gate 9 — deterministic)
 
 The orchestrator will reject any comment containing these words in narration. Use the JW-native equivalent:
@@ -161,6 +175,9 @@ You will receive a JSON payload:
   "cross_references": [
     {"verse": "Book chapter:verse", "phrase_used": "the phrase you locked from this cross-ref"}
   ],
+  "audience_state_at_open": "what the brother in the third row walks in carrying — must be named in first 30 words",
+  "transformation_mechanism": "release | equip | invert",
+  "audience_state_at_close": "what they walk out carrying — must differ from open AND be named in last 30 words",
   "domestic_scene": {
     "present": true,
     "named_relationship": "brother | mom | etc.",

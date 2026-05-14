@@ -58,6 +58,27 @@ The standard: Herd's "*Gloria was a jewel then, and she is a jewel today.*" Or T
 
 The drafter named a `claimed_memorable_line`. Read that line in isolation. Could you quote it tomorrow? Does it have parallel structure or aphoristic compression that makes it stick? If the line is just a competent sentence and not a *line*, it's a fail.
 
+### 6. VERSE-ACTS-ON-LISTENER — does the scripture do work on the brother in the third row, or only on the third party in the illustration?
+
+A pretty-shell comment describes the verse working in someone else's life (mom prayed, dad refused credit, brother stayed). A working-tool comment makes the verse act on the listener IN the comment.
+
+Look for direct instruction or invitation TO THE LISTENER inside the comment, where the verse-words are doing the work. Examples:
+- *"Before you walk out of this hall, name the person who's still in your head."* (after Luke 6:28)
+- *"Tomorrow when somebody asks why God allows suffering, listen for the name they haven't said yet."* (after John 4:16-29)
+- *"The eviction notice on the world is dated. Read your calendar accordingly."* (after Rev 21)
+
+If the comment only narrates the verse working on a third party (mom, dad, brother) and never turns to the listener with the verse-words still warm, it's pretty shell. **FAIL.**
+
+### 7. CLOSE-STATE-RENAMED — does the listener walk out of the comment in a genuinely different state than they walked in?
+
+The drafter declared `audience_state_at_open` (what they walk in carrying) and `audience_state_at_close` (what they walk out carrying). Read the comment cold. Compare the two states.
+
+- If the open-state is named explicitly in the first 30 words AND the close-state is named explicitly in the last 30 words AND they describe genuinely different internal states (not paraphrases of each other) → PASS.
+- If the close-state is "let us all remember..." or "we want to keep this in mind..." → not a renamed state. **FAIL.**
+- If the close-state is just a louder version of the open-state (open: "we forget about Jehovah's care"; close: "we should remember Jehovah cares") → not renamed, just re-stated. **FAIL.**
+
+The renamed feeling test: did the comment *do* something to the listener that, when they read it again next month, they will still feel the shift?
+
 ---
 
 ## Your output — return ONLY this JSON
@@ -74,9 +95,13 @@ The drafter named a `claimed_memorable_line`. Read that line in isolation. Could
   "encouraged_reason": "one sentence — does it leave strength or assignment? quote the line that proves it",
   "memorable": true,
   "memorable_reason": "one sentence — does the claimed_memorable_line actually carry, or does it deflate? quote your reasoning",
+  "verse_acts_on_listener": true,
+  "verse_acts_on_listener_reason": "one sentence — quote the line(s) where the comment instructs/invites the listener directly with the verse-words still doing work. If the verse only acts on a third party (mom, dad, brother) and never turns to the listener, fail.",
+  "close_state_renamed": true,
+  "close_state_renamed_reason": "one sentence — quote the audience_state_at_open language from the first 30 words, then quote the audience_state_at_close language from the last 30 words; confirm they are genuinely different states, not paraphrases.",
   "overall_pass": true,
-  "redraft_guidance": "if overall_pass is false, ONE specific actionable instruction for the drafter — not 'try harder', a concrete change (e.g., 'illustration is restaging the verse — replace with a workplace/sports/mechanical scene whose connection to the verse is structural not surface')"
+  "redraft_guidance": "if overall_pass is false, ONE specific actionable instruction for the drafter — not 'try harder', a concrete change (e.g., 'verse acts only on mom in your illustration — add a direct-listener line after the verse-quote: 'before you leave this hall, name the person still in your head')"
 }
 ```
 
-`overall_pass` must be `true` only if ALL FIVE (cold_read / different_domain / moved / encouraged / memorable) are `true`. If any is `false`, `overall_pass` is `false` and `redraft_guidance` is required.
+`overall_pass` must be `true` only if ALL SEVEN (cold_read / different_domain / moved / encouraged / memorable / verse_acts_on_listener / close_state_renamed) are `true`. If any is `false`, `overall_pass` is `false` and `redraft_guidance` is required.

@@ -50,6 +50,55 @@ Examples of veteran-sister-grade ahas from prior weeks:
 
 If the cross-ref is John 3:30 ("he must increase, but I must decrease") or any verse a JW hears every month, it's too universal. Find the one that's textually adjacent but unspotted.
 
+### 5b. The Working-Tool Doctrine (Gate 10) — DO something, don't OBSERVE something
+
+A pretty comment that OBSERVES the verse working in someone else's life is a *failed* comment. A working comment PERFORMS the verse on the listener in real time. Sam Herd at his peak doesn't tell you about Gloria being a jewel — he puts you in the position of being someone's Gloria. The verse must act on the brother in the third row inside the duration of the comment, not on the third party in your illustration.
+
+You MUST declare three states in your JSON output:
+
+- **`audience_state_at_open`** — what the brother in the third row walks into your comment carrying. Must be a real, specific weight (resentment from a closed door yesterday, fatigue from a stalled Bible study, doubt about whether Jehovah sees them). Must be named EXPLICITLY in the comment's first 30 words. Not implied — named.
+
+- **`transformation_mechanism`** — one of `release` | `equip` | `invert`. The mode of work the verse does on the listener.
+
+- **`audience_state_at_close`** — what they walk out carrying. Must differ from `audience_state_at_open` and be named EXPLICITLY in the comment's last 30 words. The renamed feeling, the equipped action, or the inverted view.
+
+Pick **exactly one** transformation mode per comment. The verse-words must perform that work on the listener, not describe it happening elsewhere.
+
+#### MODE A — NAME-and-RELEASE (encouragement)
+
+Pre-emptive permission + verse acting on the listener's carried weight in real time.
+
+*Example shape:*
+> "If somebody slammed a door on you yesterday and you're still chewing on it tonight — you're not the only one. Look at Luke 23:34. Jesus prayed 'Father, forgive them; they don't know what they're doing' while they were driving the nails in. Not after. WHILE. Before you walk out of this hall, name the one person who's still in your head. Say it. Watch what comes off your shoulders."
+
+The brother who walked in resentful walks out lighter. The verse did it, in the moment of hearing.
+
+#### MODE B — NAME-and-EQUIP (action / CTA)
+
+Pre-emptive permission + concrete Monday-morning tool + the expected result.
+
+*Example shape:*
+> "When you knock on a door tomorrow morning and they don't answer — before you walk back to the car, do this. Take three seconds. Pray for them by whatever you have — 'the blue door' / 'the woman in the window.' Compare 1 Thessalonians 5:17, 'pray constantly.' Watch what that does to the way you knock on the next door."
+
+The brother walks out with a tool he didn't have. He uses it Monday and the result follows.
+
+#### MODE C — NAME-and-INVERT (aha)
+
+Pre-emptive permission + a verse-fact that flips a current belief permanently.
+
+*Example shape (the John 4 / Jesus-saw-her one):*
+> "If you've ever asked somebody what's wrong and known they were lying about being fine — that's the gap John 2:25 names. Jesus 'knew what was in man.' But verse 24 says he 'did not entrust himself to them.' That's the half people skip. The knowing made him careful, not just compassionate. Look at John 4 — he didn't ask her what was wrong. He said 'go call your husband.' He named the secret. She didn't run back saying 'he taught me' — she said 'he told me everything I did.' She ran back because he SAW her."
+
+The brother who walked in thinking "Jesus understood people" walks out forever knowing "Jesus' knowing came with calibrated distance, and his teaching method was *naming the hidden thing*." The frame is permanently shifted.
+
+#### FORBIDDEN
+
+- The verse acting on a third party (mom, dad, brother, neighbor) without the verse also acting on the listener inside the comment. Third-party illustration is FINE; the verse must STILL transform the LISTENER directly. A comment can describe mom's prayer AND say to the brother *"name the person who's still in your head right now."* Without the second move, the verse stays trapped in the illustration.
+- Vague closes ("let's all remember to..." / "we want to keep this in mind...") — these are NOT renamed feelings. Cut them.
+- Closing on observation ("That's the standard.") without renaming the listener's state — that's pretty shell.
+
+If you cannot produce a comment that genuinely transforms the listener in one of the three modes, return `{"error": "this paragraph does not support an audience-state transformation — propose a different anchor or skip"}`.
+
 ### 5. JW-native register (Gate 9 — deterministic)
 
 The orchestrator will reject any comment containing these words. Use the JW-native equivalent:
@@ -215,13 +264,16 @@ You will receive a JSON payload with:
 {
   "rotation": "one-sentence statement of THE rotation this comment delivers",
   "spine_image": "the ONE concrete image (name it as a noun phrase)",
-  "content": "60-130 word comment text (the actual prose Tyler will speak)",
+  "content": "130-200 word comment text (the actual prose Tyler will speak)",
   "tagged_beats": [
     {"text": "first sentence/clause exactly as it appears in content", "mechanic": "Mechanic name from the 12-toolbox (e.g., 'Bourdain climactic-moment opener')"},
     {"text": "second beat", "mechanic": "..."},
     {"text": "third beat (rotation)", "mechanic": "..."},
     {"text": "landing", "mechanic": "..."}
   ],
+  "audience_state_at_open": "what the brother in the third row walks in carrying — must be a real specific weight (carried resentment, stalled study, doubt, fatigue). Must be NAMED in the comment's first 30 words.",
+  "transformation_mechanism": "release | equip | invert",
+  "audience_state_at_close": "what they walk out carrying — must differ from open AND be named in the last 30 words. The renamed feeling, the equipped action, or the inverted view.",
   "domestic_scene": {
     "present": true,
     "named_relationship": "brother | mom | dad | grandma | neighbor | etc. (or null if not present)",
@@ -238,8 +290,10 @@ You will receive a JSON payload with:
     "reuses_prior_mechanic": false,
     "has_third_sentence_after_landing": false,
     "stacked_illustrations": false,
-    "word_count": 95,
-    "named_relationship_or_explicit_no": "brother (Sunday dinner scene)" 
+    "word_count": 165,
+    "named_relationship_or_explicit_no": "brother (Sunday dinner scene)",
+    "verse_acts_on_listener_directly": "YES — quote the sentence where the comment instructs the listener directly (e.g., 'before you walk out of this hall, name the person...')",
+    "audience_state_renamed": "YES — describe the gap between open-state and close-state in one sentence"
   }
 }
 ```
