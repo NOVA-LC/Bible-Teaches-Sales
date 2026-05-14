@@ -136,6 +136,32 @@ def _make_tool_handlers(body_text: str, question_text: str):
         }
 
     def commit(underlines: list, self_audit: dict) -> dict:
+        # Pre-filter: silently drop non-yellow phrases that exceed 8 words.
+        # Operator's editorial preference: yellow (the answer) is mandatory;
+        # non-yellow phrases are opportunistic bonus highlights. An over-cap
+        # non-yellow used to fail the whole submission and burn turns; now
+        # the orchestrator just drops it and ships the rest. The agent sees
+        # what was filtered in the return so it can adjust next time.
+        filtered_non_yellow = []
+        if isinstance(underlines, list):
+            kept = []
+            for u in underlines:
+                if not isinstance(u, dict):
+                    continue
+                color = (u.get("color") or "").lower()
+                phrase = u.get("phrase") or ""
+                word_count = len(phrase.split())
+                if color != "yellow" and word_count > 8:
+                    filtered_non_yellow.append({
+                        "phrase": phrase,
+                        "color": color,
+                        "word_count": word_count,
+                        "reason": "non-yellow > 8 words; dropped silently",
+                    })
+                    continue
+                kept.append(u)
+            underlines = kept
+
         # Deferred-to-scripture escape hatch: empty underlines + explicit flag
         # bypasses the no-yellow-required gate. Only meaningful when the body
         # has no narrated answer (e.g., "Read Job 42:10-13").
@@ -165,13 +191,16 @@ def _make_tool_handlers(body_text: str, question_text: str):
         state["last_gates"] = gate_results
         if passed:
             state["payload"] = payload
-        return {
+        result: dict = {
             "accepted": passed,
             "gate_results": [
                 {"gate": g.gate, "passed": g.passed, "reason": g.reason}
                 for g in gate_results
             ],
         }
+        if filtered_non_yellow:
+            result["filtered_non_yellow"] = filtered_non_yellow
+        return result
 
     return verify, commit, state
 

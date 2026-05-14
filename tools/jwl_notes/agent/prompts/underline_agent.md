@@ -13,7 +13,11 @@ If the paragraph offers two or more distinct answers, use **multiple yellows —
 
 **Reread test:** speak the printed question, then speak the yellow phrase aloud. If the yellow is not a *grammatical, complete* answer to the question, extend it forward or backward inside the source until it is.
 
-### Other colors (2-6 words; cap of 8 words for inseparable units):
+### Other colors — OPPORTUNISTIC BONUS, not required
+
+Yellow is the only required color. Non-yellow phrases (green / pink / blue / purple) are bonus highlights — add one or two ONLY if you have something short and load-bearing. If you can't find a short non-yellow that fits, **ship with just yellows**. The operator would rather have a comment with one clean yellow and no extra colors than a comment with no underlines at all because you spent your budget chasing a green.
+
+**Rule for non-yellow phrases**: 2-6 words ideal, 8 absolute max. If you submit a non-yellow over 8 words, the orchestrator silently drops it from your submission and ships the rest. The submission is NOT rejected — the over-cap non-yellow just disappears. If you see `filtered_non_yellow` in the commit response, that's why.
 
 | Color | Job |
 |---|---|
@@ -26,7 +30,6 @@ If the paragraph offers two or more distinct answers, use **multiple yellows —
 - Demographic filler ("of both Jews")
 - Article-title repeats
 - Generic exhortations ("would do well to cultivate", "let us all") used as a yellow
-- Non-yellow phrases longer than 8 words
 - Whole sentences with surrounding context — the phrase must be load-bearing on its own
 - Paraphrasing — every phrase must appear character-exact in `body_paragraph_text`
 
@@ -66,14 +69,15 @@ This is accepted without gate-checking. Only use it when the body genuinely has 
 
 1. **Read** the question and `body_paragraph_text` carefully.
 2. **Decompose the question** into its required answer components. ("How did Jesus rely on God's Word when teaching, and what does this teach us?" has two components.)
-3. **Find the verbatim phrases** in the body that grammatically answer each component. These are your yellows.
+3. **Find the verbatim phrases** in the body that grammatically answer each component. These are your yellows. Yellow is the only required color.
 4. **Verify each candidate yellow** via `verify_phrase_verbatim` BEFORE committing. Curly apostrophes and en-dashes in source are common silent mismatches — the verify tool will catch them and show you the actual source span.
-5. **Add color underlines** for scripture-explainers (green), warnings (pink), weight (blue), comfort (purple). Each ≤ 8 words. Verify each.
-6. **Call `commit_underlines`** with the full payload + self_audit.
-7. **If rejected**, read the gate reasons and revise. Common failure modes and the surgical fix:
+5. **Optionally** add a non-yellow phrase or two (green / pink / blue / purple) if you have something short (≤ 6 words ideal) and load-bearing. Skip non-yellow entirely if nothing fits — shipping yellows-only is fine.
+6. **Call `commit_underlines` AS SOON AS your candidates have all verified `ok: true`.** Do not keep verifying additional phrases. The rule: after any round of `verify_phrase_verbatim` calls in which every candidate returned `ok: true`, your VERY NEXT tool call MUST be `commit_underlines`. If `commit_underlines` rejects your payload, revise; if it accepts (with or without `filtered_non_yellow`), you are done — stop.
+7. **If commit returns `accepted: false`**, read `gate_results` and revise surgically:
    - "yellows are not complete answers" → extend the yellow span until it grammatically completes the question
    - "phrase not verbatim" → run `verify_phrase_verbatim` on the offending phrase first to diagnose (smart-quote, paraphrase, etc.)
-   - "non-yellow > 8 words" → trim the non-yellow to its load-bearing core
+   - Re-commit immediately after the fix; do not start a new round of speculative verifies.
+   - Note: non-yellow over the 8-word cap will NOT show up here as a failure — it gets silently filtered from your submission. Look for `filtered_non_yellow` in the response if you want to know what was dropped.
 
 ## Your input
 
