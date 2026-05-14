@@ -179,15 +179,31 @@ CACHE_DIR = Path.home() / ".cache" / "jwl_research"
 
 
 def _fetch(url: str, timeout: int = 30) -> str:
-    """HTTP GET with disk cache (WOL pages are stable enough for our purposes)."""
+    """HTTP GET with disk cache + curl primary (urllib fallback). WOL's
+    CDN hangs reliably on Python urllib for some URL patterns; curl on
+    the same URL completes. Same pattern lives in jwl_notes._http_get,
+    agent/discover_week._fetch, agent/comment_agent._fetch_cached."""
+    import subprocess
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     key = re.sub(r"[^A-Za-z0-9]+", "_", url)[:200]
     cache_path = CACHE_DIR / f"{key}.html"
     if cache_path.exists():
         return cache_path.read_text(encoding="utf-8")
-    req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        html = resp.read().decode("utf-8", errors="replace")
+    html: str | None = None
+    try:
+        proc = subprocess.run(
+            ["curl", "-fsSL", "--max-time", str(timeout),
+             "-A", DEFAULT_UA, url],
+            capture_output=True, timeout=timeout + 5,
+        )
+        if proc.returncode == 0 and proc.stdout:
+            html = proc.stdout.decode("utf-8", errors="replace")
+    except (FileNotFoundError, Exception):
+        pass
+    if html is None:
+        req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            html = resp.read().decode("utf-8", errors="replace")
     cache_path.write_text(html, encoding="utf-8")
     return html
 

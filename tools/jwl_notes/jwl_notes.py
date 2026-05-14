@@ -177,6 +177,31 @@ def load_comments(path: Path) -> dict:
     return spec
 
 
+def _http_get(url: str, timeout: int = 30) -> str:
+    """HTTP GET with curl primary, urllib fallback. WOL's CDN hangs reliably
+    on Python urllib for some URL patterns (meetings, search, certain
+    article DocIds — same TLS keep-alive / chunked-transfer issue). curl
+    on the same URL completes fine. Same pattern lives in
+    agent/discover_week.py and agent/comment_agent.py."""
+    import subprocess
+    try:
+        proc = subprocess.run(
+            ["curl", "-fsSL", "--max-time", str(timeout),
+             "-A", DEFAULT_UA, url],
+            capture_output=True, timeout=timeout + 5,
+        )
+        if proc.returncode == 0 and proc.stdout:
+            return proc.stdout.decode("utf-8", errors="replace")
+    except FileNotFoundError:
+        pass  # curl not on PATH
+    except Exception:
+        pass
+    # Fallback: urllib
+    req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read().decode("utf-8", errors="replace")
+
+
 def fetch_wol_article(document_id: int, key_symbol: str = "w",
                       cache_dir: Path | None = None) -> str:
     """Fetch a WOL article HTML, caching to disk to avoid repeat hits."""
@@ -186,9 +211,7 @@ def fetch_wol_article(document_id: int, key_symbol: str = "w",
     if cache_path.exists():
         return cache_path.read_text(encoding="utf-8")
     url = f"https://wol.jw.org/en/wol/d/r1/lp-e/{document_id}"
-    req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        html = resp.read().decode("utf-8", errors="replace")
+    html = _http_get(url)
     cache_path.write_text(html, encoding="utf-8")
     return html
 
@@ -202,9 +225,7 @@ def fetch_wol_bible_chapter(book: int, chapter: int, key_symbol: str = "nwtsty",
     if cache_path.exists():
         return cache_path.read_text(encoding="utf-8")
     url = f"https://wol.jw.org/en/wol/b/r1/lp-e/{key_symbol}/{book}/{chapter}"
-    req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        html = resp.read().decode("utf-8", errors="replace")
+    html = _http_get(url)
     cache_path.write_text(html, encoding="utf-8")
     return html
 
