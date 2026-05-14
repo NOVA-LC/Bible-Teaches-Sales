@@ -150,6 +150,12 @@ MAX_ATTEMPTS = 25  # raised from 3 per operator: "should never fail, should keep
                    # has a bug. Safety: prevents infinite loops from runaway cost
                    # if a gate becomes impossible to satisfy.
 
+# Mirror Gate 11's hard_cap: once a comment type has been used this many times
+# in the current article, the orchestrator forbids the selector from picking
+# it again. Gate 11 fails when a type's count > 3 — so we block at 3 to keep
+# the next pick under cap. Soft-cap warnings (>2) do NOT trigger forbidding.
+GATE11_HARD_CAP = 3
+
 
 # Errors that no amount of retrying can fix — abort the run instead of
 # burning attempts. These come from the SDK as exception messages.
@@ -238,6 +244,16 @@ def _draft_with_gates(
 
     prior_types = [c.get("comment_type", "A") for c in prior_comments if c.get("comment_type")]
 
+    # Article-level Gate 11 enforcement: any type already at the hard cap is
+    # forbidden for this paragraph's selector. Without this, the selector's
+    # soft variety language gets overridden by paragraph-local fit (May 17
+    # picked Type F four times — caps at 3 — because each F was locally apt).
+    from collections import Counter
+    _type_counts = Counter(prior_types)
+    forbidden_types = sorted(
+        t for t, n in _type_counts.items() if n >= GATE11_HARD_CAP
+    )
+
     for attempt in range(1, MAX_ATTEMPTS + 1):
         prior_mechs = []
         prior_rels = []
@@ -263,6 +279,7 @@ def _draft_with_gates(
             "prior_named_relationships_this_week": sorted(set(prior_rels)),
             "prior_herd_moves_this_week": sorted(set(prior_herd)),
             "prior_types_used_this_article": prior_types,
+            "forbidden_types": forbidden_types,
             "attempt": attempt,
             "redraft_feedback": feedback,
         }
@@ -273,10 +290,31 @@ def _draft_with_gates(
             chosen_type = (selection.get("chosen_type") or "A").upper().strip()
             if chosen_type not in {"A", "B", "C", "D", "F", "H"}:
                 chosen_type = "A"
-            history.append(GateResult(
-                f"Type selector attempt {attempt}", True,
-                f"chose {chosen_type}: {selection.get('rationale', '')[:120]}"
-            ))
+            # Defensive: if the selector picked a forbidden type anyway,
+            # coerce to the first allowed alternative so Gate 11 can't fail
+            # mid-article. Selector should respect forbidden_types, but we
+            # don't trust soft constraints.
+            if chosen_type in forbidden_types:
+                allowed = [t for t in ("A", "F", "D", "H", "B", "C")
+                           if t not in forbidden_types]
+                if allowed:
+                    history.append(GateResult(
+                        f"Type selector attempt {attempt}", True,
+                        f"selector picked forbidden {chosen_type!r} "
+                        f"(forbidden={forbidden_types}); coerced to {allowed[0]}"
+                    ))
+                    chosen_type = allowed[0]
+                else:
+                    history.append(GateResult(
+                        f"Type selector attempt {attempt}", True,
+                        f"all types at cap (forbidden={forbidden_types}); "
+                        f"keeping {chosen_type} — Gate 11 will fail"
+                    ))
+            else:
+                history.append(GateResult(
+                    f"Type selector attempt {attempt}", True,
+                    f"chose {chosen_type}: {selection.get('rationale', '')[:120]}"
+                ))
         except Exception as e:
             if _is_fatal_worker_error(e):
                 raise SystemExit(

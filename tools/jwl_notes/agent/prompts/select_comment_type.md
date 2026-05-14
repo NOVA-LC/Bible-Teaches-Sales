@@ -26,13 +26,16 @@ You are NOT drafting the comment. You are picking the right tool for it.
   "body_paragraph_text": "the full paragraph text",
   "cited_scriptures": ["..."],
   "research_brief": "structured research from agent/research.py — cited verses, context, cross-refs, footnotes",
-  "prior_types_used_this_article": ["A", "F", "D", ...]  // for variety
+  "prior_types_used_this_article": ["A", "F", "D", ...],  // for variety
+  "forbidden_types": ["F", ...]                            // HARD constraint — see rule 0
 }
 ```
 
 ## Decision rules
 
-1. **Variety cap**: any type already used 3+ times in this article should be deprioritized. Try to land 4-6 distinct types across a 20-paragraph article.
+0. **`forbidden_types` is a HARD constraint, not a preference.** If a type appears in `forbidden_types`, you MUST NOT pick it. The orchestrator has already determined that picking this type would fail Gate 11 (article-level comment-type variety). Picking a forbidden type will be overridden by the orchestrator and waste an API call. If `forbidden_types` is `[]` or absent, ignore this rule.
+
+1. **Variety cap (soft)**: any type already used 3+ times in this article should be deprioritized. Try to land 4-6 distinct types across a 20-paragraph article. This is a preference; rule 0 is the hard cap.
 
 2. **Paragraph type match**:
    - If the paragraph names a real carried weight (suffering, doubt, exhaustion, invisibility) → lean **F**
