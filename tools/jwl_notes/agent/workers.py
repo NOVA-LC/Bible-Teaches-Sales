@@ -49,7 +49,10 @@ def load_dotenv(env_path: Path | None = None) -> None:
             continue
         key, _, value = line.partition("=")
         key, value = key.strip(), value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
+        # Set the var if it's missing OR currently empty. An empty shell-set
+        # var (e.g., `export ANTHROPIC_API_KEY=` in .zshrc) would otherwise
+        # silently block .env from loading the real key.
+        if key and not os.environ.get(key):
             os.environ[key] = value
 
 
