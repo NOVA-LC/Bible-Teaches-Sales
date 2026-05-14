@@ -203,33 +203,46 @@ def gate2_variety_across_week(comments: list[dict]) -> GateResult:
     vary — that's harder to check programmatically; the critic catches it.
     """
     name = "Gate 2 (variety across week)"
-    opener_seen, rotation_seen = {}, {}
+    # Tolerance: Tyler's actual samples use only 3-4 opener forms across
+    # all his comments ("you know how" / "when we look at" / "it makes me
+    # think of"). Mechanical block-on-any-dup is too strict for his voice.
+    # New rule: block only when an opener or rotation is used 3+ times in
+    # one article (genuine monotone), allow up to 2 uses (natural reuse).
+    opener_counts: dict[str, list] = {}
+    rotation_counts: dict[str, list] = {}
     for c in comments:
         beats = c.get("tagged_beats", [])
         if not beats:
             continue
         para = c.get("paragraph_number", "?")
         opener = _normalize_mechanic(beats[0].get("mechanic") or "")
-        if opener in opener_seen:
-            return GateResult(
-                name, False,
-                f"opener mechanic {opener!r} repeats: ¶{opener_seen[opener]} and ¶{para}"
-            )
-        opener_seen[opener] = para
-        # Rotation = third beat if 4 slots, second beat if 3 slots
+        opener_counts.setdefault(opener, []).append(para)
         rotation_idx = 2 if len(beats) >= 4 else 1
         if rotation_idx < len(beats) - 1:
             rotation = _normalize_mechanic(beats[rotation_idx].get("mechanic") or "")
-            if rotation in rotation_seen:
-                return GateResult(
-                    name, False,
-                    f"rotation {rotation!r} repeats: ¶{rotation_seen[rotation]} and ¶{para}"
-                )
-            rotation_seen[rotation] = para
-    return GateResult(
-        name, True,
-        f"{len(opener_seen)} unique openers + {len(rotation_seen)} unique rotations"
-    )
+            rotation_counts.setdefault(rotation, []).append(para)
+
+    overused_openers = {o: ps for o, ps in opener_counts.items() if len(ps) >= 3}
+    overused_rotations = {r: ps for r, ps in rotation_counts.items() if len(ps) >= 3}
+    if overused_openers:
+        first = next(iter(overused_openers))
+        return GateResult(
+            name, False,
+            f"opener mechanic {first!r} used {len(overused_openers[first])}x "
+            f"in ¶{overused_openers[first]} (cap is 2 — pick a different opener)"
+        )
+    if overused_rotations:
+        first = next(iter(overused_rotations))
+        return GateResult(
+            name, False,
+            f"rotation mechanic {first!r} used {len(overused_rotations[first])}x "
+            f"in ¶{overused_rotations[first]} (cap is 2)"
+        )
+    dups = [o for o, ps in opener_counts.items() if len(ps) == 2]
+    summary = f"{len(opener_counts)} opener variants, {len(rotation_counts)} rotation variants"
+    if dups:
+        summary += f"; opener doubles (allowed): {dups}"
+    return GateResult(name, True, summary)
 
 
 # ----------------------------------------------------------------------
@@ -690,7 +703,8 @@ def _self_test() -> int:
     if r.passed:
         print("FAIL gate3 should reject spineless content"); failures += 1
 
-    # Gate 2 — variety
+    # Gate 2 — variety. New rule: allow up to 2 of any opener/rotation,
+    # block at 3+.
     two_same = [
         {"paragraph_number": 1, "tagged_beats": [
             {"text": "x", "mechanic": "Bourdain climactic-moment opener"},
@@ -704,8 +718,17 @@ def _self_test() -> int:
         ]},
     ]
     r = gate2_variety_across_week(two_same)
+    if not r.passed:
+        print("FAIL gate2 should ALLOW exactly 2 duplicates:", r); failures += 1
+
+    three_same = two_same + [{"paragraph_number": 3, "tagged_beats": [
+        {"text": "x", "mechanic": "Bourdain climactic-moment opener"},
+        {"text": "y", "mechanic": "Schafer concession-pivot"},
+        {"text": "z", "mechanic": "Holiday Marcus-style aphorism"},
+    ]}]
+    r = gate2_variety_across_week(three_same)
     if r.passed:
-        print("FAIL gate2 should detect repeated opener"); failures += 1
+        print("FAIL gate2 should block at 3+ same opener"); failures += 1
 
     # Gate 4 — domestic scene
     notes = [
