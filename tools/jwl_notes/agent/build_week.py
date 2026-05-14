@@ -151,6 +151,22 @@ MAX_ATTEMPTS = 25  # raised from 3 per operator: "should never fail, should keep
                    # if a gate becomes impossible to satisfy.
 
 
+# Errors that no amount of retrying can fix — abort the run instead of
+# burning attempts. These come from the SDK as exception messages.
+_FATAL_ERROR_MARKERS = (
+    "credit balance is too low",  # billing exhausted
+    "invalid x-api-key",            # auth failure
+    "authentication_error",
+    "permission_error",
+    "Your account has been disabled",
+)
+
+
+def _is_fatal_worker_error(err: Exception) -> bool:
+    msg = str(err)
+    return any(marker in msg for marker in _FATAL_ERROR_MARKERS)
+
+
 def _issue_month_year(issue: int | None) -> str:
     """20260300 → 'March 2026'."""
     if not issue:
@@ -206,6 +222,15 @@ def _draft_with_gates(
             history.append(GateResult(
                 f"draft attempt {attempt}", False, f"worker error: {e}"
             ))
+            if _is_fatal_worker_error(e):
+                history.append(GateResult(
+                    "FATAL", False,
+                    "billing or auth error — no retry will fix this. Aborting."
+                ))
+                raise SystemExit(
+                    "\n❌ FATAL: " + str(e)[:200] +
+                    "\n   Fix at https://console.anthropic.com/ then rerun."
+                )
             continue
         if "error" in comment:
             history.append(GateResult(
@@ -270,6 +295,11 @@ def _draft_underlines_with_gates(
             history.append(GateResult(
                 f"underline attempt {attempt}", False, f"worker error: {e}"
             ))
+            if _is_fatal_worker_error(e):
+                raise SystemExit(
+                    "\n❌ FATAL: " + str(e)[:200] +
+                    "\n   Fix at https://console.anthropic.com/ then rerun."
+                )
             continue
         if "error" in ul:
             history.append(GateResult(

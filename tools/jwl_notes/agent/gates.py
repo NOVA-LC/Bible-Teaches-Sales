@@ -68,6 +68,58 @@ ALL_MECHANICS = (
     OPENER_MECHANICS | LABEL_MECHANICS | ROTATION_MECHANICS | LANDING_MECHANICS
 )
 
+
+def _normalize_mechanic(name: str) -> str:
+    """Normalize a mechanic name to a token-set string for tolerant comparison.
+
+    Strips: case, punctuation, em-dashes, parentheticals, quotes (smart and
+    straight), hyphens, underscores. Collapses whitespace. Returns the
+    space-separated normalized token string.
+    """
+    s = name.lower()
+    s = re.sub(r"\s*\([^)]*\)", " ", s)         # strip parentheticals
+    s = re.sub(r"[—–\-_'’‘\"“”]+", " ", s)
+    s = re.sub(r"[^\w\sé]", " ", s)              # strip remaining punct, keep accents
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def _tokens(s: str) -> list[str]:
+    return [t for t in _normalize_mechanic(s).split() if t]
+
+
+_MENU_TOKENS = {m: _tokens(m) for m in ALL_MECHANICS}
+_OPENER_TOKENS = {m: _tokens(m) for m in OPENER_MECHANICS}
+_LANDING_TOKENS = {m: _tokens(m) for m in LANDING_MECHANICS}
+
+
+def _matches_canonical(name: str, canonical_tokens_map: dict) -> bool:
+    """A name matches a canonical mechanic iff every canonical token appears
+    in the name's tokens (in any order, multiset)."""
+    if not name:
+        return False
+    nt = _tokens(name)
+    if not nt:
+        return False
+    nset = nt  # ordered list — but we just need superset semantics
+    for canon, ctoks in canonical_tokens_map.items():
+        # all canonical tokens present in the input tokens
+        if all(t in nset for t in ctoks):
+            return True
+    return False
+
+
+def _is_known_mechanic(name: str) -> bool:
+    return _matches_canonical(name, _MENU_TOKENS)
+
+
+def _is_opener_mechanic(name: str) -> bool:
+    return _matches_canonical(name, _OPENER_TOKENS)
+
+
+def _is_landing_mechanic(name: str) -> bool:
+    return _matches_canonical(name, _LANDING_TOKENS)
+
 # Tyler-overused openers — banned even though the underlying mechanic exists
 FORBIDDEN_OPENING_PHRASES = [
     "Look at",
@@ -116,7 +168,7 @@ def gate1_mechanics_tagged(comment: dict) -> GateResult:
         return GateResult(name, False, f"need ≥3 tagged beats, got {len(beats)}")
     unknown = [
         b.get("mechanic") for b in beats
-        if b.get("mechanic") not in ALL_MECHANICS
+        if not _is_known_mechanic(b.get("mechanic") or "")
     ]
     if unknown:
         return GateResult(
@@ -125,13 +177,13 @@ def gate1_mechanics_tagged(comment: dict) -> GateResult:
         )
     # Opener must be from opener menu, landing from landing menu (last beat)
     opener_mech = beats[0].get("mechanic")
-    if opener_mech not in OPENER_MECHANICS:
+    if not _is_opener_mechanic(opener_mech or ""):
         return GateResult(
             name, False,
             f"first beat mechanic '{opener_mech}' is not an opener mechanic"
         )
     landing_mech = beats[-1].get("mechanic")
-    if landing_mech not in LANDING_MECHANICS:
+    if not _is_landing_mechanic(landing_mech or ""):
         return GateResult(
             name, False,
             f"last beat mechanic '{landing_mech}' is not a landing mechanic"
@@ -157,21 +209,21 @@ def gate2_variety_across_week(comments: list[dict]) -> GateResult:
         if not beats:
             continue
         para = c.get("paragraph_number", "?")
-        opener = beats[0].get("mechanic")
+        opener = _normalize_mechanic(beats[0].get("mechanic") or "")
         if opener in opener_seen:
             return GateResult(
                 name, False,
-                f"opener mechanic '{opener}' repeats: ¶{opener_seen[opener]} and ¶{para}"
+                f"opener mechanic {opener!r} repeats: ¶{opener_seen[opener]} and ¶{para}"
             )
         opener_seen[opener] = para
         # Rotation = third beat if 4 slots, second beat if 3 slots
         rotation_idx = 2 if len(beats) >= 4 else 1
         if rotation_idx < len(beats) - 1:
-            rotation = beats[rotation_idx].get("mechanic")
+            rotation = _normalize_mechanic(beats[rotation_idx].get("mechanic") or "")
             if rotation in rotation_seen:
                 return GateResult(
                     name, False,
-                    f"rotation '{rotation}' repeats: ¶{rotation_seen[rotation]} and ¶{para}"
+                    f"rotation {rotation!r} repeats: ¶{rotation_seen[rotation]} and ¶{para}"
                 )
             rotation_seen[rotation] = para
     return GateResult(
