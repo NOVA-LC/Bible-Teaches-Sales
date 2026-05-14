@@ -267,13 +267,18 @@ TOOLS[-1]["cache_control"] = {"type": "ephemeral"}
 # Main agent loop
 # --------------------------------------------------------------------
 
-def draft_underlines_with_agent(para, model: str = DEFAULT_MODEL):
+def draft_underlines_with_agent(para, model: str = DEFAULT_MODEL, cost_tracker=None):
     """Drop-in replacement for build_week._draft_underlines_with_gates.
 
     Args:
         para: ParagraphData (from build_week.py). Uses .paragraph_number,
               .body_pid, .question_text, .body_text, .cited_scriptures.
         model: SDK model name. Default sonnet-4-6 per handoff economics.
+        cost_tracker: Optional shared CostTracker (from comment_agent).
+            When invoked by the lesson agent, pass the article-level
+            tracker so per-paragraph token spend rolls up into the
+            $20 kill switch. None → backward-compat (build_week's existing
+            path); usage isn't tracked.
 
     Returns:
         (underline_payload | None, list[GateResult])
@@ -366,6 +371,15 @@ def draft_underlines_with_agent(para, model: str = DEFAULT_MODEL):
                     f"   Fix at https://console.anthropic.com/ then rerun."
                 )
             return (None, history)
+
+        # Roll up token usage into the shared tracker if one was passed
+        # (lesson agent path; backward-compat: None when invoked from build_week).
+        if cost_tracker is not None:
+            try:
+                cost_tracker.add_usage(getattr(resp, "usage", None))
+                cost_tracker.turn_count += 1
+            except Exception:
+                pass
 
         tool_uses = [b for b in resp.content if getattr(b, "type", None) == "tool_use"]
 

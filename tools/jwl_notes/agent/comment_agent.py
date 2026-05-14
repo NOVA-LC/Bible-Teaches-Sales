@@ -736,6 +736,7 @@ def draft_comment_with_agent(
     prior_state: dict,
     model: str = DEFAULT_MODEL,
     extra_constraints: dict | None = None,
+    cost_tracker: "CostTracker | None" = None,
 ):
     """Drop-in replacement for build_week._draft_with_gates.
 
@@ -743,6 +744,11 @@ def draft_comment_with_agent(
     via commit_comment({"error": ...}), returns (None, history) with a
     GateResult capturing the agent's reason. On turn-budget exhaustion,
     returns (None, history) with the last gate trace.
+
+    When invoked by the lesson agent, pass a shared `cost_tracker` so
+    per-paragraph spend rolls up into the article-level kill switch.
+    Otherwise a fresh tracker is created and the summary is logged in
+    history (build_week's existing path).
     """
     load_dotenv()
     extra_constraints = extra_constraints or {
@@ -752,7 +758,7 @@ def draft_comment_with_agent(
         "experience_seed": None,
     }
     history: list[GateResult] = []
-    tracker = CostTracker()
+    tracker = cost_tracker if cost_tracker is not None else CostTracker()
 
     try:
         from anthropic import Anthropic
