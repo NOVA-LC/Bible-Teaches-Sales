@@ -536,6 +536,14 @@ def main() -> int:
                         "commit_underlines tools, so it can self-correct "
                         "verbatim/paraphrase errors inside one context window "
                         "instead of restarting 25 times.")
+    p.add_argument("--use-agent-comments", action="store_true",
+                   help="Use the tool-using comment agent (comment_agent.py) "
+                        "instead of the chained _draft_with_gates loop. The "
+                        "agent has suggest_type, fetch_research, "
+                        "look_up_insight, check_register, score_with_critic, "
+                        "and commit_comment tools — drives research depth and "
+                        "self-critique in one context window. Honors "
+                        "forbidden_types and extra_constraints as hard.")
     args = p.parse_args()
 
     load_dotenv()
@@ -630,11 +638,40 @@ def main() -> int:
 
         # Comment (only if there's a printed question to answer)
         if para.question_pid is not None:
-            comment, history = _draft_with_gates(
-                para, article_meta,
-                list(drafted_comments.values()),
-                worker, log_path,
-            )
+            if args.use_agent_comments:
+                from comment_agent import draft_comment_with_agent  # type: ignore
+                # Build prior_state from prior comments (mirrors what
+                # _draft_with_gates computes internally — pre-Counter logic
+                # at lines 245-282 of this file).
+                _prior = list(drafted_comments.values())
+                _prior_types = [c.get("comment_type", "A") for c in _prior if c.get("comment_type")]
+                from collections import Counter as _Counter
+                _type_counts = _Counter(_prior_types)
+                _prior_mechs, _prior_rels, _prior_herd = [], [], []
+                for c in _prior:
+                    _prior_mechs.extend(b.get("mechanic") for b in c.get("tagged_beats", []))
+                    ds = c.get("domestic_scene") or {}
+                    if ds.get("present") and ds.get("named_relationship"):
+                        _prior_rels.append(ds["named_relationship"])
+                    _prior_herd.extend(c.get("herd_distinctive_moves") or [])
+                prior_state = {
+                    "prior_types_used_this_article": _prior_types,
+                    "prior_mechanics_this_week": sorted(set(_prior_mechs)),
+                    "prior_named_relationships_this_week": sorted(set(_prior_rels)),
+                    "prior_herd_moves_this_week": sorted(set(_prior_herd)),
+                    "forbidden_types": sorted(
+                        t for t, n in _type_counts.items() if n >= GATE11_HARD_CAP
+                    ),
+                }
+                comment, history = draft_comment_with_agent(
+                    para, article_meta, prior_state,
+                )
+            else:
+                comment, history = _draft_with_gates(
+                    para, article_meta,
+                    list(drafted_comments.values()),
+                    worker, log_path,
+                )
             for g in history:
                 print(f"  {g}", flush=True)
                 log_fh.write(f"{g}\n")
