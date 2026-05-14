@@ -148,18 +148,53 @@ class CostTracker:
 # Tool implementations — closures over paragraph + worker + tracker
 # ----------------------------------------------------------------------
 
-def _fetch_cached(url: str, timeout: int = 30) -> str:
-    """HTTP GET with disk cache. Mirrors research.py's _fetch pattern."""
+def _fetch_cached(url: str, timeout: int = 30, retries: int = 1) -> str:
+    """HTTP GET with disk cache. WOL's search endpoint hangs reliably on
+    Python urllib (curl on the same URL completes in ~10s — likely a TLS
+    keep-alive / chunked-transfer interaction). We shell out to curl as
+    the primary path; urllib is a last-resort fallback if curl isn't on
+    PATH. research.py's chapter fetches don't have this problem and stay
+    on urllib (they hit a different URL pattern)."""
+    import subprocess
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     key = re.sub(r"[^A-Za-z0-9]+", "_", url)[:200]
     cache_path = CACHE_DIR / f"{key}.html"
     if cache_path.exists():
         return cache_path.read_text(encoding="utf-8")
-    req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        html = resp.read().decode("utf-8", errors="replace")
-    cache_path.write_text(html, encoding="utf-8")
-    return html
+
+    last_err: Exception | None = None
+    for attempt in range(retries + 1):
+        # Primary: curl
+        try:
+            proc = subprocess.run(
+                ["curl", "-fsSL", "--max-time", str(timeout),
+                 "-A", DEFAULT_UA, url],
+                capture_output=True, timeout=timeout + 5,
+            )
+            if proc.returncode == 0 and proc.stdout:
+                html = proc.stdout.decode("utf-8", errors="replace")
+                cache_path.write_text(html, encoding="utf-8")
+                return html
+            last_err = RuntimeError(
+                f"curl exit {proc.returncode}: {proc.stderr.decode('utf-8', errors='replace')[:200]}"
+            )
+        except FileNotFoundError:
+            # curl not on PATH — fall through to urllib
+            last_err = FileNotFoundError("curl not on PATH; falling back to urllib")
+            break
+        except Exception as e:
+            last_err = e
+            continue
+
+    # Fallback: urllib (only reached if curl unavailable)
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": DEFAULT_UA})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            html = resp.read().decode("utf-8", errors="replace")
+        cache_path.write_text(html, encoding="utf-8")
+        return html
+    except Exception as e:
+        raise (last_err or e)
 
 
 def _strip_html(html: str) -> str:
@@ -266,17 +301,21 @@ def _make_tool_handlers(
         except Exception as e:
             return {"ok": False, "reason": f"search fetch failed: {e}"}
         # Find the first Insight result. WOL search results render as
-        # <a class="..."> with hrefs like /en/wol/d/r1/lp-e/<docid>. Insight
-        # entries are scoped to publication 'it' — the p=it query restricts
-        # results, so any /en/wol/d/r1/lp-e/ link in the result body is an
-        # Insight entry. Take the first.
+        # <a class="..."> with hrefs like:
+        #   /en/wol/d/r1/lp-e/1001070107?q=skin+for+skin&amp;p=par
+        # The p=it query restricts the results to Insight, so any matching
+        # link in the body is an Insight entry. Take the first.
         m = re.search(
-            r'href="(/en/wol/d/r1/lp-e/\d+(?:#[^"]*)?)"',
+            r'href="(/en/wol/d/r1/lp-e/\d+(?:[?#][^"]*)?)"',
             html,
         )
         if not m:
             return {"ok": False, "reason": f"no Insight entry for {topic!r}"}
-        entry_url = f"https://wol.jw.org{m.group(1)}"
+        # HTML-unescape: WOL renders &amp; in href, urllib sees the entity
+        # literally and the request 400s. Strip query params entirely — the
+        # base entry URL alone resolves to the Insight article.
+        href = m.group(1).split("?")[0].split("#")[0]
+        entry_url = f"https://wol.jw.org{href}"
         try:
             entry_html = _fetch_cached(entry_url)
         except Exception as e:
