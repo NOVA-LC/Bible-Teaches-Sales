@@ -111,6 +111,11 @@ class WeekDiscovery:
     # LAC parts (only Discussion-type produce notes)
     lac_parts: list[LACPart] = field(default_factory=list)
 
+    # Congregation Bible Study (CBS — separate publication, usually lfb)
+    cbs_publication: str | None = None       # e.g., "lfb"
+    cbs_document_ids: list[int] = field(default_factory=list)  # one per lesson
+    cbs_lesson_label: str | None = None      # e.g., "lessons 84-85"
+
     # Errors / warnings encountered during discovery
     warnings: list[str] = field(default_factory=list)
 
@@ -391,10 +396,66 @@ def discover(study_date: str | None = None,
             out.bible_reading_chapter_start = c_start
             out.bible_reading_chapter_end = c_end
             out.lac_parts = _parse_lac_parts(mwb_html)
+            # Find CBS lesson DocIds by parsing the workbook's "Congregation
+            # Bible Study" section. The workbook embeds a popover URL like
+            #   /en/wol/pc/r1/lp-e/<mwb_doc>/11/0
+            # which renders the lessons inline. Fetching that popover gives
+            # us the actual lesson DocIds (e.g., lfb lessons 84+85 = 1102016094
+            # + 1102016095 for May 17).
+            cbs_doc_ids, cbs_label, cbs_pub = _parse_cbs_lessons(
+                mwb_html, out.mwb_document_id
+            )
+            out.cbs_document_ids = cbs_doc_ids
+            out.cbs_lesson_label = cbs_label
+            out.cbs_publication = cbs_pub
         except Exception as e:
             out.warnings.append(f"mwb workbook fetch failed: {e}")
 
     return out
+
+
+def _parse_cbs_lessons(mwb_html: str, mwb_doc_id: int) -> tuple[list[int], str | None, str | None]:
+    """Find the CBS lesson DocIds + label + publication symbol from the
+    workbook's 'Congregation Bible Study' section.
+
+    The workbook embeds a popover URL like:
+        <a href="/en/wol/pc/r1/lp-e/<mwb_doc>/11/0"><em>lfb</em> lessons 84-85</a>
+
+    Fetching that popover renders the actual lesson DocIds. We extract them
+    by searching for /lp-e/<docid> patterns in the popover HTML.
+
+    Returns (doc_ids, label, publication_symbol). Empty list / None on failure.
+    """
+    # Find the CBS link in the workbook — look for "Congregation Bible Study"
+    # followed by an anchor to a /pc/ popover URL.
+    cbs_idx = mwb_html.find("Congregation Bible Study")
+    if cbs_idx < 0:
+        return ([], None, None)
+    chunk = mwb_html[cbs_idx:cbs_idx + 2000]
+    # Pull the popover href + the visible label (e.g., "lfb lessons 84-85")
+    m = re.search(
+        r'<a\s+href="(/en/wol/pc/[^"]+)"[^>]*>(.*?)</a>',
+        chunk, re.DOTALL,
+    )
+    if not m:
+        return ([], None, None)
+    popover_url = f"https://wol.jw.org{m.group(1)}"
+    label_html = m.group(2)
+    label_text = re.sub(r"<[^>]+>", " ", label_html)
+    label_text = re.sub(r"\s+", " ", label_text).strip()
+    # Publication symbol — pulled from <em>lfb</em> inside the anchor
+    pub_m = re.search(r"<em[^>]*>([a-zA-Z]+)</em>", label_html)
+    publication = pub_m.group(1) if pub_m else None
+    # Fetch the popover; the rendered lessons embed their own DocIds
+    try:
+        pop_html = _fetch(popover_url)
+    except Exception:
+        return ([], label_text, publication)
+    # Lesson DocIds are 10-digit, lfb DocIds are in the 11020xxxxx range
+    doc_ids = sorted(set(
+        int(d) for d in re.findall(r"/lp-e/(11\d{8})", pop_html)
+    ))
+    return (doc_ids, label_text, publication)
 
 
 # ----------------------------------------------------------------------

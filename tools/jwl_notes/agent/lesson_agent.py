@@ -44,6 +44,71 @@ from build_week import (  # type: ignore  # noqa: E402
     GATE11_HARD_CAP,
     _issue_month_year,
 )
+import re as _re
+
+
+def scrape_cbs_lesson(html: str, doc_id: int, lesson_number: int | None = None) -> list[ParagraphData]:
+    """Scrape a CBS lfb lesson into ParagraphData. lfb structure differs from
+    WT:
+      - 4 body paragraphs per lesson, class="sb"
+      - 1 shared 'Questions:' block (class="sc")
+      - Cited scriptures listed in a final class="sc" paragraph
+
+    Each body paragraph gets the lesson-wide question block + the parsed
+    cited scriptures. The comment anchor (data_pid) is the sb paragraph's
+    own pid (CBS comments display inline at the paragraph).
+    """
+    # Pull all <p> with data-pid + class
+    paragraphs: list[ParagraphData] = []
+    sb_re = _re.compile(
+        r'<p[^>]+id="p\d+"[^>]+data-pid="(\d+)"[^>]+class="sb"[^>]*>(.*?)</p>',
+        _re.DOTALL,
+    )
+    sc_re = _re.compile(
+        r'<p[^>]+id="p\d+"[^>]+data-pid="(\d+)"[^>]+class="sc"[^>]*>(.*?)</p>',
+        _re.DOTALL,
+    )
+    # Find the lesson-wide "Questions" block + cited scriptures
+    question_text = None
+    cited_scriptures: list[str] = []
+    for m in sc_re.finditer(html):
+        body = m.group(2)
+        text = _re.sub(r"<[^>]+>", " ", body)
+        text = _re.sub(r"\s+", " ", text).strip()
+        if text.lower().startswith("questions:"):
+            question_text = text
+        elif text and not text.startswith("“"):
+            # Heuristic: cited scriptures are the sc paragraphs that aren't
+            # memory-verse quotes (which start with curly quote) or Questions.
+            # Pull explicit Bible refs from the text.
+            for ref_m in _re.finditer(
+                r"\b(\d?\s?[A-Z][a-z]+\.?\s+\d+:\d+(?:[-–]\d+)?(?:,\s*\d+(?:[-–]\d+)?)*)",
+                text,
+            ):
+                cited_scriptures.append(ref_m.group(1).strip())
+
+    # Body paragraphs — extract each sb paragraph's text and build ParagraphData
+    for visible_num, m in enumerate(sb_re.finditer(html), start=1):
+        body_pid = int(m.group(1))
+        body_html = m.group(2)
+        body_text = _re.sub(r"<[^>]+>", " ", body_html)
+        body_text = _re.sub(r"\s+", " ", body_text).strip()
+        # Strip leading paragraph number if present
+        body_text = _re.sub(r"^\d+\s+", "", body_text)
+        paragraphs.append(ParagraphData(
+            paragraph_number=visible_num,
+            body_pid=body_pid,
+            # CBS doesn't have per-paragraph question_pid. Use the body_pid
+            # itself as the question anchor — the comment will render at
+            # the paragraph itself (matches how CBS audience comments work
+            # in practice: comments respond to the lesson's discussion
+            # questions about a specific paragraph).
+            question_pid=body_pid,
+            question_text=question_text or f"(CBS lesson {lesson_number or doc_id} — comment on this paragraph)",
+            body_text=body_text,
+            cited_scriptures=cited_scriptures,
+        ))
+    return paragraphs
 from comment_agent import (  # type: ignore  # noqa: E402
     CostTracker,
     draft_comment_with_agent,
@@ -300,7 +365,56 @@ def _make_tool_handlers(state: LessonState):
                 "theme_scripture": wd.wt_theme_scripture,
                 "week_label": wd.week_label,
             }
-        else:  # mwb
+        elif tgt == "cbs":
+            # Congregation Bible Study — needs lfb (or current CBS publication)
+            # lesson DocIds discovered from the workbook.
+            if not wd.cbs_document_ids:
+                return {"ok": False,
+                        "reason": "no CBS lesson DocIds discovered from workbook",
+                        "warnings": warnings}
+            meta = {
+                # Use the FIRST lesson's DocId as the canonical anchor; scrape
+                # will fetch both lessons under cbs_document_ids.
+                "document_id": wd.cbs_document_ids[0],
+                "key_symbol": wd.cbs_publication or "lfb",
+                "issue": 0,
+                "title": f"Congregation Bible Study — {wd.cbs_lesson_label or 'this week'}",
+                "source": f"Congregation Bible Study ({wd.cbs_publication or 'lfb'} {wd.cbs_lesson_label or ''})".strip(),
+                "url": f"https://wol.jw.org/en/wol/d/r1/lp-e/{wd.cbs_document_ids[0]}",
+                "theme_scripture": None,
+                "week_label": wd.week_label,
+                "cbs_document_ids": wd.cbs_document_ids,  # all lessons for scrape
+                "cbs_lesson_label": wd.cbs_lesson_label,
+            }
+        elif tgt == "gems":
+            # Spiritual Gems — Bible reading range. The lesson agent doesn't
+            # draft paragraph comments here; it dispatches to gems_run for
+            # verse drafting. We still return meta so the agent can decide.
+            if not wd.bible_reading_book:
+                return {"ok": False,
+                        "reason": "no Bible reading discovered for Spiritual Gems",
+                        "warnings": warnings}
+            chap_label = (
+                f"{wd.bible_reading_book_name} {wd.bible_reading_chapter_start}"
+                f"-{wd.bible_reading_chapter_end}"
+                if wd.bible_reading_chapter_end != wd.bible_reading_chapter_start
+                else f"{wd.bible_reading_book_name} {wd.bible_reading_chapter_start}"
+            )
+            meta = {
+                "document_id": 0,  # gems writes per-chapter Bible-mode JSON
+                "key_symbol": "nwtsty",
+                "issue": 0,
+                "title": f"Spiritual Gems — {chap_label}",
+                "source": f"Spiritual Gems — Bible reading {chap_label}",
+                "url": None,
+                "theme_scripture": None,
+                "week_label": wd.week_label,
+                "bible_reading_book": wd.bible_reading_book,
+                "bible_reading_book_name": wd.bible_reading_book_name,
+                "bible_reading_chapter_start": wd.bible_reading_chapter_start,
+                "bible_reading_chapter_end": wd.bible_reading_chapter_end,
+            }
+        else:  # mwb (legacy / not currently supported via lesson_agent)
             if wd.mwb_document_id is None:
                 return {"ok": False, "reason": "no mwb DocumentId discovered",
                         "warnings": warnings}
@@ -324,8 +438,24 @@ def _make_tool_handlers(state: LessonState):
         did = document_id or state.article_meta["document_id"]
         ks = key_symbol or state.article_meta.get("key_symbol", "w")
         try:
-            html = fetch_wol_article(did, ks)
-            paragraphs = scrape_article(html)
+            # CBS target: fetch each lesson DocId separately, concatenate
+            # ParagraphData lists (re-numbering visible paragraph numbers
+            # across lessons so the lesson agent sees them as 1..N).
+            if state.target == "cbs":
+                lesson_ids = (state.article_meta or {}).get("cbs_document_ids") or [did]
+                all_paragraphs: list[ParagraphData] = []
+                visible_offset = 0
+                for lesson_idx, lesson_did in enumerate(lesson_ids, start=1):
+                    lesson_html = fetch_wol_article(lesson_did, ks)
+                    lp = scrape_cbs_lesson(lesson_html, lesson_did, lesson_idx)
+                    for p in lp:
+                        p.paragraph_number += visible_offset
+                    all_paragraphs.extend(lp)
+                    visible_offset += len(lp)
+                paragraphs = all_paragraphs
+            else:
+                html = fetch_wol_article(did, ks)
+                paragraphs = scrape_article(html)
         except Exception as e:
             return {"ok": False, "reason": f"scrape failed: {e}"}
         # Apply the test/debug paragraph filter if set on the LessonState
@@ -814,6 +944,13 @@ def run_lesson(study_date: str, target: str = "wt",
     """Run the lesson agent end-to-end. Returns process exit code."""
     load_dotenv()
 
+    # Gems target is structurally different (verse anchors, not paragraph
+    # anchors; uses verse_comment.md prompt; writes one JSON per chapter).
+    # Dispatch to gems_run.run_gems and return its exit code directly.
+    if target == "gems":
+        from gems_run import run_gems  # type: ignore
+        return run_gems(study_date=study_date, model=model)
+
     try:
         from anthropic import Anthropic
     except ImportError:
@@ -994,7 +1131,12 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--study-date", required=True,
                    help="ISO date in the JW study week, e.g., 2026-05-17")
-    p.add_argument("--target", choices=["wt", "mwb"], default="wt")
+    p.add_argument("--target", choices=["wt", "mwb", "cbs", "gems"], default="wt",
+                   help="Which lesson to draft: wt (Sunday Watchtower study), "
+                        "cbs (midweek Congregation Bible Study — lfb lessons), "
+                        "gems (Spiritual Gems verse comments for the week's "
+                        "Bible reading), mwb (midweek workbook — legacy, may "
+                        "not scrape correctly).")
     p.add_argument("--email", action="store_true",
                    help="Email the JSON via Resend after commit (requires RESEND_API_KEY)")
     p.add_argument("--model", default=DEFAULT_MODEL,
