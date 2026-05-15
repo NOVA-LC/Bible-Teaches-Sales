@@ -20,12 +20,42 @@ from pathlib import Path
 
 
 def _send(payload: dict, api_key: str) -> None:
+    """POST to Resend. Try curl primary (avoids Cloudflare bot-flagging that
+    rejected urllib's default UA with 'error 1010'), urllib as fallback."""
+    import subprocess
+    body = json.dumps(payload).encode("utf-8")
+    # curl primary — sends a realistic UA + handles TLS/keep-alive cleanly
+    try:
+        proc = subprocess.run(
+            ["curl", "-sS", "-X", "POST",
+             "-H", f"Authorization: Bearer {api_key}",
+             "-H", "Content-Type: application/json",
+             "-H", "User-Agent: Mozilla/5.0 (compatible; jwl-notes-agent/1.0)",
+             "--data-binary", "@-",
+             "-w", "\n__HTTP_CODE__:%{http_code}",
+             "https://api.resend.com/emails"],
+            input=body, capture_output=True, timeout=120,
+        )
+        out = proc.stdout.decode("utf-8", errors="replace")
+        # Split off the trailing http_code marker
+        body_text, _, code_line = out.rpartition("\n__HTTP_CODE__:")
+        http_code = code_line.strip() if code_line else "?"
+        print(f"Resend status: {http_code}")
+        print(f"Resend body: {body_text}")
+        if http_code.startswith("2"):
+            return
+        print(f"Resend non-2xx response (exit {proc.returncode})", file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError:
+        pass  # curl not on PATH — fall through to urllib
+    # Fallback: urllib (with a sane UA)
     req = urllib.request.Request(
         "https://api.resend.com/emails",
-        data=json.dumps(payload).encode("utf-8"),
+        data=body,
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (compatible; jwl-notes-agent/1.0)",
         },
         method="POST",
     )
