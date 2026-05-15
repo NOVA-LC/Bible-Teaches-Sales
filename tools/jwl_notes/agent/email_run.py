@@ -12,6 +12,7 @@ import base64
 import glob
 import json
 import os
+import re
 import sys
 import urllib.request
 import urllib.error
@@ -52,7 +53,10 @@ def main() -> int:
         print("ERROR: RESEND_API_KEY not set", file=sys.stderr)
         return 2
     sender = os.environ.get("RESEND_FROM", "Tyler <tyler@gonenova.com>")
-    recipient = os.environ.get("RESEND_TO", "tylerjavonbrown@gmail.com")
+    # RESEND_TO can be a single address or a comma/semicolon-separated list
+    # for multiple recipients (e.g., "tyler@gonenova.com, tylerjavonbrown@gmail.com").
+    recipient_raw = os.environ.get("RESEND_TO", "tylerjavonbrown@gmail.com")
+    recipients = [r.strip() for r in re.split(r"[,;]", recipient_raw) if r.strip()]
 
     json_paths = sorted(glob.glob(args.comments_glob))
     attachments = []
@@ -101,7 +105,7 @@ def main() -> int:
 
     payload = {
         "from": sender,
-        "to": [recipient],
+        "to": recipients,
         "subject": f"JWL prep — week of {args.study_date}",
         "text": "\n".join(summary_lines),
         "attachments": attachments,

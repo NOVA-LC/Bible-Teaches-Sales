@@ -1,8 +1,9 @@
 name: weekly-prep
 
-# Auto-runs the lesson agent every Monday at 13:00 UTC (08:00 CT) to
-# generate the upcoming Sunday's Watchtower study notes + the midweek
-# meeting's CBS comments + Spiritual Gems verse comments.
+# Auto-runs the lesson agent every Sunday at 13:00 UTC (09:00 ET / 08:00 CT)
+# to generate the NEXT week's Sunday Watchtower study notes + midweek
+# meeting CBS comments + Spiritual Gems verse comments. That gives a full
+# 7 days of lead time on every meeting in the upcoming week.
 #
 # Three sequential targets:
 #   1. wt   — Sunday Watchtower study article
@@ -30,8 +31,10 @@ name: weekly-prep
 
 on:
   schedule:
-    # Every Monday at 13:00 UTC. Cron syntax: minute hour dom month dow.
-    - cron: "0 13 * * 1"
+    # Every Sunday at 13:00 UTC (09:00 ET). Cron syntax: minute hour dom month dow.
+    # 0 = Sunday in GitHub Actions cron (uses 0-6, where 0 and 7 both = Sunday).
+    # Generates prep for the NEXT week's midweek + Sunday meetings.
+    - cron: "0 13 * * 0"
   workflow_dispatch:
     inputs:
       study_date:
