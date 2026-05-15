@@ -15,8 +15,17 @@ Article-level gates (Gate 2 mechanic variety, Gate 4 domestic-scene quota, Gate 
 
 ## Your tools
 
-### `discover_lesson(study_date, target="wt")`
-Wraps `discover_week.discover`. Pulls the WT or midweek workbook DocumentId, title, issue tag, source line, and theme scripture from WOL for the given week. Call this FIRST. Returns `{document_id, key_symbol, issue, title, source, url, warnings}`. If a warning indicates discovery failed, commit failure and stop — there's no recovery for "no article found."
+### `discover_lesson(study_date, target)`
+Wraps `discover_week.discover`. Call this FIRST. Returns metadata for the requested target. Targets:
+
+- **`wt`** (Sunday Watchtower study) — returns `{document_id, key_symbol='w', issue, title, source, url, theme_scripture, week_label}`
+- **`cbs`** (Congregation Bible Study) — returns the above PLUS `cbs_document_ids` (list of lfb lesson DocIds, e.g. `[1102016094, 1102016095]` for "lfb lessons 84-85") and `cbs_lesson_label`. The lesson agent will scrape EACH of those lesson DocIds when you call `scrape_paragraphs`; visible paragraph numbers are re-numbered consecutively across lessons (e.g., lesson 84's ¶1-4 + lesson 85's ¶1-5 → visible ¶1-9).
+- **`gems`** — Spiritual Gems verse drafting; the lesson agent short-circuits to `gems_run` and doesn't enter the orchestration loop for this target. You won't see this case as the lesson agent; it's a CLI dispatch.
+- **`mwb`** (legacy) — not currently supported via lesson_agent; the workbook HTML scraper isn't wired. Don't pick mwb.
+
+Default target if you don't pass one: whatever the lesson agent was invoked with (visible in your initial user message's `target` field).
+
+If a warning indicates discovery failed (no DocIds returned), call `commit_lesson_failure` immediately — there's no recovery for "no article found."
 
 ### `scrape_paragraphs(document_id, key_symbol="w")`
 Wraps `fetch_wol_article` + `scrape_article`. Pulls the full article HTML and returns the per-paragraph list (paragraph_number, body_pid, question_pid, question_text, body_text, cited_scriptures). Call this SECOND, after discover. The list is ordered by visible paragraph number.

@@ -87,9 +87,17 @@ def scrape_cbs_lesson(html: str, doc_id: int, lesson_number: int | None = None) 
             ):
                 cited_scriptures.append(ref_m.group(1).strip())
 
-    # Body paragraphs — extract each sb paragraph's text and build ParagraphData
+    # Body paragraphs — extract each sb paragraph's text and build ParagraphData.
+    # CBS spans multiple lessons; each lesson has its own data-pid namespace
+    # (lesson 84 and lesson 85 both have body_pids 3,4,5,6). To prevent
+    # cache-key collisions in the lesson agent's state.drafted_comments
+    # (which is keyed by body_pid), we use a SYNTHETIC body_pid that
+    # encodes the source DocId. original_body_pid preserves the real pid
+    # so the JW Library injector anchors to the correct paragraph.
+    pid_offset = (doc_id % 100000) * 1000  # unique per lesson DocId
     for visible_num, m in enumerate(sb_re.finditer(html), start=1):
-        body_pid = int(m.group(1))
+        original_pid = int(m.group(1))
+        synthetic_pid = pid_offset + original_pid
         body_html = m.group(2)
         body_text = _re.sub(r"<[^>]+>", " ", body_html)
         body_text = _re.sub(r"\s+", " ", body_text).strip()
@@ -97,16 +105,18 @@ def scrape_cbs_lesson(html: str, doc_id: int, lesson_number: int | None = None) 
         body_text = _re.sub(r"^\d+\s+", "", body_text)
         paragraphs.append(ParagraphData(
             paragraph_number=visible_num,
-            body_pid=body_pid,
-            # CBS doesn't have per-paragraph question_pid. Use the body_pid
-            # itself as the question anchor — the comment will render at
-            # the paragraph itself (matches how CBS audience comments work
-            # in practice: comments respond to the lesson's discussion
-            # questions about a specific paragraph).
-            question_pid=body_pid,
+            body_pid=synthetic_pid,
+            # CBS doesn't have per-paragraph question_pid. Use synthetic
+            # body_pid as the question anchor too — comment renders at the
+            # paragraph itself in JW Library (matches how CBS audience
+            # comments work: response to lesson-wide questions about this
+            # specific paragraph).
+            question_pid=synthetic_pid,
             question_text=question_text or f"(CBS lesson {lesson_number or doc_id} — comment on this paragraph)",
             body_text=body_text,
             cited_scriptures=cited_scriptures,
+            source_lesson_doc_id=doc_id,
+            original_body_pid=original_pid,
         ))
     return paragraphs
 from comment_agent import (  # type: ignore  # noqa: E402
@@ -714,7 +724,87 @@ def _make_tool_handlers(state: LessonState):
         if unresolved:
             return {"ok": False, "reason": f"unresolved paragraphs: {unresolved}"}
 
-        # Assemble
+        # CBS spans multiple source-lesson DocIds — each lesson must ship
+        # its own JSON anchored to its own DocId. Detect by presence of
+        # source_lesson_doc_id on any paragraph; split accordingly.
+        cbs_groups: dict[int, list] = {}
+        single_paragraphs = []
+        for para in state.paragraphs:
+            if para.source_lesson_doc_id is not None:
+                cbs_groups.setdefault(para.source_lesson_doc_id, []).append(para)
+            else:
+                single_paragraphs.append(para)
+
+        out_dir = _HERE.parent / "comments"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        written_paths = []
+        total_note_count = 0
+        total_underline_count = 0
+
+        if cbs_groups:
+            # Multi-lesson CBS — one JSON per lesson, anchored to that lesson's DocId
+            for lesson_doc_id, lesson_paras in cbs_groups.items():
+                # Build per-lesson drafted dicts keyed by original_body_pid
+                # so assemble_comments_json writes the right anchor.
+                lesson_comments: dict[int, dict] = {}
+                lesson_underlines: dict[int, dict] = {}
+                rekeyed_paras = []
+                for p in lesson_paras:
+                    rkey = p.original_body_pid
+                    # Rebuild a ParagraphData with body_pid + question_pid
+                    # set to the ORIGINAL pid (what the injector expects).
+                    rekeyed_paras.append(ParagraphData(
+                        paragraph_number=p.paragraph_number,
+                        body_pid=p.original_body_pid,
+                        question_pid=p.original_body_pid,
+                        question_text=p.question_text,
+                        body_text=p.body_text,
+                        cited_scriptures=p.cited_scriptures,
+                        source_lesson_doc_id=p.source_lesson_doc_id,
+                        original_body_pid=p.original_body_pid,
+                    ))
+                    if p.body_pid in state.drafted_comments:
+                        c = dict(state.drafted_comments[p.body_pid])
+                        # Update embedded body_pid/question_pid to original
+                        c["body_pid"] = p.original_body_pid
+                        c["question_pid"] = p.original_body_pid
+                        lesson_comments[p.original_body_pid] = c
+                    if p.body_pid in state.drafted_underlines:
+                        lesson_underlines[p.original_body_pid] = state.drafted_underlines[p.body_pid]
+                lesson_meta = {
+                    "article_title": state.article_meta.get("title"),
+                    "article_source": state.article_meta.get("source"),
+                    "study_date": state.study_date,
+                    "key_symbol": state.article_meta.get("key_symbol", "lfb"),
+                    "issue": 0,
+                    "document_id": lesson_doc_id,
+                    "url": f"https://wol.jw.org/en/wol/d/r1/lp-e/{lesson_doc_id}",
+                }
+                out_doc = assemble_comments_json(
+                    lesson_meta, rekeyed_paras, lesson_comments, lesson_underlines,
+                )
+                ks = state.article_meta.get("key_symbol", "lfb")
+                out_path = out_dir / f"{state.study_date}-{ks}-{lesson_doc_id}.json"
+                out_path.write_text(
+                    json.dumps(out_doc, indent=2, ensure_ascii=False) + "\n",
+                    encoding="utf-8",
+                )
+                written_paths.append(str(out_path))
+                total_note_count += sum(1 for n in out_doc.get("notes", []) if n.get("content"))
+                total_underline_count += sum(
+                    len(n.get("underlines", []) or []) for n in out_doc.get("notes", [])
+                )
+            state.committed_path = ", ".join(written_paths)
+            return {
+                "ok": True,
+                "written_paths": written_paths,
+                "note_count": total_note_count,
+                "underline_count": total_underline_count,
+                "comments_skipped": sorted(state.failed_comments),
+                "underlines_skipped": sorted(state.failed_underlines),
+            }
+
+        # Standard single-source path (WT)
         out_doc = assemble_comments_json(
             article_meta={
                 "article_title": state.article_meta.get("title"),
@@ -729,8 +819,6 @@ def _make_tool_handlers(state: LessonState):
             drafted_comments=state.drafted_comments,
             drafted_underlines=state.drafted_underlines,
         )
-        out_dir = _HERE.parent / "comments"
-        out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"{state.study_date}-{state.article_meta.get('key_symbol', 'w')}.json"
         out_path.write_text(
             json.dumps(out_doc, indent=2, ensure_ascii=False) + "\n",
@@ -802,14 +890,23 @@ def _make_tool_handlers(state: LessonState):
 TOOLS: list[dict] = [
     {
         "name": "discover_lesson",
-        "description": "Discover the article for the study week. Returns "
-                       "document_id, key_symbol, issue, title, source, url, warnings. "
-                       "Call FIRST. On failure (no DocId), call commit_lesson_failure.",
+        "description": (
+            "Discover the lesson(s) for the study week. Returns "
+            "document_id, key_symbol, issue, title, source, url, warnings, "
+            "plus target-specific extras. Call FIRST. On failure, call "
+            "commit_lesson_failure. Targets:\n"
+            "  wt — Sunday Watchtower study article\n"
+            "  cbs — Congregation Bible Study (lfb lessons referenced by "
+            "the workbook; returns cbs_document_ids list)\n"
+            "  gems — Spiritual Gems (Bible reading range; the lesson "
+            "agent dispatches gems_run for verse drafting)\n"
+            "  mwb — legacy midweek workbook scrape (not currently supported)"
+        ),
         "input_schema": {
             "type": "object",
             "properties": {
                 "study_date": {"type": "string", "description": "ISO date inside the study week. Defaults to the date the lesson agent was invoked with."},
-                "target": {"type": "string", "enum": ["wt", "mwb"], "description": "Which publication. Defaults to 'wt'."},
+                "target": {"type": "string", "enum": ["wt", "mwb", "cbs", "gems"], "description": "Which publication. Defaults to the target the lesson agent was invoked with."},
             },
         },
     },

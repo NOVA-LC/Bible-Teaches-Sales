@@ -64,6 +64,12 @@ class ParagraphData:
     question_text: str | None
     body_text: str
     cited_scriptures: list[str]
+    # For multi-source lessons (CBS = lfb lessons 84+85 etc.) — when set,
+    # body_pid is a SYNTHETIC unique key the agent uses; original_body_pid
+    # is the real pid in the source HTML that the injector anchors to.
+    # When None, body_pid IS the real pid (single-source lessons).
+    source_lesson_doc_id: int | None = None
+    original_body_pid: int | None = None
 
 
 def scrape_article(html: str) -> list[ParagraphData]:
