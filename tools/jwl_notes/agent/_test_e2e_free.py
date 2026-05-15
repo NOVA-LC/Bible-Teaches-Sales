@@ -320,19 +320,38 @@ def test_wt_scrape_on_cached_article(t: TestRun):
 
 def test_discover_week_cbs(t: TestRun):
     t.start("discover_week: CBS lesson DocId extraction")
-    from discover_week import discover  # type: ignore
+    from discover_week import discover, _lesson_count_from_label  # type: ignore
+    # Label parsing
+    t.equal("count(lessons 84-85)", _lesson_count_from_label("lfb lessons 84-85"), 2)
+    t.equal("count(lesson 86)", _lesson_count_from_label("lfb lesson 86"), 1)
+    t.equal("count(lessons 84, 86, 88)", _lesson_count_from_label("lessons 84, 86, 88"), 3)
+    t.equal("count(None)", _lesson_count_from_label(None), 1)
+    # Real-week discovery: May 17 = lessons 84-85 (range, 2 DocIds);
+    # May 24 = lesson 86 (single, 1 DocId — would have leaked 5 nav-link
+    # DocIds without the frequency-by-label-count parser fix).
     try:
-        wd = discover(study_date="2026-05-17")
+        wd17 = discover(study_date="2026-05-17")
     except Exception as e:
-        t.check("discover cached run", False, f"network: {e}")
+        t.check("discover May 17", False, f"network: {e}")
         return
-    t.equal("WT DocId", wd.wt_document_id, 2026321)
-    t.equal("CBS DocIds for May 17", wd.cbs_document_ids,
+    t.equal("May 17 WT DocId", wd17.wt_document_id, 2026321)
+    t.equal("May 17 CBS DocIds (lessons 84-85)", wd17.cbs_document_ids,
             [1102016094, 1102016095])
-    t.equal("CBS publication", wd.cbs_publication, "lfb")
-    t.equal("Bible reading book (Isaiah)", wd.bible_reading_book, 23)
-    t.equal("Bible reading chapters", (wd.bible_reading_chapter_start, wd.bible_reading_chapter_end),
+    t.equal("May 17 CBS publication", wd17.cbs_publication, "lfb")
+    t.equal("May 17 Bible reading book (Isaiah)", wd17.bible_reading_book, 23)
+    t.equal("May 17 Bible chapters", (wd17.bible_reading_chapter_start, wd17.bible_reading_chapter_end),
             (60, 61))
+    # May 24 — regression for the over-greedy DocId parser
+    try:
+        wd24 = discover(study_date="2026-05-24")
+    except Exception as e:
+        t.check("discover May 24", False, f"network: {e}")
+        return
+    t.equal("May 24 CBS DocIds (lesson 86 — exactly 1)", wd24.cbs_document_ids,
+            [1102016096])
+    t.equal("May 24 Bible reading book", wd24.bible_reading_book, 23)
+    t.equal("May 24 Bible chapters", (wd24.bible_reading_chapter_start, wd24.bible_reading_chapter_end),
+            (62, 64))
 
 
 def test_json_wire_shape_validates(t: TestRun):

@@ -451,11 +451,45 @@ def _parse_cbs_lessons(mwb_html: str, mwb_doc_id: int) -> tuple[list[int], str |
         pop_html = _fetch(popover_url)
     except Exception:
         return ([], label_text, publication)
-    # Lesson DocIds are 10-digit, lfb DocIds are in the 11020xxxxx range
-    doc_ids = sorted(set(
-        int(d) for d in re.findall(r"/lp-e/(11\d{8})", pop_html)
-    ))
+    # Lesson DocIds are 10-digit, lfb DocIds are in the 11020xxxxx range.
+    # The popover also contains nav links ("prev/next lesson"), "see more"
+    # links, and similar-publication references — all of which match the
+    # same pattern but are NOT the lesson(s) being studied this week.
+    # Two-part filter:
+    #   1. Parse the label ("lessons 84-85" → 2, "lesson 86" → 1) so we
+    #      know how many to keep.
+    #   2. Rank DocIds by frequency in the popover; actual content DocIds
+    #      appear 4-9× (body content + thumbnail + cross-refs), nav links
+    #      appear 1×. Take the top-N by frequency.
+    from collections import Counter
+    expected = _lesson_count_from_label(label_text)
+    counts = Counter(int(d) for d in re.findall(r"/lp-e/(11\d{8})", pop_html))
+    doc_ids = sorted(d for d, _ in counts.most_common(expected))
     return (doc_ids, label_text, publication)
+
+
+def _lesson_count_from_label(label: str | None) -> int:
+    """Parse 'lessons 84-85' (range) or 'lesson 86' (single) or
+    'lessons 84, 86' (comma list) → integer count. Defaults to 1."""
+    if not label:
+        return 1
+    # Range: "lessons 84-85" → 2
+    m = re.search(r"lessons?\s+(\d+)\s*[-–]\s*(\d+)", label, re.IGNORECASE)
+    if m:
+        try:
+            count = int(m.group(2)) - int(m.group(1)) + 1
+            return max(1, count)
+        except ValueError:
+            return 1
+    # Comma list: "lessons 84, 86, 88" → 3
+    m = re.search(r"lessons?\s+(\d+(?:\s*,\s*\d+){1,})", label, re.IGNORECASE)
+    if m:
+        return len([x for x in m.group(1).split(",") if x.strip()])
+    # Single: "lesson 86" → 1
+    m = re.search(r"lesson\s+\d+", label, re.IGNORECASE)
+    if m:
+        return 1
+    return 1
 
 
 # ----------------------------------------------------------------------
