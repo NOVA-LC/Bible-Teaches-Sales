@@ -84,8 +84,12 @@ def main() -> int:
         return 2
     sender = os.environ.get("RESEND_FROM", "Tyler <tyler@gonenova.com>")
     # RESEND_TO can be a single address or a comma/semicolon-separated list
-    # for multiple recipients (e.g., "tyler@gonenova.com, tylerjavonbrown@gmail.com").
-    recipient_raw = os.environ.get("RESEND_TO", "tylerjavonbrown@gmail.com")
+    # for multiple recipients. Default is both operator addresses so the
+    # Sunday cron Just Works even if the env var isn't set in repo secrets.
+    recipient_raw = os.environ.get(
+        "RESEND_TO",
+        "tyler@gonenova.com, Jenasis@gonenova.com",
+    )
     recipients = [r.strip() for r in re.split(r"[,;]", recipient_raw) if r.strip()]
 
     json_paths = sorted(glob.glob(args.comments_glob))
