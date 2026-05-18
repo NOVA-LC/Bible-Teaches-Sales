@@ -1,0 +1,188 @@
+name: weekly-prep
+
+# Auto-runs the lesson agent every Sunday at 13:00 UTC (09:00 ET / 08:00 CT)
+# to generate the NEXT week's Sunday Watchtower study notes + midweek
+# meeting CBS comments + Spiritual Gems verse comments. That gives a full
+# 7 days of lead time on every meeting in the upcoming week.
+#
+# Three sequential targets:
+#   1. wt   — Sunday Watchtower study article
+#   2. cbs  — Congregation Bible Study (lfb lesson[s] for the week)
+#   3. gems — Spiritual Gems (4 verse comments across the Bible reading)
+#
+# Pre-flight: agent._test_e2e_free runs first to gate the production
+# spend ($0, ~90s, 73 deterministic assertions). If any assertion fails,
+# the workflow stops BEFORE spending any API.
+#
+# Required repo secrets:
+#   ANTHROPIC_API_KEY   — for the lesson agent + sub-agents
+#   RESEND_API_KEY      — to email the result
+#   RESEND_FROM         — verified sender (e.g. "Tyler <tyler@gonenova.com>")
+#   RESEND_TO           — recipient (e.g. "tylerjavonbrown@gmail.com")
+#
+# Optional:
+#   SEED_BACKUP_URL     — HTTPS URL to the seed .jwlibrary backup. If set,
+#                         the workflow injects every generated JSON into
+#                         the seed and emails the resulting .jwlibrary.
+#                         If unset, the workflow emails the JSONs only.
+#
+# Manual trigger (workflow_dispatch) lets you regen any week on demand
+# and pick which target(s) to run.
+
+on:
+  schedule:
+    # Every Sunday at 13:00 UTC (09:00 ET). Cron syntax: minute hour dom month dow.
+    # 0 = Sunday in GitHub Actions cron (uses 0-6, where 0 and 7 both = Sunday).
+    # Generates prep for the NEXT week's midweek + Sunday meetings.
+    - cron: "0 13 * * 0"
+  workflow_dispatch:
+    inputs:
+      study_date:
+        description: "ISO date inside the JW study week (default: next Sunday)"
+        required: false
+        default: ""
+      targets:
+        description: "Which target(s) to draft for"
+        required: false
+        default: "all"
+        type: choice
+        options: [all, wt, cbs, gems]
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Resolve study date
+        id: study_date
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.study_date }}" ]; then
+            STUDY_DATE="${{ inputs.study_date }}"
+          else
+            # Default: the upcoming Sunday from today
+            STUDY_DATE=$(python -c "
+          import datetime as dt
+          today = dt.date.today()
+          # Sunday is weekday 6 in Python's date.weekday()
+          days = (6 - today.weekday()) % 7
+          if days == 0:
+              days = 7  # if today IS Sunday, use NEXT Sunday's study
+          print((today + dt.timedelta(days=days)).isoformat())
+          ")
+          fi
+          echo "study_date=${STUDY_DATE}" >> "$GITHUB_OUTPUT"
+          echo "Study date: ${STUDY_DATE}"
+
+      - name: Pre-flight regression suite (zero API cost)
+        working-directory: tools/jwl_notes
+        run: |
+          python -m agent._test_e2e_free
+        # The suite gates the production run. If any of the 73 assertions
+        # fail, we abort BEFORE spending any API. This is the discipline
+        # that replaced the ad-hoc "run and see what breaks" pattern that
+        # cost ~$4 in May 14-15 debugging.
+
+      - name: Discover this week's materials
+        working-directory: tools/jwl_notes
+        run: |
+          python -m agent.discover_week --study-date "${{ steps.study_date.outputs.study_date }}"
+
+      - name: Generate WT prep JSON (Sunday Watchtower study)
+        if: ${{ inputs.targets == 'all' || inputs.targets == 'wt' || inputs.targets == '' }}
+        working-directory: tools/jwl_notes
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python -m agent.lesson_agent \
+            --study-date "${{ steps.study_date.outputs.study_date }}" \
+            --target wt
+
+      - name: Generate CBS prep JSON(s) (Congregation Bible Study, one per lfb lesson)
+        if: ${{ inputs.targets == 'all' || inputs.targets == 'cbs' || inputs.targets == '' }}
+        working-directory: tools/jwl_notes
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # CBS may not be configured for every week; treat empty output as
+        # non-fatal (the lesson agent itself returns 1 on commit_lesson_failure,
+        # but the email step uses a glob so a missing CBS JSON just doesn't
+        # get attached).
+        continue-on-error: true
+        run: |
+          python -m agent.lesson_agent \
+            --study-date "${{ steps.study_date.outputs.study_date }}" \
+            --target cbs
+
+      - name: Generate Spiritual Gems verse comments (one JSON per Bible reading chapter)
+        if: ${{ inputs.targets == 'all' || inputs.targets == 'gems' || inputs.targets == '' }}
+        working-directory: tools/jwl_notes
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # Similarly best-effort — if the Bible reading isn't yet discoverable
+        # the script will warn and exit non-zero; we don't want that to block
+        # the WT JSON from being emailed.
+        continue-on-error: true
+        run: |
+          python -m agent.lesson_agent \
+            --study-date "${{ steps.study_date.outputs.study_date }}" \
+            --target gems
+
+      - name: Inject into seed backup (if SEED_BACKUP_URL configured)
+        id: inject
+        if: ${{ env.SEED_BACKUP_URL != '' }}
+        working-directory: tools/jwl_notes
+        env:
+          SEED_BACKUP_URL: ${{ secrets.SEED_BACKUP_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL "${SEED_BACKUP_URL}" -o /tmp/seed.jwlibrary
+          INPUT=/tmp/seed.jwlibrary
+          OUTPUT=/tmp/prep.jwlibrary
+          for COMMENTS in comments/${{ steps.study_date.outputs.study_date }}-*.json; do
+            [ -f "$COMMENTS" ] || continue
+            python jwl_notes.py --input "$INPUT" --output "$OUTPUT" \
+              --comments "$COMMENTS" --verify
+            INPUT=$OUTPUT
+          done
+          echo "backup_path=${OUTPUT}" >> "$GITHUB_OUTPUT"
+
+      - name: Email JSON(s) + (optional) backup via Resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          RESEND_TO: ${{ secrets.RESEND_TO }}
+          STUDY_DATE: ${{ steps.study_date.outputs.study_date }}
+          BACKUP_PATH: ${{ steps.inject.outputs.backup_path }}
+        working-directory: tools/jwl_notes
+        run: |
+          # Glob picks up every JSON generated for this study date:
+          # - <date>-w.json (WT)
+          # - <date>-lfb-<lesson_doc_id>.json (one per CBS lesson)
+          # - <date>-spiritual-gems-<bookchapter>.json (one per Bible reading chapter)
+          python agent/email_run.py \
+            --study-date "$STUDY_DATE" \
+            --comments-glob "comments/${STUDY_DATE}-*.json" \
+            ${BACKUP_PATH:+--backup "$BACKUP_PATH"}
+
+      - name: Upload artifacts (run logs + JSONs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-prep-${{ steps.study_date.outputs.study_date }}
+          path: |
+            tools/jwl_notes/comments/${{ steps.study_date.outputs.study_date }}-*.json
+            tools/jwl_notes/agent/runs/
+          retention-days: 30
