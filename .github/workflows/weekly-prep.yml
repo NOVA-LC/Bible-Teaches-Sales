@@ -47,6 +47,11 @@ on:
         default: "all"
         type: choice
         options: [all, wt, cbs, gems]
+      skip_drafting:
+        description: "Skip the lesson_agent draft steps and use whatever JSON is already committed in comments/<study_date>-*.json. Useful for re-delivering a hand-curated set."
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -101,7 +106,7 @@ jobs:
           python -m agent.discover_week --study-date "${{ steps.study_date.outputs.study_date }}"
 
       - name: Generate WT prep JSON (Sunday Watchtower study)
-        if: ${{ inputs.targets == 'all' || inputs.targets == 'wt' || inputs.targets == '' }}
+        if: ${{ inputs.skip_drafting != true && (inputs.targets == 'all' || inputs.targets == 'wt' || inputs.targets == '') }}
         working-directory: tools/jwl_notes
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -111,7 +116,7 @@ jobs:
             --target wt
 
       - name: Generate CBS prep JSON(s) (Congregation Bible Study, one per lfb lesson)
-        if: ${{ inputs.targets == 'all' || inputs.targets == 'cbs' || inputs.targets == '' }}
+        if: ${{ inputs.skip_drafting != true && (inputs.targets == 'all' || inputs.targets == 'cbs' || inputs.targets == '') }}
         working-directory: tools/jwl_notes
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -126,7 +131,7 @@ jobs:
             --target cbs
 
       - name: Generate Spiritual Gems verse comments (one JSON per Bible reading chapter)
-        if: ${{ inputs.targets == 'all' || inputs.targets == 'gems' || inputs.targets == '' }}
+        if: ${{ inputs.skip_drafting != true && (inputs.targets == 'all' || inputs.targets == 'gems' || inputs.targets == '') }}
         working-directory: tools/jwl_notes
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
