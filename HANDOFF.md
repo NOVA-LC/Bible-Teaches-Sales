@@ -12,6 +12,11 @@
 
 Meeting-preparation efficiency work is documented in `tools/jwl_notes/agent/HANDOFF.md` and [ADR 0007](decisions/0007-checkpointed-meeting-preparation.md). Root onboarding now routes that track to scoped instructions; sales-writing rules remain intact. New Work checkpoints preserve approved comments and bound repairs; SDK redrafts now receive the old draft and exact failure reason. No paid generation or savings benchmark was run.
 
+The skill-integration follow-up adds scoped skill routing, plan-time feasibility,
+fingerprinted evidence and read-only progress/repair history. See
+[ADR 0008](decisions/0008-task-scoped-skill-integration.md). The full personal skill
+inventory remains private; the public repo contains only its relevant projection.
+
 The repo is in late scaffolding phase. Governance triad is live, schema is future-proofed (v2.0), ADRs 0001-0006 accepted. Lesson 01 body is approved by the operator but not yet written to disk with final frontmatter. No reverse indexes populated yet.
 
 Files live:

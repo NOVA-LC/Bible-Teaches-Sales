@@ -18,7 +18,7 @@ def comment(n):
 
 
 def plan():
-    return [{"paragraph_number": n, "purpose": "Teach patience", "angle": "Listen first", "reserved_for_later": [{"paragraph_number": 14, "point": "Practical help"}] if n == 10 else []} for n in (10, 14)]
+    return [{"paragraph_number": n, "purpose": "Teach patience", "angle": "Listen first", "comment_type": "F", "herd_distinctive_moves": ["H1"], "reserved_for_later": [{"paragraph_number": 14, "point": "Practical help"}] if n == 10 else []} for n in (10, 14)]
 
 
 class SessionTests(unittest.TestCase):

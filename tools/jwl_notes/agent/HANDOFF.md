@@ -12,6 +12,19 @@
 
 ## Current session: preserve approved quality with fewer iterations
 
+Skill integration follow-up: `SKILL_ROUTING.md` now sets the scoped production
+precedence and skill activation policy. `prep_session` validates type/feature
+plans before prose, requires supplied experience/research for B/H, fingerprints
+private context into all requests, and retains repair reasons in events.
+Read-only `status` gives the next action and saved operation counts. No model-call
+or quota measurement is inferred. Old fingerprints are intentionally invalidated;
+preserve old runs and their matching code revision. Full private skill inventory
+is kept outside this public repository.
+
+Verification for the follow-up: 35 targeted offline tests and 72/72 free-suite
+checks passed. Independent review of `603e923..2f05432` found no critical or
+important findings and independently passed the eight new behavior tests.
+
 The operator calls the finished Watchtower output phenomenal. Reduce repeated
 context and rewriting, not depth or voice. Watchtower Work/chat preparation now defaults to
 `prep_session.py`; follow `RUNBOOK.md` and `../AGENTS.md`. This path plans the full

@@ -8,6 +8,7 @@ only: underlines require the separate existing preparation workflow.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from contextlib import contextmanager
 from datetime import date
 import hashlib
@@ -17,13 +18,14 @@ from pathlib import Path
 import tempfile
 
 from .gates import run_article_gates, run_per_comment_gates, _COMMENT_TYPES
+from .prep_context import validate_context
 import inspect
 
 HERE = Path(__file__).resolve().parent
 REVIEW_CHECKS = (
     "accuracy", "paragraph_fit", "no_future_leakage", "voice_and_depth",
     "cold_read", "different_domain", "moved", "encouraged", "memorable",
-    "verse_acts_on_listener", "close_state_renamed",
+    "verse_acts_on_listener", "close_state_renamed", "evidence_supported",
 )
 POLICY = """Read the whole article and approved voice references before planning.
 Plan each question-bearing paragraph's purpose, distinct angle, and points reserved
@@ -32,7 +34,9 @@ example paragraph 10 must not spend paragraph 14's point). Draft from that plan.
 Preserve all existing prompt quality standards and deterministic gates. Accepted
 comments are frozen. Review every requested paragraph independently against the
 source, plan, all drafts, accepted comments, and approved voice references. Return
-specific evidence in reason, including a concrete defect for every failure. Never
+specific evidence in reason, including a concrete defect for every failure.
+Check supplied experience provenance and the actual support for research claims;
+distinguish quotations, paraphrases and inferences. Metadata is not proof. Never
 claim a check passes merely because its metadata is present. One targeted repair
 per failed paragraph is allowed; unresolved failures block export. Do not weaken
 quality gates to reduce iteration. A review is an external judgment, not a proof
@@ -53,17 +57,24 @@ def policy_documents():
             for p in sorted((HERE / "prompts").rglob("*.md"))}
 
 
-def draft_documents():
+def workflow_policy():
+    return (HERE / "SKILL_ROUTING.md").read_text(encoding="utf-8")
+
+
+def draft_documents(plan=None):
+    selected = {row["comment_type"] for row in plan} if plan else _COMMENT_TYPES
     return {name: text for name, text in policy_documents().items()
-            if name == "prompts/comment_agent.md" or name.startswith("prompts/types/")}
+            if name == "prompts/comment_agent.md" or
+            (name.startswith("prompts/types/") and Path(name).name[0] in selected)}
 
 
 def policy_fingerprint():
-    return digest({"policy": POLICY, "checks": REVIEW_CHECKS,
+    return digest({"policy": POLICY, "checks": REVIEW_CHECKS, "workflow": workflow_policy(),
                    "prompts": policy_documents(),
                    "voice_recipe": (HERE.parent / "voice" / "drafting-recipe.md").read_text(encoding="utf-8"),
                    "gates": (HERE / "gates.py").read_text(encoding="utf-8"),
                    "engine": Path(__file__).read_text(encoding="utf-8"),
+                   "context_validator": (HERE / "prep_context.py").read_text(encoding="utf-8"),
                    "assembly": (HERE / "build_week.py").read_text(encoding="utf-8")})
 
 
@@ -172,7 +183,7 @@ def coverage(state):
 def load_state(run_dir):
     state = read_json(Path(run_dir) / "state.json")
     require(state.get("policy_sha256") == policy_fingerprint(), "Prompt policy/gates changed; use a new run directory")
-    require(state.get("fingerprint") == digest({"source": state["source"], "references": state["references"], "policy": state["policy_sha256"]}), "Source/reference fingerprint mismatch; use a new run directory")
+    require(state.get("fingerprint") == digest({"source": state["source"], "references": state["references"], "context": state["context"], "policy": state["policy_sha256"]}), "Source/reference/context fingerprint mismatch; use a new run directory")
     for key, lock in state["accepted"].items():
         require(lock["draft_sha256"] == digest(state["drafts"].get(key)), f"Accepted paragraph {key} was changed; restore the locked checkpoint")
         require(lock["comment"] == state["drafts"][key], f"Accepted paragraph {key} differs from its locked comment")
@@ -182,6 +193,7 @@ def load_state(run_dir):
 def review_request(state):
     pending = sorted((int(k) for k in state["drafts"] if k not in state["accepted"] and k not in state["failures"] and k not in state["blocked"]))
     packet = {"fingerprint": state["fingerprint"], "policy": POLICY,
+              "workflow_policy": workflow_policy(), "context": state["context"],
               "source": state["source"], "references": state["references"],
               "plan": state["plan"], "drafts": state["drafts"],
               "accepted": state["accepted"], "failures": state["failures"],
@@ -197,9 +209,10 @@ def review_request(state):
 def packets(run_dir, state):
     atomic_json(run_dir / "source.json", state["source"])
     common = {"fingerprint": state["fingerprint"], "policy": POLICY,
+              "workflow_policy": workflow_policy(), "context": state["context"],
               "source": state["source"], "references": state["references"],
               "plan": state["plan"], "accepted": state["accepted"]}
-    atomic_json(run_dir / "draft-request.json", {**common, "prompt_documents": draft_documents(),
+    atomic_json(run_dir / "draft-request.json", {**common, "prompt_documents": draft_documents(state["plan"]),
                 "paragraph_numbers": sorted(int(k) for k in coverage(state) - state["drafts"].keys())})
     atomic_json(run_dir / "review-request.json", review_request(state))
     atomic_json(run_dir / "repair-request.json", {**common, "failures": {
@@ -213,22 +226,27 @@ def save(run_dir, state):
     packets(run_dir, state)
 
 
-def prepare(source, run_dir, references=None):
+def prepare(source, run_dir, references=None, context=None):
     validate_source(source)
+    try:
+        context = validate_context(context)
+    except ValueError as exc:
+        raise SessionError(str(exc)) from exc
     references = [] if references is None else references
     require(isinstance(references, list), "References must be a list of approved comment strings")
     for ref in references:
         nonempty(ref, "Approved reference")
     policy = policy_fingerprint()
-    fingerprint = digest({"source": source, "references": references, "policy": policy})
+    fingerprint = digest({"source": source, "references": references, "context": context, "policy": policy})
     with locked(run_dir) as run:
         if (run / "state.json").exists():
             state = load_state(run)
-            require(state["fingerprint"] == fingerprint, "Source/reference/policy changed; refusing to overwrite this run. Use a new run directory")
+            require(state["fingerprint"] == fingerprint, "Source/reference/context/policy changed; refusing to overwrite this run. Use a new run directory")
             packets(run, state)
         else:
             require(not any(p.name != ".session.lock" for p in run.iterdir()), "Run directory is not empty; refusing to overwrite it")
-            state = {"schema_version": 1, "fingerprint": fingerprint, "policy_sha256": policy,
+            state = {"schema_version": 2, "fingerprint": fingerprint, "policy_sha256": policy,
+                     "context": context, "events": [],
                      "source": source, "references": references, "plan": None, "drafts": {},
                      "accepted": {}, "failures": {}, "repair_attempts": {}, "blocked": {}}
             save(run, state)
@@ -241,18 +259,33 @@ def submit_plan(run_dir, plan):
         rows = indexed(plan, "plan")
         require(set(rows) == coverage(state), "Plan must cover exactly every question-bearing paragraph")
         all_ids = {p["paragraph_number"] for p in state["source"]["paragraphs"]}
+        evidence_ids = {r["id"] for r in state["context"]["research"]}
+        experience_ids = {r["id"] for r in state["context"]["experiences"]}
         for row in rows.values():
             for field in ("purpose", "angle"):
                 nonempty(row.get(field), f"plan.{field}")
+            require(isinstance(row.get("comment_type"), str) and row["comment_type"] in _COMMENT_TYPES, "plan.comment_type must be A, B, C, D, F or H")
+            evidence = row.get("evidence_ids", [])
+            require(isinstance(evidence, list) and all(isinstance(e, str) and e in evidence_ids for e in evidence), "Plan evidence_ids must reference saved research")
+            if row["comment_type"] == "B":
+                require(isinstance(row.get("experience_id"), str) and row["experience_id"] in experience_ids, "Type B requires an experience_id from supplied, traceable experiences; never invent one")
+            if row["comment_type"] == "H":
+                require(bool(evidence), "Type H requires evidence_ids from saved historical research")
             require(isinstance(row.get("reserved_for_later"), list), "reserved_for_later must be a list")
             for ref in row["reserved_for_later"]:
                 require(isinstance(ref, dict), "Each future reference must be an object")
                 number = positive_id(ref.get("paragraph_number"), "future paragraph_number")
                 require(number in all_ids and number > row["paragraph_number"], "Reserved point must reference a known future paragraph")
                 nonempty(ref.get("point"), "reserved point")
+        try:
+            failures = [str(r) for r in run_article_gates(plan) if not r.passed]
+        except (AttributeError, KeyError, TypeError, ValueError) as exc:
+            raise SessionError(f"Malformed plan gate metadata: {exc}") from exc
+        require(not failures, "Plan cannot meet existing article gates: " + "; ".join(failures))
         ordered = sorted(plan, key=lambda p: p["paragraph_number"])
         require(not state["drafts"] or state["plan"] == ordered, "Plan is immutable once drafts have been submitted")
         state["plan"] = ordered
+        state["events"].append({"action": "plan", "paragraphs": sorted(int(k) for k in rows)})
         save(run, state)
 
 
@@ -265,6 +298,8 @@ def validate_comment(comment, state):
             require(type(comment[name]) is type(source[name]) and comment[name] == source[name], f"Paragraph {key}: {name} disagrees with source")
     nonempty(comment.get("content"), "comment.content")
     require(comment.get("comment_type") in {"A", "B", "C", "D", "F", "H"}, f"Paragraph {key}: valid explicit comment_type required")
+    planned = next(row for row in state["plan"] if str(row["paragraph_number"]) == key)
+    require(comment["comment_type"] == planned["comment_type"], f"Paragraph {key}: comment_type differs from its planned type")
     try:
         results = run_per_comment_gates(comment)
     except (AttributeError, KeyError, TypeError, ValueError) as exc:
@@ -284,6 +319,7 @@ def submit_drafts(run_dir, comments):
             require(key not in state["failures"] and key not in state["blocked"], f"Paragraph {key} failed review; use its bounded repair")
             validate_comment(comment, state)
         state["drafts"].update(rows)
+        state["events"].append({"action": "draft", "paragraphs": sorted(int(k) for k in rows)})
         save(run, state)
 
 
@@ -323,6 +359,9 @@ def submit_review(run_dir, review):
                 state["failures"][key] = verdict
                 if state["repair_attempts"].get(key, 0) >= 1:
                     state["blocked"][key] = "One repair used; review still fails: " + verdict["reason"]
+        state["events"].append({"action": "review", "input_sha256": request["input_sha256"],
+                                "failures": {k: v["reason"] for k, v in rows.items() if not v["passed"]},
+                                "accepted": sorted(int(k) for k in rows if k in state["accepted"])})
         save(run, state)
 
 
@@ -338,6 +377,8 @@ def submit_repair(run_dir, comments):
         for key in rows:
             state["repair_attempts"][key] = 1
             state["blocked"][key] = "Repair attempt consumed; validation not completed"
+        state["events"].append({"action": "repair", "paragraphs": sorted(int(k) for k in rows),
+                                "failure_reasons": {k: state["failures"][k]["reason"] for k in rows}})
         save(run, state)
         errors = []
         for key, comment in rows.items():
@@ -378,23 +419,56 @@ def export(run_dir, output):
         return payload
 
 
+def status(run_dir):
+    """Inspect one atomically saved checkpoint; never mutate or dispatch work."""
+    state = load_state(run_dir)
+    required = coverage(state)
+    missing = required - state["drafts"].keys()
+    pending = state["drafts"].keys() - state["accepted"].keys() - state["failures"].keys() - state["blocked"].keys()
+    if state["blocked"]:
+        action = "resolve_blocker"
+    elif state["plan"] is None:
+        action = "plan"
+    elif missing:
+        action = "draft"
+    elif state["failures"]:
+        action = "repair"
+    elif pending:
+        action = "review"
+    else:
+        action = "export"
+    return {"next_action": action, "required_paragraphs": len(required),
+            "missing_drafts": sorted(int(k) for k in missing),
+            "pending_review": sorted(int(k) for k in pending),
+            "accepted": sorted(int(k) for k in state["accepted"]),
+            "failures": {k: v["reason"] for k, v in state["failures"].items()},
+            "blocked": state["blocked"], "repair_attempts_used": sum(state["repair_attempts"].values()),
+            "checkpoint_counts": dict(Counter(e["action"] for e in state["events"])),
+            "measurement_note": "Saved checkpoint operations only; not model calls, tokens, quota or cost."}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    for command in ("prepare", "plan", "draft", "review", "repair", "export"):
+    for command in ("prepare", "plan", "draft", "review", "repair", "export", "status"):
         item = sub.add_parser(command)
         item.add_argument("--run-dir", required=True, type=Path)
         if command == "prepare":
             item.add_argument("--article-json", required=True, type=Path)
             item.add_argument("--reference-json", type=Path)
+            item.add_argument("--context-json", type=Path)
         elif command == "export":
             item.add_argument("--output", required=True, type=Path)
-        else:
+        elif command != "status":
             item.add_argument("--input", required=True, type=Path)
     args = parser.parse_args(argv)
     try:
         if args.command == "prepare":
-            prepare(read_json(args.article_json), args.run_dir, read_json(args.reference_json) if args.reference_json else None)
+            prepare(read_json(args.article_json), args.run_dir, read_json(args.reference_json) if args.reference_json else None,
+                    read_json(args.context_json) if args.context_json else None)
+        elif args.command == "status":
+            print(json.dumps(status(args.run_dir), indent=2, ensure_ascii=False))
+            return 0
         elif args.command == "export":
             export(args.run_dir, args.output)
         else:

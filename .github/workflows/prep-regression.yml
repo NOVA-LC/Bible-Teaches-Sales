@@ -17,4 +17,4 @@ jobs:
           python-version: '3.12'
       - name: Checkpoint, input and SDK handoff regression tests (no API calls)
         working-directory: tools/jwl_notes
-        run: python -m unittest agent.test_prep_session agent.test_prep_inputs agent.test_redraft_handoff
+        run: python -m unittest agent.test_prep_session agent.test_prep_inputs agent.test_redraft_handoff agent.test_prep_skill_policy

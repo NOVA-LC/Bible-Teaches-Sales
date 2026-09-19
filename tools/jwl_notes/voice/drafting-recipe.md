@@ -1,5 +1,12 @@
 # How to draft a Tyler comment — the mesh
 
+> **Current Work/chat Watchtower workflow:** Use
+> [`../agent/SKILL_ROUTING.md`](../agent/SKILL_ROUTING.md) for production-rule
+> precedence. The older word counts, selected-paragraph coverage and retry rules
+> below are historical for that workflow. The current generator requires
+> 130–200 words, complete question-bearing paragraph coverage and type-aware
+> gates. Retain this guide's voice craft and full-answer underline doctrine.
+
 > ## ⚠️ GLOBAL RULES — Watchtower / midweek article processing
 >
 > When processing a *full* article (Watchtower study, midweek workbook

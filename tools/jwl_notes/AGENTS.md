@@ -19,6 +19,11 @@ their existing workflows; the new engine supports one Watchtower document only. 
 SDK automation remains available for explicitly requested API runs. Do not run a
 paid API job just to test a workflow change.
 
+Read `agent/SKILL_ROUTING.md` for the scoped skill policy and current production
+rule precedence. Load applicable installed skills once at the appropriate stage;
+do not make every skill or optional review panel part of each paragraph's context.
+Inspect `python -m agent.prep_session status --run-dir <session>` before resuming.
+
 Read `voice/drafting-recipe.md`, `agent/prompts/comment_agent.md`, the selected type
 prompts and `agent/prompts/critic_gate6.md` once per preparation session/policy
 version. Reuse that context and saved source research; do not reread the entire
@@ -54,7 +59,7 @@ HANDOFF. Regression tests must exercise behavior and use fake models/local input
 
 ```bash
 cd tools/jwl_notes
-python -m unittest agent.test_prep_session agent.test_prep_inputs agent.test_redraft_handoff
+python -m unittest agent.test_prep_session agent.test_prep_inputs agent.test_redraft_handoff agent.test_prep_skill_policy
 python -m agent._test_e2e_free
 ```
 

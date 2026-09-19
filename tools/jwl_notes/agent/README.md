@@ -12,6 +12,12 @@ hashes, existing gates and repair limits. Private inputs belong in ignored
 `agent/runs/`; the final export is comments only. Full preparation still requires
 underlines. See the runbook for complete commands and JSON contracts.
 
+[SKILL_ROUTING.md](SKILL_ROUTING.md) maps relevant skill principles to this
+workflow. Plan-time gates check type/feature feasibility; saved research and
+experience context travel with every request. `prep_session status` reports the
+next action, locks and retained repair reasons without changing the run. Its
+checkpoint counts are not model-call or quota measurements.
+
 The existing SDK automation below remains available. Its redraft handoff now
 includes the original draft and specific failure reason, retains rejected drafts
 safely during repair, persists retry counts before dispatch, and gives the writer

@@ -9,6 +9,8 @@ or Bible verse anchors.
 
 The approved final voice is the quality target. Read the scoped `../AGENTS.md` and
 canonical quality instructions once. Keep two or three approved examples nearby.
+Use [SKILL_ROUTING.md](SKILL_ROUTING.md) to select applicable skills and resolve
+the older recipe's production settings against the current generator.
 Reuse source research across paragraphs. Fetch/verify additional scripture or
 historical evidence only when a planned insight needs it; never invent evidence
 or remove depth just to avoid research. Save relevant findings with URLs in the
@@ -49,6 +51,23 @@ Select two or three representative approved comments into `inputs/references.jso
 backup without changing it; it does not assume all other notes are approved.
 Never commit these inputs. Omit `--reference-json` only when none are available.
 
+When using additional research or real personal experiences, save
+`inputs/context.json` before preparation. Research records contain `id`, `claim`,
+`source_url`, `evidence`, and `kind` (`quotation`, `paraphrase`, or `inference`).
+Experience records contain `id`, the supplied `text`, and a traceable `source`.
+Only include evidence that was actually obtained and experiences actually supplied
+by the operator; never lift a first-person prompt example into personal history.
+
+```json
+{"research":[{"id":"r1","claim":"The supported finding","source_url":"https://example.org/source","evidence":"Short exact support or a faithful sourced summary","kind":"paraphrase"}],"experiences":[{"id":"e1","text":"The actual user-provided experience","source":"Locator for the originating user message or approved note"}]}
+```
+
+The example above describes the shape, not usable evidence. Add
+`--context-json inputs/context.json` (using the actual full path) to `prepare`.
+Omit that flag when neither input is needed; both lists default to empty. The
+engine validates records but the reviewer must verify their truth and provenance.
+Every writer/reviewer/repair packet includes this saved context and its fingerprint.
+
 ```bash
 python -m agent.prep_session prepare \
   --article-json agent/runs/2026-09-20/inputs/article.json \
@@ -56,8 +75,9 @@ python -m agent.prep_session prepare \
   --run-dir agent/runs/2026-09-20/session
 ```
 
-Identical `prepare` resumes and recreates request packets. Changed source,
-references, prompt policy or gate code refuses reuse: use a new run after explaining
+Identical `prepare` resumes and recreates request packets. Supply the same context
+and references on resume. Changed source, references, context, prompt policy or
+gate code refuses reuse: use a new run after explaining
 the change. Never reset solely to get another repair allowance. Checkpoint locking
 uses POSIX `fcntl` (Linux/macOS). Shared question anchors are intentional; printed
 paragraph numbers and question `data-pid` are different identifiers.
@@ -68,7 +88,7 @@ Read `session/draft-request.json`: full source, references and canonical prompts
 Save `inputs/plan.json` as an array covering every question-bearing paragraph:
 
 ```json
-[{"paragraph_number":10,"purpose":"The teaching developed here","angle":"The distinct contribution of this comment","reserved_for_later":[{"paragraph_number":14,"point":"The later payoff to preserve"}]}]
+[{"paragraph_number":10,"purpose":"The teaching developed here","angle":"The distinct contribution of this comment","comment_type":"F","herd_distinctive_moves":["H1"],"evidence_ids":[],"reserved_for_later":[{"paragraph_number":14,"point":"The later payoff to preserve"}]}]
 ```
 
 The example is one row; the real plan must cover the whole article. Reserve future
@@ -77,6 +97,17 @@ before prose, without manufacturing experiences. The engine refuses more than 18
 question-bearing paragraphs under the existing six-type/three-per-type cap. If
 Type B has no authentic experience seed, usable capacity can be lower; resolve
 that policy conflict upfront rather than drafting an impossible distribution.
+
+Each row requires a valid `comment_type`. The existing article gates run against
+the plan: use the canonical `tagged_beats`, `domestic_scene`, and
+`herd_distinctive_moves` fields wherever needed to allocate the required features.
+The same gates still check completed drafts; planned metadata cannot prove the
+finished content contains those features. A Type B row needs `experience_id`
+matching a saved experience; Type H needs nonempty `evidence_ids` matching saved
+research. Other rows may reference research too. Drafts and repairs must retain
+their planned types. Resolve the plan before drafting; it becomes immutable with
+the first submitted draft. Only selected standalone type prompts are included
+after planning; the common prompt remains the complete quality contract.
 
 ```bash
 python -m agent.prep_session plan --run-dir agent/runs/2026-09-20/session \
@@ -109,6 +140,9 @@ article, plan, drafts, accepted comments, article-gate failures and exact respon
 shape. Review actual accuracy, paragraph fit, future-point reservations, voice,
 depth and all seven existing critic criteria. All checks must be literal booleans;
 provide concrete evidence and pinpoint every failure. Do not rubber-stamp.
+The additional `evidence_supported` check verifies that the actual claims follow
+from supplied research and that personal experiences have authentic provenance.
+It must not treat a source URL or populated field as proof.
 
 Save its response as `inputs/review.json`, preserving `input_sha256` exactly:
 
@@ -152,7 +186,23 @@ existing underline workflow when full weekly preparation is requested, preservin
 the full-answer underline doctrine. Injection/packaging is deterministic; don't
 ask another writer to polish accepted comments during packaging.
 
-Record observed draft/review/repair counts and any measured usage outside git.
+Before resuming, inspect the saved state without rewriting it:
+
+```bash
+python -m agent.prep_session status --run-dir agent/runs/2026-09-20/session
+```
+
+It reports the next command, missing drafts, pending review, accepted paragraphs,
+unresolved defects, consumed repairs and checkpoint operation counts. The
+`events` in `state.json` retain original failure reasons after a successful repair.
+Counts cover saved operations only, not rejected calls, model work or tokens.
+The `export` next action means comments are eligible for export; it does not claim
+underlines or packaging are complete. A blocker must be resolved explicitly;
+status never clears one or grants another repair attempt.
+
+This policy revision invalidates earlier fingerprints. Keep prior runs intact;
+their original code/policy revision can still resume them. Never reset a run to
+replenish its repair allowance. Record any measured usage separately outside git.
 No percentage savings or identical model quality has been established by the
 offline regression tests. The old API pipeline is not proof of what consumed a
 Fable/Astra session's quota.
