@@ -1,6 +1,8 @@
 # AGENTS.md
 
-> **This file is the onboarding contract for any AI agent or human contributor joining this repository. Read every linked document in full before proposing, editing, or publishing content. Take as long as you need. Do not begin work until you have internalized what follows — the voice rules, the hidden-origin directive, the dual-audience test, the schema, and every lesson already in the repo.**
+> **Scope first:** For Watchtower/CBS/Spiritual Gems preparation or JW Library tooling, read [`tools/jwl_notes/AGENTS.md`](tools/jwl_notes/AGENTS.md) and its focused handoff/runbook. The sales-content onboarding below applies to the sales-writing track. If changing both, follow both. This routing is recorded in [ADR 0007](decisions/0007-checkpointed-meeting-preparation.md).
+
+> **Sales-writing contract:** Read every linked sales document in full before proposing, editing, or publishing sales lessons. Internalize the voice rules, hidden-origin directive, dual-audience test, schema, and existing lessons before beginning that work.
 
 This repository is governed by an open standard ([AGENTS.md](https://agents.md), stewarded by the Agentic AI Foundation under the Linux Foundation, adopted by 60,000+ repositories). Codex, Claude Code, Cursor, Aider, Continue, and adjacent agents read this file at session start.
 
@@ -95,7 +97,7 @@ ADR format: see existing files in [`/decisions/`](decisions/). Status progresses
 
 ## Commands
 
-This is a content repo. There is no build step, no test suite, no package manager. The "commands" are editorial:
+The sales-writing track is a content repo; its commands are editorial. Meeting-tooling tests are documented in `tools/jwl_notes/AGENTS.md`:
 
 - `git status` — check for untracked content.
 - `git add <file>` — stage named files only. Never `git add -A` (risks committing drafts or scratch notes).

@@ -4,13 +4,45 @@
 >
 > Read this before starting a new session on the comment pipeline.
 
-**Last updated:** 2026-05-15
-**Branch:** `claude/jwl-notes-injector-YnbfN`
+**Last updated:** 2026-09-19
+**Branch:** `codex/watchtower-prep-efficiency`
 **Pipeline version:** v5 (tool-using agents, Phase 3 shipped)
 
 ---
 
-## Current state — three working targets, all on the lesson agent
+## Current session: preserve approved quality with fewer iterations
+
+The operator calls the finished Watchtower output phenomenal. Reduce repeated
+context and rewriting, not depth or voice. Watchtower Work/chat preparation now defaults to
+`prep_session.py`; follow `RUNBOOK.md` and `../AGENTS.md`. This path plans the full
+article, tracks later-paragraph reservations, locks accepted comments, uses a
+consolidated independent review and permits one local repair per failed paragraph.
+It makes no model calls itself. Source/reference/policy changes invalidate reuse.
+CBS and Spiritual Gems retain their existing workflows.
+
+`prep_inputs.py` reads saved official HTML and extracts only explicitly selected
+notes from a local backup. Keep approved examples, backups and all run files in
+ignored `agent/runs/`. No private examples were added to the repo. Export is
+comment-only; full preparation still needs the existing underlines and packaging.
+
+SDK redrafts now get the old draft, exact reason and full article context (even
+when drafting a paragraph slice). Failed repairs retain quarantined checkpoints;
+attempt counts persist before dispatch, and checkpoint failures cannot bless an
+old rejected draft. SDK orchestration limits remain separate from Work locks.
+
+Validation: targeted offline lifecycle/input/handoff tests plus the existing free
+regression suite. A saved current official article parsed into 16 paragraphs;
+selected backup yielded 15 reference notes and a valid preparation packet. No paid
+model generation, percentage savings measurement or model-quality comparison.
+An independent code review found retry-bypass and save-failure cases, both covered
+by regression tests and fixed before publication.
+
+Next: use the runbook for the next real preparation and record draft/review/repair
+counts and actual usage. Do not reset runs to escape the cap, rewrite accepted
+comments, weaken existing gates, or call a comment-only export a complete week's
+preparation. ADR: `../../../decisions/0007-checkpointed-meeting-preparation.md`.
+
+## Prior SDK state — three working targets
 
 | Target | Drafter | Output | Status |
 |---|---|---|---|

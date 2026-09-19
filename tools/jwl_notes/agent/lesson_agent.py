@@ -284,6 +284,7 @@ class LessonState:
         # Discovery + scrape outputs
         self.article_meta: dict | None = None
         self.paragraphs: list[ParagraphData] = []
+        self.article_paragraphs: list[ParagraphData] = []
         self.paragraph_by_num: dict[int, ParagraphData] = {}
 
         # Drafts so far
@@ -468,6 +469,7 @@ def _make_tool_handlers(state: LessonState):
                 paragraphs = scrape_article(html)
         except Exception as e:
             return {"ok": False, "reason": f"scrape failed: {e}"}
+        state.article_paragraphs = list(paragraphs)
         # Apply the test/debug paragraph filter if set on the LessonState
         # (used by --paragraphs CLI flag for cheap slice smoke tests).
         if state.paragraph_filter is not None:
@@ -491,6 +493,12 @@ def _make_tool_handlers(state: LessonState):
             ],
         }
 
+    def _article_context() -> list[dict]:
+        return [{"paragraph_number": p.paragraph_number,
+                 "question_text": p.question_text, "body_text": p.body_text,
+                 "cited_scriptures": p.cited_scriptures}
+                for p in (state.article_paragraphs or state.paragraphs)]
+
     def draft_comment(paragraph_number: int,
                       extra_constraints: dict | None = None) -> dict:
         if paragraph_number not in state.paragraph_by_num:
@@ -498,6 +506,9 @@ def _make_tool_handlers(state: LessonState):
         para = state.paragraph_by_num[paragraph_number]
         if para.question_pid is None:
             return {"ok": False, "reason": f"¶{paragraph_number} has no question_pid; no comment needed"}
+        if paragraph_number in state.failed_comments:
+            return {"ok": False, "accepted": False,
+                    "reason": "paragraph requires redraft_comment with a specific reason"}
         # Resume-cache hit: return without calling the subagent.
         if para.body_pid in state.drafted_comments:
             cached = state.drafted_comments[para.body_pid]
@@ -512,6 +523,7 @@ def _make_tool_handlers(state: LessonState):
             "article_title": state.article_meta.get("title"),
             "article_source": state.article_meta.get("source"),
             "study_date": state.study_date,
+            "article_context": _article_context(),
         }
         try:
             comment, history = draft_comment_with_agent(
@@ -532,6 +544,8 @@ def _make_tool_handlers(state: LessonState):
                     "reason": "comment agent gave up; see gates.log",
                     "gate_history_tail": [str(g) for g in history[-5:]]}
         state.drafted_comments[para.body_pid] = comment
+        if paragraph_number in state.failed_comments:
+            state.failed_comments.remove(paragraph_number)
         # Persist immediately so a kill/crash doesn't lose this draft.
         try:
             _save_comment(state, para.body_pid, comment)
@@ -651,37 +665,38 @@ def _make_tool_handlers(state: LessonState):
     def redraft_comment(paragraph_number: int,
                         extra_constraints: dict | None = None,
                         reason: str = "(no reason given)") -> dict:
+        if type(paragraph_number) is not int or paragraph_number not in state.paragraph_by_num:
+            return {"ok": False, "reason": f"unknown paragraph_number {paragraph_number}"}
+        if not isinstance(reason, str) or not reason.strip() or reason == "(no reason given)":
+            return {"ok": False, "reason": "a specific repair reason is required"}
+        para = state.paragraph_by_num[paragraph_number]
+        if para.question_pid is None:
+            return {"ok": False, "reason": "paragraph has no question; no comment needed"}
         if state.redraft_cycles_used >= ARTICLE_REDRAFT_CYCLE_CAP:
             return {"ok": False, "accepted": False,
                     "reason": f"redraft cycle cap ({ARTICLE_REDRAFT_CYCLE_CAP}) reached"}
+        previous = state.drafted_comments.get(para.body_pid)
         state.redraft_cycles_used += 1
-        state.log(
-            f"\n  redraft_comment ¶{paragraph_number} (cycle "
-            f"{state.redraft_cycles_used}/{ARTICLE_REDRAFT_CYCLE_CAP}): "
-            f"{reason}"
-        )
-        if paragraph_number not in state.paragraph_by_num:
-            return {"ok": False, "reason": f"unknown paragraph_number {paragraph_number}"}
-        para = state.paragraph_by_num[paragraph_number]
-        # Remove the existing comment so forbidden_types is recomputed without
-        # this paragraph's own type counting against it. Also delete from disk
-        # so a checkpoint-resume doesn't restore the rejected draft.
-        state.drafted_comments.pop(para.body_pid, None)
-        try:
-            _delete_comment(state, para.body_pid)
-        except Exception:
-            pass
-        prior_state = _compute_prior_state()
+        if paragraph_number not in state.failed_comments:
+            state.failed_comments.append(paragraph_number)
+        # Save before paid dispatch. Keep the previous draft, but quarantine it
+        # until a replacement passes: a crash must not reset attempts or ship it.
+        _save_meta(state)
+        state.log(f"\n  redraft_comment ¶{paragraph_number} (cycle "
+                  f"{state.redraft_cycles_used}/{ARTICLE_REDRAFT_CYCLE_CAP}): {reason}")
+        prior_state = _compute_prior_state(skip_body_pid=para.body_pid)
         article_meta_full = {
             "article_title": state.article_meta.get("title"),
             "article_source": state.article_meta.get("source"),
             "study_date": state.study_date,
+            "article_context": _article_context(),
         }
         try:
             comment, history = draft_comment_with_agent(
                 para, article_meta_full, prior_state,
                 extra_constraints=extra_constraints,
                 cost_tracker=state.cost_tracker,
+                revision={"reason": reason, "previous_comment": previous},
             )
         except SystemExit:
             raise
@@ -693,12 +708,25 @@ def _make_tool_handlers(state: LessonState):
             return {"ok": False, "accepted": False,
                     "reason": "comment agent gave up on redraft"}
         state.drafted_comments[para.body_pid] = comment
+        if paragraph_number in state.failed_comments:
+            state.failed_comments.remove(paragraph_number)
         try:
             _save_comment(state, para.body_pid, comment)
         except Exception as save_err:
-            state.log(f"    ⚠ checkpoint save failed (non-fatal): {save_err}")
-        if paragraph_number in state.failed_comments:
-            state.failed_comments.remove(paragraph_number)
+            # Do not let a later metadata save bless an old on-disk draft.
+            if previous is None:
+                state.drafted_comments.pop(para.body_pid, None)
+            else:
+                state.drafted_comments[para.body_pid] = previous
+            if paragraph_number not in state.failed_comments:
+                state.failed_comments.append(paragraph_number)
+            try:
+                _save_meta(state)
+            except Exception:
+                pass  # The pre-dispatch quarantine was already persisted.
+            state.log(f"    checkpoint save failed; repair remains unresolved: {save_err}")
+            return {"ok": False, "accepted": False,
+                    "reason": f"repair checkpoint failed: {save_err}"}
         return {
             "ok": True,
             "accepted": True,
@@ -707,6 +735,11 @@ def _make_tool_handlers(state: LessonState):
         }
 
     def commit_lesson() -> dict:
+        quarantined = [p.paragraph_number for p in state.paragraphs
+                       if p.paragraph_number in state.failed_comments
+                       and p.body_pid in state.drafted_comments]
+        if quarantined:
+            return {"ok": False, "reason": f"repairs still unresolved: {quarantined}"}
         # Pre-conditions
         comments = list(state.drafted_comments.values())
         article_results = gates_run_article_gates(comments)
