@@ -1,0 +1,20 @@
+name: prep-regression
+on:
+  pull_request:
+    paths:
+      - 'tools/jwl_notes/**'
+      - '.github/workflows/prep-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Checkpoint, input and SDK handoff regression tests (no API calls)
+        working-directory: tools/jwl_notes
+        run: python -m unittest agent.test_prep_session agent.test_prep_inputs agent.test_redraft_handoff agent.test_prep_skill_policy

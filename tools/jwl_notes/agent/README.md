@@ -1,6 +1,34 @@
-# Autonomous Weekly Prep Agent
+# Weekly preparation: Work sessions and SDK automation
 
-Closes the trust gap. Tyler shouldn't have to QA every comment — the orchestrator does, in code.
+For Watchtower Work/chat sessions, start with [RUNBOOK.md](RUNBOOK.md). The default is a
+whole-article plan, checkpointed drafts, one consolidated independent review and
+one targeted repair per failed paragraph. Accepted comments stay locked. This
+model-independent path needs no API key and makes no model calls itself.
+
+`prep_inputs.py` creates cached article JSON from saved official HTML and can
+extract explicitly selected approved notes from a local JW Library backup.
+`prep_session.py` enforces coverage, input/policy fingerprints, current review
+hashes, existing gates and repair limits. Private inputs belong in ignored
+`agent/runs/`; the final export is comments only. Full preparation still requires
+underlines. See the runbook for complete commands and JSON contracts.
+
+[SKILL_ROUTING.md](SKILL_ROUTING.md) maps relevant skill principles to this
+workflow. Plan-time gates check type/feature feasibility; saved research and
+experience context travel with every request. `prep_session status` reports the
+next action, locks and retained repair reasons without changing the run. Its
+checkpoint counts are not model-call or quota measurements.
+
+The existing SDK automation below remains available. Its redraft handoff now
+includes the original draft and specific failure reason, retains rejected drafts
+safely during repair, persists retry counts before dispatch, and gives the writer
+and optional critic full article context. The Work workflow's mandatory review
+locks and one-repair cap do **not** replace the SDK's existing orchestration caps.
+Neither offline tests nor these changes establish a percentage quota saving.
+
+CBS and Spiritual Gems retain their existing workflows; the checkpoint engine
+supports one Watchtower document only.
+
+## Existing SDK automation (historical architecture)
 
 ## What this is
 

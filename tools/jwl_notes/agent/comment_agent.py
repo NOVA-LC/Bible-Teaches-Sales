@@ -471,6 +471,7 @@ def _make_tool_handlers(
             "paragraph_number": para.paragraph_number,
             "question_text": pdata.get("question_text"),
             "body_paragraph_text": pdata.get("body_paragraph_text"),
+            "article_context": article_meta.get("article_context", []),
             "comment_content": comment_payload.get("content"),
             "claimed_rotation": comment_payload.get("rotation"),
             "claimed_spine_image": comment_payload.get("spine_image"),
@@ -737,6 +738,7 @@ def draft_comment_with_agent(
     model: str = DEFAULT_MODEL,
     extra_constraints: dict | None = None,
     cost_tracker: "CostTracker | None" = None,
+    revision: dict | None = None,
 ):
     """Drop-in replacement for build_week._draft_with_gates.
 
@@ -804,6 +806,8 @@ def draft_comment_with_agent(
         "prior_herd_moves_this_week": prior_state.get("prior_herd_moves_this_week", []),
         "forbidden_types": prior_state.get("forbidden_types", []),
         "extra_constraints": extra_constraints,
+        "article_context": article_meta.get("article_context", []),
+        "revision": revision,
     }
 
     messages: list[dict] = [{

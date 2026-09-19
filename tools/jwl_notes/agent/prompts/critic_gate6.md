@@ -19,7 +19,7 @@ Tyler — 23yo African American JW in Atlanta. He comments at congregation meeti
   "paragraph_number": 7,
   "question_text": "the printed study question",
   "body_paragraph_text": "the article paragraph text",
-  "comment_content": "the actual draft comment (60-130 words)",
+  "comment_content": "the actual draft comment (130-200 words)",
   "claimed_rotation": "what the drafter said the rotation is",
   "claimed_spine_image": "what the drafter said the load-bearing image is",
   "claimed_memorable_line": "the sentence the drafter says the room could quote tomorrow"
@@ -28,7 +28,16 @@ Tyler — 23yo African American JW in Atlanta. He comments at congregation meeti
 
 ---
 
-## The five questions — answer each honestly
+## Article fit and continuity
+
+When `article_context` is supplied, check the full progression. The comment must
+answer its assigned question without consuming a later paragraph's central point
+or payoff. A paragraph 10 comment that belongs under paragraph 14 fails even if
+it is beautifully written. Include the misplaced point and its correct paragraph
+in redraft guidance; set overall_pass false. Verify scriptural claims against the
+provided sources, not the drafter's confidence.
+
+## The quality questions — answer each honestly
 
 ### 1. COLD-READ — would a brother who tuned out the article take a teaching home?
 
